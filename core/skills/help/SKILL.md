@@ -6,7 +6,7 @@ description: >
   <example>
   Context: Developer wants to know what skills are available
   user: "/help"
-  assistant: "ContextForge 1.0.0 — 20 skills across 4 categories. System status: manifests FRESH, worklogs active."
+  assistant: "ContextForge 1.1.0 — 20 skills across 4 categories. System status: manifests FRESH, worklogs active."
   </example>
 model: none
 ---
@@ -32,7 +32,7 @@ Return the template below, substituting live system status values.
 ## Output Format
 
 ```
-ContextForge v1.0.0 — 20 skills, 4 categories
+ContextForge v1.1.0 — 20 skills, 4 categories
 
 ## Discovery (4 skills)
 | Skill              | Tier | Ownership | Trigger |

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-30
+
+First public release. Everything below was developed privately between
+2026-04-14 and 2026-07-30 and is published here as one cut; see
+[README — Project history](README.md#project-history).
+
+### Portability and tooling (2026-07-30)
+
+- **`stat` fallback order** (`statusline.sh`, `bootstrap-agent.sh`) — `stat -f %m FILE` means "filesystem status" on GNU coreutils, which takes `%m` as an operand, writes filesystem info to stdout *and* exits non-zero. A `stat -f … || stat -c …` chain therefore concatenated that output with the fallback and broke the arithmetic that followed. GNU is now tried first (BSD has no `-c` and fails cleanly), with a numeric guard on the result.
+- **Marketplace parity suite** now skips when `../.local-marketplace/` is absent — it exists only on a machine with the plugin installed locally, so the suite could never pass on a fresh clone or in CI.
+- **CI runs the canonical audit gate** (`npm run test:audit`); the partial duplicate `scripts/test-audit.sh` is deleted.
+- **Dependencies:** `tree-sitter` pinned to `^0.21.1` (the peer the grammar packages declare — `0.22.4` made `npm ci` fail on a strict resolve); `vitest` 1.6 → 4, clearing the vite/esbuild advisory chain (0 vulnerabilities).
+- **Plugin cache path** is read from `.claude-plugin/plugin.json` instead of a hardcoded version string, so it no longer drifts on a version bump.
+
 ### Added
 
 - **Rule 016 `cf-research-escalation`** (intelligent) — turns the circuit breaker from "give up at the 2nd failure" into "research at the 1st, halt at the 2nd if still stuck". On a first failure during autonomous work: local-first (source/docs/manifest), then bounded routed web research (GitHub issues + official docs as the authority; Reddit/forum/StackOverflow as lead-not-truth, verified before acting), ≤2 queries + ≤3 fetches, research trace recorded in the failure ledger. Cross-referenced from `004-cf-circuit-breaker` (failure chain step 1) and `015-cf-mcp-tools` (`firecrawl_research_search_github`/`firecrawl_search` mechanism; `gh`/`WebFetch` Tier-0 preferred).

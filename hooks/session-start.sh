@@ -18,7 +18,11 @@ HOOK_MODEL=$(echo "$HOOK_INPUT" | jq -r '.model // "unknown"' 2>/dev/null || ech
 # If plugin was reinstalled from marketplace, cache is a copy not a symlink.
 # Re-create symlinks to live source so edits are immediately reflected.
 CONTEXT_FORGE_SOURCE="$(cd "$SCRIPT_DIR/.." && pwd)"
-CF_CACHE="$HOME/.claude/plugins/cache/local/context-forge/1.0.0"
+# Read the version from the manifest — a hardcoded one silently stops self-healing
+# the cache the moment the plugin version is bumped.
+CF_VERSION="$(jq -r '.version // empty' "$CONTEXT_FORGE_SOURCE/.claude-plugin/plugin.json" 2>/dev/null || true)"
+[ -z "$CF_VERSION" ] && CF_VERSION="1.1.0"
+CF_CACHE="$HOME/.claude/plugins/cache/local/context-forge/$CF_VERSION"
 
 if [ -d "$CONTEXT_FORGE_SOURCE" ] && [ ! -L "$CF_CACHE" ]; then
   rm -rf "$CF_CACHE"
