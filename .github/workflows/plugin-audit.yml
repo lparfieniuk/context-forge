@@ -24,8 +24,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Canonical gate — validate-index, parity, runtime artifacts, doc claims,
+      # plugin surface, rules, token benchmark, and the vitest suite.
       - name: Run plugin audit
-        run: bash scripts/test-audit.sh
-
-      - name: Run vitest
-        run: npm test
+        run: npm run test:audit
