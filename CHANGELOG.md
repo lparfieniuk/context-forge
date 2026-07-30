@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **`audit-runtime-artifacts.sh` failed on artifacts git never publishes.** The gate exists to keep runtime artifacts out of the *published* tree, but it tested existence rather than publishability — so `.claude/lessons/`, which rule 004 tells the agent to write to and which `.gitignore` has always excluded, failed the audit and blocked commits. An artifact is now exempt only when git proves it can never ship: untracked **and** ignored. Untracked-but-not-ignored still fails, since the audit runs before `git add` — exactly when a stray artifact is most worth catching. Covered by `scripts/audit-runtime-artifacts.test.ts`.
+- **The same audit never scanned the marketplace copy.** It looked for `.local-marketplace/` as a child of the plugin root; the marketplace is a *sibling*, as `convert.ts` and `hooks.test.ts` have always had it. The scan silently found nothing for its entire existence and reported `marketplace-root: absent` on a machine where the copy was present.
+- **A root path containing glob metacharacters silently skipped its artifacts** — `${path#$root/}` treated the root as a pattern, leaving the path unstripped.
+- **`/evolve` wrote patch_text it never verified.** Hand-written unified diffs fail `git apply` (`corrupt patch`) because hunk headers must agree with the body line counts. The skill now requires patches generated from a real `git diff` and verified with `git apply --check` before a proposal is written, and documents the two traps found in practice: restoring the edited file with `git checkout` wipes an earlier proposal already applied but uncommitted, and a HEAD-relative diff double-counts one.
+
+### Added
+
+- Five agent-governance constraints from an `/evolve` panel run: log-line conclusions are hypotheses rather than measurements, and scripted in-place edits plus external tool output shape can both lie at exit 0 (rule 004); settle third-party tool behavior by reading its source (rule 016); derive watchdog timeouts from measured job parameters, and a bare `sleep` in a poll loop defers the bash trap and leaks rented resources (rule 017); a clean working tree does not prove a repo is safe to publish (`plugin-audit` skill).
+
 ## [1.1.0] - 2026-07-30
 
 First public release. Everything below was developed privately between

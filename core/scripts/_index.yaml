@@ -297,7 +297,7 @@ tools:
 
   - id: audit-runtime-artifacts
     file: tools/audit-runtime-artifacts.sh
-    description: "Detect runtime artifacts in plugin roots, including cache/lessons directories and observation/run logs."
+    description: "Detect publishable runtime artifacts (tracked, or untracked and not gitignored) in plugin roots — cache/lessons directories and observation/run logs."
     params:
       - name: --plugin-root
         required: false

@@ -48,6 +48,30 @@ proposal to `<IDE_DIR>/evolve/pending/<id>.yaml` (schema below). Then set
 `last_processed_total` in `~/worklogs/diaries/INDEX.yaml` to the current total
 signal count (so the next run only sees newer signal).
 
+**Step 3a — Generate and verify patch_text (Tier 0, MANDATORY).** NEVER hand-write
+a unified diff: `git apply` validates each hunk header's line counts against the
+body, so a transcribed diff fails with `corrupt patch` and burns a `reverted-patch`
+row. Produce every patch mechanically:
+
+1. Copy the target file to a temp dir twice — `old` and `new` — and apply the
+   intended edit to `new`. NEVER edit the real file under `core/`: an abort
+   between edit and restore would leave a rule silently modified with no ledger
+   row, violating this skill's own "NEVER apply a rule/skill" constraint. It also
+   keeps the diff worktree-relative, which a HEAD-relative `git diff` is not once
+   an earlier proposal in the same run is applied but still uncommitted.
+2. `git diff --no-index -U3 <old> <new>`, then rewrite the temp paths in the
+   `diff --git`, `---`, and `+++` lines to `a/<file>` / `b/<file>` and drop the
+   `index` line.
+3. Verify the RAW diff now, before indenting: pipe it to `git apply --check -`.
+   A proposal whose patch fails `--check` is BANNED from `pending/`.
+4. Only then indent 2 spaces into `patch_text`. The indent is storage formatting,
+   NOT part of the patch — `git apply` rejects an indented diff with `No valid
+   patches in input`, so anything re-verifying a stored proposal must strip it
+   first (`sed 's/^  //' | git apply --check -`), exactly as `evolve-apply.sh` does.
+
+Two proposals touching the same region of one file: apply the first, then
+regenerate the second against the updated file.
+
 **Step 4 — Emit digest.** Print the `[EVOLVE DIGEST]` envelope. If `--digest
 <path>` was given, also write a markdown digest there. STOP. Await human review.
 
@@ -139,5 +163,6 @@ NEVER spawn the Fit/Cost/Risk batch before the Evidence gate returns PASS.
 NEVER spawn more than 4 Haiku subagents per run; NEVER pass thinking params to Haiku.
 ALWAYS advance last_processed_total only after proposals are written.
 ALWAYS Tier-0 check ledger.tsv before writing a proposal; NEVER silently re-propose a reverted verdict+target.
+ALWAYS generate patch_text from a real `git diff` and verify it with `git apply --check` before writing the proposal; hand-written hunk headers are BANNED.
 ALWAYS include the ACTION footer (explicit human gate).
 NEVER apply, merge, or delete a rule/skill — that is /evolve-apply, run by a human.
