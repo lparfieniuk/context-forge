@@ -9,6 +9,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['scripts/**/*.test.ts'],
+    // These tests copy the plugin tree and shell out to the bash audit scripts;
+    // the 5s default is not enough headroom on a cold cache or in CI.
+    testTimeout: 30000,
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
