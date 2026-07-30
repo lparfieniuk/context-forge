@@ -1,0 +1,8 @@
+id: plugin-audit
+type: skill
+category: admin
+tier: 1
+model: none
+ownership: owned
+trigger: "After ContextForge change packages, before PR/commit, after convert, or after runtime artifact cleanup"
+tags: [admin, audit, gate, validation, parity, runtime-artifacts, docs, surface]

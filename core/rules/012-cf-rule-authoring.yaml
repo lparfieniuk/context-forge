@@ -1,0 +1,12 @@
+id: cf-rule-authoring
+number: 012
+name: "Rule Authoring"
+activation:
+  mode: intelligent
+  description: "9 Golden Rules, YAML+MD format, NEVER/ALWAYS constraints, validation gate."
+  patterns: [write rule, new rule, rule authoring, optimize rule]
+cursor:
+  alwaysApply: false
+claude:
+  rule_file: true
+content_file: 012-cf-rule-authoring.md

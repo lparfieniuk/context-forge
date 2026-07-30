@@ -1,0 +1,8 @@
+id: help
+type: skill
+category: admin
+tier: 0
+model: none
+ownership: owned
+trigger: "/help or 'list skills' or 'what can you do'"
+tags: [help, reference, capabilities, skills, listing]

@@ -1,0 +1,103 @@
+# Rule Authoring
+
+## SYSTEM CONSTRAINTS
+
+ALWAYS replace ALL soft language with hard constraints: "ALWAYS", "NEVER", "BANNED".
+EVERY rule file MUST have a `## SYSTEM CONSTRAINTS` section at the top.
+NEVER mix constraints with guidance in the same paragraph.
+EVERY implementation rule MUST include at least one few-shot example with reasoning.
+EVERY implementation rule MUST end with a `## Validation gate` checkbox list.
+ALWAYS use the universal YAML+MD dual-file format. NEVER create `.mdc` files directly.
+NEVER use `alwaysApply: true` without justifying token cost (>80% session frequency).
+
+## Universal YAML+MD Format
+
+Two files per rule:
+```
+core/rules/<NNN>-<id>.yaml   — metadata
+core/rules/<NNN>-<id>.md     — content body (pure Markdown)
+```
+
+### YAML schema
+
+```yaml
+id: <slug>
+number: <NNN>
+name: "<Human readable name>"
+activation:
+  mode: always | intelligent | scoped
+  description: "<one-line description>"
+  patterns: []
+cursor:
+  alwaysApply: true | false
+claude:
+  include_in_claude_md: true | false
+  rule_file: true
+content_file: <NNN>-<id>.md
+```
+
+### Content body structure
+
+```markdown
+# Rule Title
+
+## SYSTEM CONSTRAINTS
+NEVER [forbidden].
+ALWAYS [required].
+
+## [Topic section]
+[Guidance, tables, patterns]
+
+## Few-shot example
+**Input:** ...
+**Reasoning:** ...
+**Output:** ...
+
+## Validation gate (MANDATORY before output)
+- [ ] [check 1]?
+If any unchecked → fix before returning output.
+```
+
+## 9 Golden Rules (summary)
+
+| # | Rule | Key constraint |
+|---|------|---------------|
+| 1 | Constitutional AI | Replace ALL soft language with NEVER/ALWAYS |
+| 2 | Chain-of-Thought | Only when >2 files or architectural decision |
+| 3 | Structured Output | XML envelope only for complex multi-step tasks |
+| 4 | Few-Shot Examples | MUST include Input + Reasoning + Output |
+| 5 | System Prompt Separation | CONSTRAINTS section at top, guidance below |
+| 6 | Token Efficiency | `alwaysApply: true` only if >80% session frequency |
+| 7 | Prompt Chaining | Numbered steps; each atomic and verifiable |
+| 8 | Validation Loops | Checkbox gate at end of every implementation rule |
+| 9 | Guarded Updates | Preserve immutable core; regression-test changes |
+
+## File Number Ranges
+
+| Range | Purpose |
+|-------|---------|
+| 000–099 | Always-on core behavior |
+| 100–199 | Angular / TypeScript patterns |
+| 200–299 | Backend (PHP, API) |
+| 800–899 | Private per-user (gitignored) |
+| 900–999 | Meta / memory / tooling |
+
+## Few-shot example
+
+**Input:** "Write a new rule for API boundary enforcement."
+**Reasoning:** New rule → YAML+MD dual format. Must have SYSTEM CONSTRAINTS at top, few-shot, validation gate.
+**Output:**
+```
+core/rules/015-cf-api-boundary.yaml  — metadata (mode: intelligent, alwaysApply: false)
+core/rules/015-cf-api-boundary.md    — content (SYSTEM CONSTRAINTS + example + gate)
+```
+
+## Validation gate (MANDATORY before creating/modifying a rule)
+
+- [ ] Dual YAML+MD files created (not .mdc)?
+- [ ] `## SYSTEM CONSTRAINTS` section at top of .md?
+- [ ] All soft language replaced with NEVER/ALWAYS?
+- [ ] At least one few-shot example with Input/Reasoning/Output?
+- [ ] `## Validation gate` checkbox list at end?
+- [ ] `alwaysApply: false` for intelligent rules?
+If any unchecked → fix before saving rule files.

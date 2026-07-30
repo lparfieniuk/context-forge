@@ -1,0 +1,4 @@
+id: cf-scribe
+type: agent
+model: haiku
+tags: [compression, observation-masking, rca]

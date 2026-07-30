@@ -1,0 +1,15 @@
+id: cf-research-escalation
+number: 16
+name: "Research Escalation (Autonomous Problem-Solving)"
+activation:
+  mode: intelligent
+  description: "When autonomous work hits a failure/blocker: local-first, then bounded routed web research (GitHub issues/docs primary, Reddit/forum as lead-not-truth) before the circuit-breaker halt"
+  patterns: ["circuit breaker", "failure", "stuck", "blocked", "research", "github issue", "how to fix", "error", "autonomous", "web search"]
+cursor:
+  alwaysApply: false
+claude:
+  include_in_claude_md: false
+  skip_on_bugfix: false
+  rule_file: true
+  paths: []
+content_file: 016-cf-research-escalation.md

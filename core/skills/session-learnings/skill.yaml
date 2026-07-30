@@ -1,0 +1,8 @@
+id: session-learnings
+type: skill
+category: workflow
+tier: 2
+model: sonnet
+ownership: owned
+trigger: "End of session or /session-learnings command"
+tags: [learnings, observations, anti-patterns, rules, session, retrospective]

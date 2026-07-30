@@ -1,0 +1,8 @@
+id: extract-signatures
+type: skill
+category: discovery
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Need function/class signatures without reading full file bodies"
+tags: [signatures, typescript, php, discovery, symbols, api]

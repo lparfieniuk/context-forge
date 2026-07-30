@@ -1,0 +1,13 @@
+id: cf-worklog
+number: 008
+name: "Worklog"
+activation:
+  mode: intelligent
+  description: "Session start, state externalization, YAML scratchpads, observation masking."
+  patterns: [worklogs, tickets, ~/worklogs, worklog, session start]
+cursor:
+  alwaysApply: false
+claude:
+  skip_on_bugfix: true
+  rule_file: true
+content_file: 008-cf-worklog.md

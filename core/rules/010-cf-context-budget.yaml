@@ -1,0 +1,12 @@
+id: cf-context-budget
+number: 010
+name: "Context Budget"
+activation:
+  mode: always
+  description: "60-70% effective capacity tracking, threshold actions (60/70/80%), capacity estimation formula."
+  patterns: []
+cursor:
+  alwaysApply: true
+claude:
+  rule_file: true
+content_file: 010-cf-context-budget.md

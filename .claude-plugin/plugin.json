@@ -1,0 +1,9 @@
+{
+  "name": "context-forge",
+  "version": "1.0.0",
+  "description": "Deterministic context engineering for AI coding agents — structure over search, tokens over brute force. 18 rules, 20 skills, 1 agent, 11 hooks.",
+  "author": {
+    "name": "Lukasz Parfieniuk",
+    "email": "lukasz.parfieniuk@gmail.com"
+  }
+}

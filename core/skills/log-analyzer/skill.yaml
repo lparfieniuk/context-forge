@@ -1,0 +1,8 @@
+id: log-analyzer
+type: skill
+category: execution
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Build, test, or lint failure that needs root cause analysis"
+tags: [rca, logs, build, test, eslint, typescript, angular, debugging]

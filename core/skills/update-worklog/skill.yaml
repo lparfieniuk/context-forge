@@ -1,0 +1,8 @@
+id: update-worklog
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Decision made, phase completed, cross-boundary impact found, or error root-caused"
+tags: [worklog, append, decision, state, externalize]

@@ -1,0 +1,7 @@
+{
+  "name": "context-forge",
+  "version": "1.0.0",
+  "description": "Deterministic context engineering for AI coding agents — structure over search, tokens over brute force.",
+  "rules": ".cursor/rules",
+  "agents": ".cursor/agents"
+}

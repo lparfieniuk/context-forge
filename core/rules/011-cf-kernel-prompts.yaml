@@ -1,0 +1,13 @@
+id: cf-kernel-prompts
+number: 011
+name: "Kernel Prompts"
+activation:
+  mode: intelligent
+  description: "KERNEL template for Task() prompts, RED FLAG banned patterns, Scribe I/O contract."
+  patterns: ["Task(", kernel, subagent, prompt template, agent spawn]
+cursor:
+  alwaysApply: false
+claude:
+  skip_on_bugfix: true
+  rule_file: true
+content_file: 011-cf-kernel-prompts.md

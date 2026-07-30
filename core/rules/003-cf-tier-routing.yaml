@@ -1,0 +1,12 @@
+id: cf-tier-routing
+number: 003
+name: "Tier Routing"
+activation:
+  mode: always
+  description: "Cost hierarchy enforcement, Haiku-first heuristic, Scribe dispatch, max 2 T3 concurrent."
+  patterns: []
+cursor:
+  alwaysApply: true
+claude:
+  rule_file: true
+content_file: 003-cf-tier-routing.md

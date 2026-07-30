@@ -1,0 +1,8 @@
+id: diary
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Significant decision made, phase completed, or pattern confirmed/failed mid-session"
+tags: [diary, capture, self-evolving, success, failure]

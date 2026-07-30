@@ -1,0 +1,52 @@
+---
+description: Cloud & Metered Execution Safety
+alwaysApply: false
+globs: []
+---
+# Cloud & Metered Execution Safety
+
+## SYSTEM CONSTRAINTS
+
+NEVER submit a paid remote job without a TTL and an explicit cancel path — an uncapped job is BANNED. An abandoned serverless render with no ttl auto-retried ~6.3h and drained the balance.
+ALWAYS run the cheapest preflight check (image digest, model file present, disk free) BEFORE submitting billable work — NEVER pay a cold start to discover a missing file.
+NEVER require a live worker before submitting on a scale-to-zero endpoint — that deadlocks the cold start it is waiting for.
+NEVER re-push a mutable image tag and assume workers picked it up — ALWAYS build a new immutable tag per build and verify the running digest before debugging the code.
+NEVER treat a config/env change as applied to a running worker — ALWAYS force a fresh worker and verify, NEVER trust the control-plane response alone.
+NEVER delete a pod or volume before confirming the artifact transfer completed — ALWAYS quote remote globs (the local shell expands unquoted ones).
+NEVER background a long remote job with `&` inside an already-backgrounded launcher — the completion signal fires for the launcher, not the work. ALWAYS verify the process is alive and monitor a real output signal.
+NEVER restart a long-lived service inside an SSH heredoc — the background child holds the session open (`nohup`/`setsid`/`</dev/null` are all insufficient). ALWAYS use separate SSH invocations.
+NEVER spawn pods from inside an agent session for unattended work — session limits orphan them, and idle-stop kills CPU-pod containers mid-job.
+ALWAYS verify a control-plane mutation persisted by re-reading it — `runpodctl serverless update --workers-max 0` silently does not persist (verified 3x); hard pause and spend limits are web-console-only.
+
+## Failure Modes Observed
+
+| Symptom | Real cause | Check first |
+|---|---|---|
+| Fix "has no effect" | worker cached the old image by tag | running digest vs pushed digest |
+| Job COMPLETED, empty body | response exceeded transport cap (RunPod: 10MB) | payload size vs provider limit |
+| Next job times out too | prior render orphaned inside the worker | interrupt/cancel on handler timeout |
+| Worker healthy, never takes a job | base image ENTRYPOINT ignored downstream CMD | container entrypoint chain |
+| Job "finished" instantly | double-backgrounded launcher detached | process alive + real output signal |
+| Cost spike with no output | cold start paid per failed attempt | attempt count before retrying |
+
+## Few-shot example
+
+**Input:** A render fix was pushed; the remote worker still produces the old output.
+**Reasoning:** Same tag re-pushed. The worker cached by tag, so a correct fix presents as no fix. Do NOT re-debug the code.
+**Output:**
+```
+1. verify running digest vs pushed digest -> mismatch
+2. rebuild with a new immutable tag (...-v4), push, verify digest
+3. force a fresh worker; re-read the config to confirm it persisted
+4. re-run once; if it fails again -> rule 004 halt + cost-to-date
+```
+
+## Validation gate (MANDATORY before launching metered remote work)
+
+- [ ] TTL and cancel path set on the job?
+- [ ] Preflight check run before billable submission?
+- [ ] Image tag immutable for this build, and running digest verified?
+- [ ] Backgrounded job has a real liveness/output signal (not just launcher exit)?
+- [ ] Control-plane mutation re-read and confirmed persisted?
+- [ ] Artifacts transferred and verified before deleting the pod?
+If any unchecked → fix before spending.

@@ -1,0 +1,8 @@
+id: refresh-manifest
+type: skill
+category: discovery
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Manifest missing, stale, or broken (detected by validate-manifest)"
+tags: [manifest, shadow-index, symbol-lookup, ide, discovery]

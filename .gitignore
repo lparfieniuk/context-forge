@@ -1,0 +1,21 @@
+node_modules/
+
+# runtime artifacts — regenerated per session, never committed
+.claude/cache/
+.claude/lessons/
+.claude/evolve/
+.claude/shadow/
+.claude/diary/
+.cursor/lessons/
+.cursor/evolve/
+.cursor/shadow/
+*.log
+
+# private working notes — internal plans, specs, audits, knowledge-base entries.
+# Kept on disk, excluded from the public repo.
+docs/superpowers/
+docs/knowledge-base/
+docs/audits/
+PRE-PUBLICATION-AUDIT.md
+
+.DS_Store

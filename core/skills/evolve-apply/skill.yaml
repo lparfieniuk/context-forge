@@ -1,0 +1,8 @@
+id: evolve-apply
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Human approved a pending /evolve proposal and wants it applied"
+tags: [evolve-apply, patch, governance, human-gate, self-evolving]

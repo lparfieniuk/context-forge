@@ -1,0 +1,13 @@
+id: cf-cloud-execution
+number: 17
+name: "Cloud & Metered Execution Safety"
+activation:
+  mode: intelligent
+  description: "Lifecycle, spend, and image-tag discipline for paid remote compute (GPU pods, serverless workers, containers)"
+  patterns: []
+cursor:
+  alwaysApply: false
+claude:
+  include_in_claude_md: false
+  rule_file: true
+content_file: 017-cf-cloud-execution.md

@@ -1,0 +1,8 @@
+id: pack-context
+type: skill
+category: discovery
+tier: 2
+model: sonnet
+ownership: owned
+trigger: "Task touches 3+ interrelated files and full method bodies needed"
+tags: [context, bundle, xml, multi-file, discovery, refactor]

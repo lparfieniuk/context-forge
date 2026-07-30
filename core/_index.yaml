@@ -1,0 +1,427 @@
+version: "1.0"
+description: "ContextForge module map — single source of truth for all rules, skills, and agents"
+
+rules:
+  - id: cf-token-efficiency
+    type: rule
+    number: 1
+    source: core/rules/001-cf-token-efficiency.md
+    yaml: core/rules/001-cf-token-efficiency.yaml
+    installed_claude: .claude/rules/cf-token-efficiency.md
+    installed_cursor: .cursor/rules/001-cf-token-efficiency.mdc
+    activation: always
+    tags: [core, token-efficiency, output-constraints]
+
+  - id: cf-shadow-index
+    type: rule
+    number: 2
+    source: core/rules/002-cf-shadow-index.md
+    yaml: core/rules/002-cf-shadow-index.yaml
+    installed_claude: .claude/rules/cf-shadow-index.md
+    installed_cursor: .cursor/rules/002-cf-shadow-index.mdc
+    activation: always
+    tags: [core, shadow-index, symbol-lookup]
+
+  - id: cf-tier-routing
+    type: rule
+    number: 3
+    source: core/rules/003-cf-tier-routing.md
+    yaml: core/rules/003-cf-tier-routing.yaml
+    installed_claude: .claude/rules/cf-tier-routing.md
+    installed_cursor: .cursor/rules/003-cf-tier-routing.mdc
+    activation: always
+    tags: [core, tier-routing, subagent-orchestration]
+
+  - id: cf-circuit-breaker
+    type: rule
+    number: 4
+    source: core/rules/004-cf-circuit-breaker.md
+    yaml: core/rules/004-cf-circuit-breaker.yaml
+    installed_claude: .claude/rules/cf-circuit-breaker.md
+    installed_cursor: .cursor/rules/004-cf-circuit-breaker.mdc
+    activation: always
+    tags: [core, circuit-breaker, failure-ledger]
+
+  - id: cf-code-search
+    type: rule
+    number: 5
+    source: core/rules/005-cf-code-search.md
+    yaml: core/rules/005-cf-code-search.yaml
+    installed_claude: .claude/rules/cf-code-search.md
+    installed_cursor: .cursor/rules/005-cf-code-search.mdc
+    activation: intelligent
+    tags: [search, ripgrep, progressive-disclosure]
+
+  - id: cf-prompt-caching
+    type: rule
+    number: 6
+    source: core/rules/006-cf-prompt-caching.md
+    yaml: core/rules/006-cf-prompt-caching.yaml
+    installed_claude: .claude/rules/cf-prompt-caching.md
+    installed_cursor: .cursor/rules/006-cf-prompt-caching.mdc
+    activation: intelligent
+    tags: [caching, kv-cache, prompt-prefix]
+
+  - id: cf-context-loading
+    type: rule
+    number: 7
+    source: core/rules/007-cf-context-loading.md
+    yaml: core/rules/007-cf-context-loading.yaml
+    installed_claude: .claude/rules/cf-context-loading.md
+    installed_cursor: .cursor/rules/007-cf-context-loading.mdc
+    activation: intelligent
+    tags: [context-loading, task-type, rule-budget]
+
+  - id: cf-worklog
+    type: rule
+    number: 8
+    source: core/rules/008-cf-worklog.md
+    yaml: core/rules/008-cf-worklog.yaml
+    installed_claude: .claude/rules/cf-worklog.md
+    installed_cursor: .cursor/rules/008-cf-worklog.mdc
+    activation: intelligent
+    tags: [worklog, state-externalization, session-start]
+
+  - id: cf-module-index
+    type: rule
+    number: 9
+    source: core/rules/009-cf-module-index.md
+    yaml: core/rules/009-cf-module-index.yaml
+    installed_claude: .claude/rules/cf-module-index.md
+    installed_cursor: .cursor/rules/009-cf-module-index.mdc
+    activation: intelligent
+    tags: [module-index, source-of-truth, convert-pipeline]
+
+  - id: cf-context-budget
+    type: rule
+    number: 10
+    source: core/rules/010-cf-context-budget.md
+    yaml: core/rules/010-cf-context-budget.yaml
+    installed_claude: .claude/rules/cf-context-budget.md
+    installed_cursor: .cursor/rules/010-cf-context-budget.mdc
+    activation: always
+    tags: [core, context-budget, capacity-tracking]
+
+  - id: cf-kernel-prompts
+    type: rule
+    number: 11
+    source: core/rules/011-cf-kernel-prompts.md
+    yaml: core/rules/011-cf-kernel-prompts.yaml
+    installed_claude: .claude/rules/cf-kernel-prompts.md
+    installed_cursor: .cursor/rules/011-cf-kernel-prompts.mdc
+    activation: intelligent
+    tags: [kernel, task-prompts, subagent-templates]
+
+  - id: cf-rule-authoring
+    type: rule
+    number: 12
+    source: core/rules/012-cf-rule-authoring.md
+    yaml: core/rules/012-cf-rule-authoring.yaml
+    installed_claude: .claude/rules/cf-rule-authoring.md
+    installed_cursor: .cursor/rules/012-cf-rule-authoring.mdc
+    activation: intelligent
+    tags: [rule-authoring, yaml-md-format, validation-gates]
+
+  - id: cf-interleaved-thinking
+    type: rule
+    number: 13
+    source: core/rules/013-cf-interleaved-thinking.md
+    yaml: core/rules/013-cf-interleaved-thinking.yaml
+    installed_claude: .claude/rules/cf-interleaved-thinking.md
+    installed_cursor: .cursor/rules/013-cf-interleaved-thinking.mdc
+    activation: intelligent
+    tags: [interleaved-thinking, cache, budget-tokens, claude-4]
+
+  - id: cf-tool-result-clearing
+    type: rule
+    number: 14
+    source: core/rules/014-cf-tool-result-clearing.md
+    yaml: core/rules/014-cf-tool-result-clearing.yaml
+    installed_claude: .claude/rules/cf-tool-result-clearing.md
+    installed_cursor: .cursor/rules/014-cf-tool-result-clearing.mdc
+    activation: intelligent
+    tags: [context-editing, tool-result-clearing, compaction, context-management]
+
+  - id: cf-mcp-tools
+    type: rule
+    number: 15
+    source: core/rules/015-cf-mcp-tools.md
+    yaml: core/rules/015-cf-mcp-tools.yaml
+    installed_claude: .claude/rules/cf-mcp-tools.md
+    installed_cursor: .cursor/rules/015-cf-mcp-tools.mdc
+    activation: intelligent
+    tags: [mcp, playwright, chrome-devtools, firecrawl, glif, tool-routing]
+
+  - id: cf-research-escalation
+    type: rule
+    number: 16
+    source: core/rules/016-cf-research-escalation.md
+    yaml: core/rules/016-cf-research-escalation.yaml
+    installed_claude: .claude/rules/cf-research-escalation.md
+    installed_cursor: .cursor/rules/016-cf-research-escalation.mdc
+    activation: intelligent
+    tags: [research, circuit-breaker, github, autonomous, failure, verified-research]
+
+  - id: cf-cloud-execution
+    type: rule
+    number: 17
+    source: core/rules/017-cf-cloud-execution.md
+    yaml: core/rules/017-cf-cloud-execution.yaml
+    installed_claude: .claude/rules/cf-cloud-execution.md
+    installed_cursor: .cursor/rules/017-cf-cloud-execution.mdc
+    activation: intelligent
+    tags: [cloud, gpu, runpod, serverless, container, spend, lifecycle, image-tags]
+
+  - id: cf-cost-model
+    type: rule
+    number: 18
+    source: core/rules/018-cf-cost-model.md
+    yaml: core/rules/018-cf-cost-model.yaml
+    installed_claude: .claude/rules/cf-cost-model.md
+    installed_cursor: .cursor/rules/018-cf-cost-model.mdc
+    activation: intelligent
+    tags: [cost, pricing, tokens, batch, cache, tokenizer, tier-routing, spend]
+
+skills:
+  - id: extract-signatures
+    type: skill
+    category: discovery
+    source: core/skills/extract-signatures/SKILL.md
+    yaml: core/skills/extract-signatures/skill.yaml
+    installed_claude: skills/extract-signatures/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/extract-signatures.sh
+    tier: 1
+    model: haiku
+    tags: [discovery, typescript, signatures]
+
+  - id: pack-context
+    type: skill
+    category: discovery
+    source: core/skills/pack-context/SKILL.md
+    yaml: core/skills/pack-context/skill.yaml
+    installed_claude: skills/pack-context/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/pack-context.sh
+    tier: 2
+    model: sonnet
+    tags: [discovery, xml-bundle, multi-file]
+
+  - id: refresh-manifest
+    type: skill
+    category: discovery
+    source: core/skills/refresh-manifest/SKILL.md
+    yaml: core/skills/refresh-manifest/skill.yaml
+    installed_claude: skills/refresh-manifest/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/refresh-manifest.sh
+    tier: 1
+    model: haiku
+    tags: [discovery, manifest, shadow-index]
+
+  - id: shadow-lookup
+    type: skill
+    category: discovery
+    source: core/skills/shadow-lookup/SKILL.md
+    yaml: core/skills/shadow-lookup/skill.yaml
+    installed_claude: skills/shadow-lookup/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/shadow-lookup.sh
+    tier: 0
+    model: none
+    tags: [discovery, symbol-lookup, zero-cost]
+
+  - id: safe-exec
+    type: skill
+    category: execution
+    source: core/skills/safe-exec/SKILL.md
+    yaml: core/skills/safe-exec/skill.yaml
+    installed_claude: skills/safe-exec/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/safe-exec.sh
+    tier: 1
+    model: haiku
+    tags: [execution, output-masking, large-output]
+
+  - id: log-analyzer
+    type: skill
+    category: execution
+    source: core/skills/log-analyzer/SKILL.md
+    yaml: core/skills/log-analyzer/skill.yaml
+    installed_claude: skills/log-analyzer/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/log-context-analyzer.sh
+    tier: 1
+    model: haiku
+    tags: [execution, rca, error-logs]
+
+  - id: compile-wiki
+    type: skill
+    category: execution
+    source: core/skills/compile-wiki/SKILL.md
+    yaml: core/skills/compile-wiki/skill.yaml
+    installed_claude: skills/compile-wiki/SKILL.md
+    installed_cursor: null
+    tier: 2
+    model: sonnet
+    tags: [execution, wiki, karpathy-pattern]
+
+  - id: clear-context
+    type: skill
+    category: execution
+    source: core/skills/clear-context/SKILL.md
+    yaml: core/skills/clear-context/skill.yaml
+    installed_claude: skills/clear-context/SKILL.md
+    installed_cursor: null
+    tier: 1
+    model: none
+    routing_key: "tier1:clear-context"
+    tags: [context, tool-result, compaction, clear_tool_uses, compact_20260112]
+
+  - id: task-init
+    type: skill
+    category: workflow
+    source: core/skills/task-init/SKILL.md
+    yaml: core/skills/task-init/skill.yaml
+    installed_claude: skills/task-init/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/task-init.sh
+    tier: 1
+    model: haiku
+    tags: [workflow, worklog, jira]
+
+  - id: update-worklog
+    type: skill
+    category: workflow
+    source: core/skills/update-worklog/SKILL.md
+    yaml: core/skills/update-worklog/skill.yaml
+    installed_claude: skills/update-worklog/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/worklog.sh
+    tier: 1
+    model: haiku
+    tags: [workflow, worklog, state-externalization]
+
+  - id: session-learnings
+    type: skill
+    category: workflow
+    source: core/skills/session-learnings/SKILL.md
+    yaml: core/skills/session-learnings/skill.yaml
+    installed_claude: skills/session-learnings/SKILL.md
+    installed_cursor: null
+    tier: 2
+    model: sonnet
+    tags: [workflow, learnings, session-end]
+
+  - id: record-failure
+    type: skill
+    category: workflow
+    source: core/skills/record-failure/SKILL.md
+    yaml: core/skills/record-failure/skill.yaml
+    installed_claude: skills/record-failure/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/record-failure.sh
+    tier: 1
+    model: haiku
+    tags: [workflow, failure-ledger, circuit-breaker]
+
+  - id: optimize-rules
+    type: skill
+    category: admin
+    source: core/skills/optimize-rules/SKILL.md
+    yaml: core/skills/optimize-rules/skill.yaml
+    installed_claude: skills/optimize-rules/SKILL.md
+    installed_cursor: null
+    tier: 2
+    model: sonnet
+    tags: [admin, rule-optimization, token-audit]
+
+  - id: plugin-audit
+    type: skill
+    category: admin
+    source: core/skills/plugin-audit/SKILL.md
+    yaml: core/skills/plugin-audit/skill.yaml
+    installed_claude: skills/plugin-audit/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/plugin-audit.sh
+    tier: 1
+    model: none
+    tags: [admin, audit, gate, validation]
+
+  - id: help
+    type: skill
+    category: admin
+    source: core/skills/help/SKILL.md
+    yaml: core/skills/help/skill.yaml
+    installed_claude: skills/help/SKILL.md
+    installed_cursor: null
+    tier: 0
+    model: none
+    tags: [admin, help, skill-listing]
+
+  - id: pre-review
+    type: skill
+    category: workflow
+    source: core/skills/pre-review/SKILL.md
+    yaml: core/skills/pre-review/skill.yaml
+    installed_claude: skills/pre-review/SKILL.md
+    installed_cursor: null
+    tier: 1
+    model: haiku
+    delegates_to: superpowers:requesting-code-review
+    tags: [workflow, pre-review, superpowers-delegation]
+
+  - id: diary
+    type: skill
+    category: workflow
+    source: core/skills/diary/SKILL.md
+    yaml: core/skills/diary/skill.yaml
+    installed_claude: skills/diary/SKILL.md
+    installed_cursor: null
+    tier: 1
+    model: haiku
+    tags: [workflow, self-evolving, diary, capture]
+
+  - id: end-session
+    type: skill
+    category: workflow
+    source: core/skills/end-session/SKILL.md
+    yaml: core/skills/end-session/skill.yaml
+    installed_claude: skills/end-session/SKILL.md
+    installed_cursor: null
+    tier: 1
+    model: none
+    routing_key: "tier1:end-session"
+    tags: [workflow, session, commit, merge, close-out]
+
+  - id: evolve
+    type: skill
+    category: workflow
+    source: core/skills/evolve/SKILL.md
+    yaml: core/skills/evolve/skill.yaml
+    installed_claude: skills/evolve/SKILL.md
+    installed_cursor: null
+    tier: 3
+    model: sonnet
+    tags: [workflow, self-evolving, panel, governance, human-gate]
+
+  - id: evolve-apply
+    type: skill
+    category: workflow
+    source: core/skills/evolve-apply/SKILL.md
+    yaml: core/skills/evolve-apply/skill.yaml
+    installed_claude: skills/evolve-apply/SKILL.md
+    installed_cursor: null
+    tier: 1
+    model: haiku
+    tags: [workflow, self-evolving, apply, human-gate]
+
+agents:
+  - id: cf-scribe
+    type: agent
+    source: core/agents/cf-scribe.md
+    yaml: core/agents/cf-scribe.yaml
+    installed_claude: agents/cf-scribe.md
+    installed_cursor: .cursor/agents/cf-scribe.md
+    model: haiku
+    tags: [compression, observation-masking]

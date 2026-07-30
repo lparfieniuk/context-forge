@@ -1,0 +1,13 @@
+id: cf-code-search
+number: 005
+name: "Code Search"
+activation:
+  mode: intelligent
+  description: "rg enforcement, progressive disclosure, context flags, no grep."
+  patterns: [grep, rg, search, find files, locate symbol]
+cursor:
+  alwaysApply: false
+claude:
+  skip_on_bugfix: true
+  rule_file: true
+content_file: 005-cf-code-search.md

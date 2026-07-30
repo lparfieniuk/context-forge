@@ -1,0 +1,8 @@
+id: evolve
+type: skill
+category: workflow
+tier: 3
+model: sonnet
+ownership: owned
+trigger: "SessionStart surfaces SELF-EVOLVE readiness, weekly cron, or manual /evolve"
+tags: [evolve, panel, reviewers, governance, human-gate, self-evolving]

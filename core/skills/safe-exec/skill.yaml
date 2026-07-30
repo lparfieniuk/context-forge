@@ -1,0 +1,8 @@
+id: safe-exec
+type: skill
+category: execution
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Running any shell command expected to produce >5 KB output"
+tags: [execution, compression, build, test, lint, output-masking]

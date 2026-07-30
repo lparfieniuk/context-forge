@@ -1,0 +1,15 @@
+id: cf-tool-result-clearing
+number: 14
+name: "Tool Result Clearing and Context Management"
+activation:
+  mode: intelligent
+  description: "Anthropic context management API: tool use and thinking block clearing"
+  patterns: ["tool result", "context management", "clear_tool_uses", "clear_thinking", "30K tokens", "tool accumulation"]
+cursor:
+  alwaysApply: false
+claude:
+  include_in_claude_md: false
+  skip_on_bugfix: true
+  rule_file: true
+  paths: []
+content_file: 014-cf-tool-result-clearing.md

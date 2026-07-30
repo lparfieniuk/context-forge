@@ -1,0 +1,13 @@
+id: cf-cost-model
+number: 18
+name: "Cost Model & Token Economics"
+activation:
+  mode: intelligent
+  description: "Doc-verified per-token prices, cache multipliers, batch discount, and tokenizer cohort behind every tier-routing decision"
+  patterns: []
+cursor:
+  alwaysApply: false
+claude:
+  include_in_claude_md: false
+  rule_file: true
+content_file: 018-cf-cost-model.md

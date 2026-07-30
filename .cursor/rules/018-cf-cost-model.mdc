@@ -1,0 +1,78 @@
+---
+description: Cost Model & Token Economics
+alwaysApply: false
+globs: []
+---
+# Cost Model & Token Economics
+
+> The tier tables (rule 003) route by token *count*. This rule supplies the token *prices* those
+> decisions implicitly trade on. Every number below was verified against the official pricing and
+> models docs on **2026-07-21** — refresh the date and the figures when they are re-checked, and
+> NEVER quote a price this rule does not carry.
+
+## SYSTEM CONSTRAINTS
+
+ALWAYS reason about routing cost in dollars, not just token counts — a Tier-3 escalation is a spend decision (see rule 003).
+NEVER treat output tokens as priced like input — output is 5x the input rate on every current model. ALWAYS prefer returning IDs / references over re-emitting prose (rule 001).
+ALWAYS use the Batch API (50% off input AND output) for non-interactive, latency-tolerant work — `/evolve` passes, audits, benchmark scoring. NEVER batch interactive or blocking work.
+NEVER assume token counts are comparable across model generations — Opus 4.7+, Sonnet 5, and Fable 5 use a newer tokenizer that emits ~30% MORE tokens for the same text than Sonnet 4.6 and earlier. ALWAYS inflate capacity/cost estimates by ~30% when moving work onto a new-tokenizer model (adjusts rule 010).
+NEVER route to a superseded model to save money without checking this table — Sonnet 5 introductory pricing ($2/$10) is CHEAPER than legacy Sonnet 4.6 ($3/$15) through 2026-08-31.
+NEVER use fast mode on Opus 4.7 — deprecated, removed 2026-07-24. Opus 4.6 fast mode already silently runs at standard speed/price.
+
+## Model Pricing (USD per 1M tokens, verified 2026-07-21)
+
+| Model | Input | Output | 5m cache write | 1h cache write | Cache read | Batch in/out |
+|---|---|---|---|---|---|---|
+| `claude-haiku-4-5` | $1 | $5 | $1.25 | $2 | $0.10 | $0.50 / $2.50 |
+| `claude-sonnet-5` (intro→2026-08-31) | $2 | $10 | $2.50 | $4 | $0.20 | $1 / $5 |
+| `claude-sonnet-5` (from 2026-09-01) | $3 | $15 | $3.75 | $6 | $0.30 | $1.50 / $7.50 |
+| `claude-opus-4-8` | $5 | $25 | $6.25 | $10 | $0.50 | $2.50 / $12.50 |
+| `claude-fable-5` | $10 | $50 | $12.50 | $20 | $1 | $5 / $25 |
+
+Sonnet 4.6 (legacy) is $3/$15 — never cheaper than Sonnet 5 intro pricing, so there is no cost reason to route to it.
+
+## Cache Multipliers (relative to base input)
+
+| Operation | Multiplier | Break-even |
+|---|---|---|
+| 5-min cache write (default TTL) | 1.25x | pays off after 1 read |
+| 1-hour cache write | 2x | pays off after 2 reads |
+| Cache read (hit) | 0.1x | — |
+
+Multipliers stack with the Batch discount and data-residency multiplier. This is the same table rule 006 enforces on TTL selection — kept here so a routing decision has the price in one place.
+
+## Tokenizer Cohort (affects rule 010 capacity math)
+
+| Cohort | Models | Token behavior |
+|---|---|---|
+| New tokenizer | Opus 4.7, Opus 4.8, Sonnet 5, Fable 5, Mythos 5 | ~30% more tokens for the same text |
+| Prior tokenizer | Sonnet 4.6 and earlier | baseline |
+
+A prompt that fit a budget on Sonnet 4.6 may overflow the same nominal budget on Sonnet 5 — re-estimate, do not assume parity.
+
+## Output-Dominates-Cost Heuristic
+
+Output is 5x input on every current model. Two levers, both already in rule 001:
+- Return IDs / file:line references and resolve them in code, not full re-quoted content.
+- Compress tool results (rule 014) — but note clearing saves *input* re-tokenization; the 5x lever is on what the model *emits*.
+
+## Few-shot example
+
+**Input:** A 12-task benchmark scoring pass, non-interactive, ~40k input + 8k output per task on Sonnet 5.
+**Reasoning:** Non-interactive + latency-tolerant → Batch API (50% off). Sonnet 5 intro batch = $1/$5 per MTok. Per task: 40k×$1 + 8k×$5 = $0.04 + $0.04 = **$0.08**; ×12 = **$0.96**. Synchronous standard rate would be 40k×$2 + 8k×$10 = $0.08 + $0.08 = $0.16/task = **$1.92** — batch halves it.
+**Output:**
+```
+route: Batch API, model claude-sonnet-5
+est: ~$0.96 for the 12-task pass (vs ~$1.92 synchronous)
+note: batch results land async (up to 24h) — acceptable, scoring is not blocking
+```
+
+## Validation gate (MANDATORY before a spend-sensitive routing or estimate)
+
+- [ ] Cost stated in dollars using THIS table (not invented prices)?
+- [ ] Output priced at 5x input (not equal)?
+- [ ] Non-interactive + latency-tolerant work routed through the Batch API (50% off)?
+- [ ] Capacity/cost inflated ~30% when the target model uses the new tokenizer?
+- [ ] Not routing to a superseded model that is not actually cheaper?
+- [ ] Prices treated as of the verified date (2026-07-21) — re-checked if stale?
+If any unchecked → fix before committing the spend decision.

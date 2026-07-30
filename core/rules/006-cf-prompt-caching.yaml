@@ -1,0 +1,12 @@
+id: cf-prompt-caching
+number: 006
+name: "Prompt Caching"
+activation:
+  mode: intelligent
+  description: "KV cache prefix stability, static-first placement, no re-attachment."
+  patterns: [cache, caching, KV, prefix, static]
+cursor:
+  alwaysApply: false
+claude:
+  rule_file: true
+content_file: 006-cf-prompt-caching.md

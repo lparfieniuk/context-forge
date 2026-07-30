@@ -1,0 +1,14 @@
+id: clear-context
+name: "Clear Context"
+description: >
+  Orchestrates tool result and thinking block clearing via Anthropic Context Management API.
+  Checks accumulated context size and emits context_management.edits params.
+  <example>
+  Context: Agent has 45K tokens of tool results after 50 file reads
+  user: "/clear-context"
+  assistant: "Tool results at 45K (>30K threshold). Action: clear_tool_uses_20250919; retaining 3 most recent tool uses."
+  </example>
+category: execution
+tier: 1
+model: none
+routing_key: "tier1:clear-context"

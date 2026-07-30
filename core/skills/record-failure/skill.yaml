@@ -1,0 +1,8 @@
+id: record-failure
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Unrecoverable error or circuit-breaker halt ([CIRCUIT_BREAKER_HALT])"
+tags: [failure, ledger, circuit-breaker, lessons, yaml, sharded]

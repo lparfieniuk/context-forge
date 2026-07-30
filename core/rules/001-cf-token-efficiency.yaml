@@ -1,0 +1,12 @@
+id: cf-token-efficiency
+number: 001
+name: "Token Efficiency"
+activation:
+  mode: always
+  description: "Output constraints, diff-only edits, structured output, 5KB threshold, circuit breaker cross-ref."
+  patterns: []
+cursor:
+  alwaysApply: true
+claude:
+  rule_file: true
+content_file: 001-cf-token-efficiency.md

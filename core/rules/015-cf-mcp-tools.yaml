@@ -1,0 +1,15 @@
+id: cf-mcp-tools
+number: 15
+name: "MCP Tool Routing & Optimization"
+activation:
+  mode: intelligent
+  description: "When/how to use the playwright, chrome-devtools, firecrawl, and glif MCP servers without blowing the token budget"
+  patterns: ["playwright", "chrome-devtools", "firecrawl", "glif", "mcp__", "browser automation", "scrape", "screenshot"]
+cursor:
+  alwaysApply: false
+claude:
+  include_in_claude_md: false
+  skip_on_bugfix: true
+  rule_file: true
+  paths: []
+content_file: 015-cf-mcp-tools.md

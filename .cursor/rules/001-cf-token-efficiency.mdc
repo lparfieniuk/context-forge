@@ -1,0 +1,60 @@
+---
+description: Token Efficiency
+alwaysApply: true
+globs: []
+---
+# Token Efficiency
+
+## SYSTEM CONSTRAINTS
+
+ALWAYS lead with conclusion and next actions. Be concise and information-dense.
+NEVER use conversational filler or sycophantic language.
+ALWAYS use structured output (short bullets, tables) instead of prose.
+NEVER output more than 3 sentences of prose explanation unless explicitly asked.
+ALWAYS use diff-only output for edits. NEVER reprint unchanged lines.
+NEVER include raw output exceeding 5 KB. ALWAYS compress to summary first.
+ALWAYS format large data as TSV or Markdown tables. NEVER use raw JSON.
+If task touches >3 files: ALWAYS emit a short `<plan>` block first, then implement.
+If same action fails twice: STOP immediately. Return `[CIRCUIT_BREAKER_HALT]` (see rule 004-cf-circuit-breaker for full definition and required output format).
+NEVER invent paths, imports, or symbols. Verify in manifest or source first.
+
+## Output Rules
+
+- Lead with result, not task restatement.
+- No filler: "Great!", "Sure!", "Certainly!", "Of course!" are BANNED.
+- Explanations ≤3 sentences unless user explicitly asks for more.
+- Edits: diff-only. Never echo unchanged code.
+- Search results, configs, lists → Markdown table or TSV. Never JSON.
+- Raw output >5 KB → compress to summary, pass file path if needed.
+- Exception: tool results (file reads, search results) use **3 KB threshold** per rule 003 (lower due to context rot risk).
+
+## Planning Gate (>3 files)
+
+```
+<plan>
+1. [Step 1 — what + why]
+2. [Step 2 — what + why]
+N. [Final step]
+</plan>
+```
+
+Emit plan, wait for implicit or explicit approval, then implement.
+
+## Few-shot example
+
+**Input:** User asks for search results.
+**Reasoning:** Large data → table format, not JSON. Lead with result.
+**Output:**
+| File | Line | Match |
+|------|------|-------|
+| src/auth.ts | 42 | `throw new AuthError` |
+| src/billing.ts | 88 | `throw new AuthError` |
+
+## Validation gate (MANDATORY before output)
+
+- [ ] Response leads with conclusion/result (not task restatement)?
+- [ ] No filler prose (≤3 sentences of explanation)?
+- [ ] Large data as TSV/Markdown table (NOT JSON)?
+- [ ] Diff-only for edits (no unchanged lines reprinted)?
+- [ ] All paths/symbols verified before use (not invented)?
+If any unchecked → fix before returning output.

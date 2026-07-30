@@ -1,0 +1,356 @@
+version: "1.0"
+description: "ContextForge script library. All tool scripts are plugin-agnostic — pass PLUGIN_ROOT as argument."
+# Script IDs MUST use kebab-case ONLY. No underscores or mixed_case.
+
+tools:
+  - id: extract-signatures
+    file: tools/extract-signatures.sh
+    description: "Extract TypeScript/PHP method stubs (names, parameters, return types — no bodies) from a source file"
+    params:
+      - name: --file
+        required: true
+        description: "Path to source file to extract signatures from"
+    output: "Indented signature block (~500-2k tokens per file). Supports .ts and .php files."
+    tags: [discovery, typescript, php, signatures]
+    routing_key: "tier1:signatures"
+
+  - id: validate-manifest
+    file: tools/validate-manifest.sh
+    description: "Check manifest freshness: age-based and orphan-based staleness detection. Exit 0=FRESH, 1=STALE, 2=BROKEN"
+    params:
+      - name: --manifest
+        required: true
+        description: "Path to _manifest.lightweight.yaml"
+      - name: --source-root
+        required: false
+        description: "Path to source root for orphan detection"
+    output: "FRESH / STALE / BROKEN verdict with reason"
+    tags: [manifest, validation, freshness]
+    routing_key: "tier1:manifest"
+
+  - id: shadow-lookup
+    file: tools/shadow-lookup.sh
+    description: "Symbol-to-file-path lookup against lightweight manifest. Returns TSV: symbol, kind, file, repo. ~50 tokens per lookup."
+    params:
+      - name: --symbol
+        required: true
+        description: "Symbol name to look up (class, interface, function, etc.)"
+      - name: --repo
+        required: false
+        description: "Repository name to scope search (optional)"
+      - name: --kind
+        required: false
+        description: "Symbol kind filter: class|interface|enum|function|type"
+    output: "TSV rows: symbol_name<tab>kind<tab>file_path<tab>repo"
+    tags: [discovery, symbol-lookup, zero-cost, shadow-index]
+    routing_key: "tier0:shadow"
+
+  - id: route-to-tier
+    file: tools/route-to-tier.sh
+    description: "Given a task description, determine the cheapest execution tier. Returns TIER:N + ACTION command."
+    params:
+      - name: PLUGIN_ROOT
+        required: true
+        description: "Path to context-forge plugin root"
+      - name: task_description
+        required: true
+        description: "Task description (first 20 words of Task() prompt)"
+    output: "TIER:<N>\\nACTION:<command or ALLOW>\\nREASON:<one sentence>"
+    tags: [routing, tier-validation, cost-hierarchy]
+    routing_key: "tier0:routing"
+
+  - id: safe-exec
+    file: tools/safe-exec.sh
+    description: "Wrap command execution with automatic output masking. If output >5KB: writes to file, returns summary (<500 chars)."
+    params:
+      - name: command
+        required: true
+        description: "Shell command to execute"
+    output: "[SAFE-EXEC] block with command, exit code, output size, summary, key error"
+    tags: [execution, output-masking, large-output]
+    routing_key: "tier1:exec"
+
+  - id: log-context-analyzer
+    file: tools/log-context-analyzer.sh
+    description: "Parse error logs using rg pattern matching. Extract root cause, failing file, line number, 1-line fix suggestion."
+    params:
+      - name: --file
+        required: true
+        description: "Path to log file (build, test, lint, or safe-exec observation output)"
+      - name: --log
+        required: false
+        description: "Backward-compatible alias for --file"
+      - name: --log-file
+        required: false
+        description: "Backward-compatible alias for --file"
+      - name: --type
+        required: false
+        description: "Log type: typescript|jest|eslint|build|generic (default: auto-detect)"
+      - name: --format
+        required: false
+        description: "Alias for --type"
+      - name: --max-errors
+        required: false
+        description: "Maximum generic error lines to include (default: 3)"
+    output: "[RCA] block with root cause, failing file:line, error message, fix suggestion"
+    tags: [execution, rca, error-logs]
+    routing_key: "tier1:rca"
+
+  - id: record-failure
+    file: tools/record-failure.sh
+    description: "Create failure ledger YAML with sharded path. Checks for 3-strike pattern."
+    params:
+      - name: --goal
+        required: true
+        description: "Goal that failed (what was being attempted)"
+      - name: --tool
+        required: true
+        description: "Tool/command that failed"
+      - name: --error
+        required: true
+        description: "Error snippet (max 500 chars, will be truncated)"
+      - name: --reflection
+        required: true
+        description: "Root cause and assumption that proved false"
+    output: "Path to created YAML failure ledger. Emits [3-STRIKE] if pattern detected."
+    tags: [workflow, failure-ledger, circuit-breaker]
+    routing_key: "tier1:failure"
+
+  - id: task-init
+    file: tools/task-init.sh
+    description: "Initialize worklog for a new Jira ticket. Creates ~/worklogs/tickets/<KEY>.yaml and updates INDEX.yaml."
+    params:
+      - name: --ticket
+        required: true
+        description: "Jira ticket key (e.g. PROJ-3456)"
+      - name: --scope
+        required: true
+        description: "Short business goal description"
+    output: "[TASK INIT] block with ticket, worklog path, branch, task type, INDEX.yaml update status"
+    tags: [workflow, worklog, jira]
+    routing_key: "tier1:worklog"
+
+  - id: worklog
+    file: tools/worklog.sh
+    description: "Read/write worklog entries for active ticket. Validates against append rules."
+    params:
+      - name: --action
+        required: true
+        description: "Action: read|append|compress"
+      - name: --ticket
+        required: false
+        description: "Jira ticket key (reads from INDEX.yaml if omitted)"
+      - name: --scope
+        required: false
+        description: "Entry scope (required for append)"
+      - name: --ctx
+        required: false
+        description: "Entry context/why (required for append)"
+    output: "For read: YAML entries. For append: confirmation. For compress: history_summary + last 5."
+    tags: [workflow, worklog, state-externalization]
+    routing_key: "tier1:worklog"
+
+  - id: validate-index
+    file: tools/validate-index.sh
+    description: "Verify core/_index.yaml is consistent with filesystem. Reports ERROR (missing files) and DRIFT (not installed)."
+    params:
+      - name: --plugin-root
+        required: true
+        description: "Path to context-forge plugin root"
+    output: "ERROR lines (missing sources) + DRIFT lines (not installed) + METRICS block. Exit 0=OK, 1=errors."
+    tags: [audit, index, consistency, module-map]
+    routing_key: "tier1:manifest"
+
+  - id: check-parity
+    file: tools/check-parity.sh
+    description: "Compare core/ sources vs skills/, agents/, .cursor/ installed artifacts. Detect drift and orphans."
+    params:
+      - name: --plugin-root
+        required: true
+        description: "Path to context-forge plugin root"
+    output: "DRIFT / ORPHAN / NOT_INSTALLED lines + METRICS block"
+    tags: [audit, parity, install, drift]
+    routing_key: "tier1:manifest"
+
+  - id: impact-tier0
+    file: tools/impact-tier0.sh
+    description: "Tier 0 impact helpers: is_api_boundary, quick_impact (importer count), has_tests."
+    params:
+      - name: --check
+        required: true
+        description: "Check to run: api-boundary|quick-impact|has-tests"
+      - name: --file
+        required: true
+        description: "File to check"
+    output: "true/false or count (single line)"
+    tags: [impact, tier0, api-boundary]
+    routing_key: "tier0:impact"
+
+  - id: token-counter
+    file: tools/token-counter.sh
+    description: "Estimate token count for a file or directory. Used for rule budget validation."
+    params:
+      - name: --path
+        required: true
+        description: "File or directory path to count"
+      - name: --threshold
+        required: false
+        description: "Warning threshold in tokens (default: 5120)"
+    output: "Token count estimate + OVER/UNDER threshold verdict"
+    tags: [tokens, budget, validation]
+    routing_key: "tier0:tokens"
+
+  - id: scaffold-skill
+    file: tools/scaffold-skill.sh
+    description: "Scaffold a new skill: create core/skills/<id>/SKILL.md and skill.yaml stubs."
+    params:
+      - name: --id
+        required: true
+        description: "Skill ID (kebab-case)"
+      - name: --category
+        required: true
+        description: "Skill category: discovery|execution|workflow|admin"
+      - name: --tier
+        required: true
+        description: "Skill tier: 0|1|2|3"
+    output: "Paths of created files. Reminds to register in _index.yaml."
+    tags: [admin, scaffold, skill]
+    routing_key: "tier1:scaffold"
+
+  - id: scaffold-rule
+    file: tools/scaffold-rule.sh
+    description: "Scaffold a new rule: create core/rules/<NNN>-cf-<id>.md and .yaml stubs."
+    params:
+      - name: --id
+        required: true
+        description: "Rule ID without prefix (e.g. 'my-rule' for 'cf-my-rule')"
+      - name: --number
+        required: true
+        description: "Rule number (3 digits, e.g. '013')"
+      - name: --activation
+        required: true
+        description: "Activation mode: always|intelligent"
+    output: "Paths of created files. Reminds to register in _index.yaml."
+    tags: [admin, scaffold, rule]
+    routing_key: "tier1:scaffold"
+
+  - id: bootstrap-agent
+    file: tools/bootstrap-agent.sh
+    description: "Bootstrap a new agent: create core/agents/<id>.md and <id>.yaml stubs."
+    params:
+      - name: --id
+        required: true
+        description: "Agent ID (kebab-case, will get cf- prefix)"
+      - name: --model
+        required: true
+        description: "Default model: haiku|sonnet"
+    output: "Paths of created files. Reminds to register in _index.yaml."
+    tags: [admin, scaffold, agent]
+    routing_key: "tier1:scaffold"
+
+  - id: git-status-summary
+    file: tools/git-status-summary.sh
+    description: "Compact git status: changed files, staged files, current branch, last commit. <50 tokens output."
+    params: []
+    output: "Branch, last commit SHA, staged count, unstaged count, untracked count. Single line per item."
+    tags: [git, status, compact]
+    routing_key: "tier0:git"
+
+  - id: compress-observation
+    file: tools/compress-observation.sh
+    description: "Compress a large tool output to summary. Dispatches Scribe pattern inline for outputs >5KB."
+    params:
+      - name: --input-file
+        required: true
+        description: "Path to file containing large output to compress"
+      - name: --type
+        required: false
+        description: "Output type hint: build|test|search|worklog (helps pattern matching)"
+    output: "[COMPRESSED] block with summary, key finding, and recommendation"
+    tags: [compression, observation-masking, scribe-pattern]
+    routing_key: "tier1:compress"
+
+  - id: benchmark-tokens
+    file: tools/benchmark-tokens.sh
+    description: "Measure token efficiency of all plugin content (rules, skills, agents). Outputs Markdown table with line/word/est-token counts. Supports --baseline (save TSV) and --compare (delta vs prior snapshot)."
+    params:
+      - name: --baseline
+        required: false
+        description: "Save current stats to core/benchmarks/baseline-YYYY-MM-DD.tsv"
+      - name: --compare
+        required: false
+        description: "Path to prior baseline TSV; adds Delta column showing token change"
+    output: "Markdown table: File | Type | Lines | Words | Est.Tokens [| Delta]. Totals row. Threshold warnings (* marker)."
+    tags: [audit, tokens, benchmark, efficiency]
+    routing_key: "tier0:tokens"
+
+  - id: audit-rules
+    file: tools/audit-rules.sh
+    description: "Audit rule quality across core/rules/*.md. Checks hard constraint density, soft language violations in SYSTEM CONSTRAINTS, few-shot presence, validation gate presence, and .yaml existence."
+    params:
+      - name: --plugin-root
+        required: false
+        description: "Path to plugin root (default: auto-detected from script location)"
+    output: "Markdown table: Rule | Hard Constraints | Soft Violations | Few-shot | Val.Gate | YAML. Summary counts."
+    tags: [audit, rules, quality, constraints]
+    routing_key: "tier0:audit"
+
+  - id: audit-runtime-artifacts
+    file: tools/audit-runtime-artifacts.sh
+    description: "Detect runtime artifacts in plugin roots, including cache/lessons directories and observation/run logs."
+    params:
+      - name: --plugin-root
+        required: false
+        description: "Path to plugin root (default: auto-detected from script location)"
+    output: "[RUNTIME ARTIFACT AUDIT] envelope. Exit non-zero when runtime artifacts are found."
+    tags: [audit, runtime-artifacts, contamination]
+    routing_key: "tier0:audit"
+
+  - id: audit-doc-claims
+    file: tools/audit-doc-claims.sh
+    description: "Scan active docs for stale ContextForge counts, old install paths, deprecated agent names, and old Context API tokens."
+    params:
+      - name: --plugin-root
+        required: false
+        description: "Path to plugin root (default: auto-detected from script location)"
+    output: "[DOC CLAIMS AUDIT] envelope. Exit non-zero on active stale documentation claims."
+    tags: [audit, docs, stale-claims]
+    routing_key: "tier0:audit"
+
+  - id: audit-plugin-surface
+    file: tools/audit-plugin-surface.sh
+    description: "Validate package audit entrypoint, script/module index coverage, hook targets, and active surface expectations."
+    params:
+      - name: --plugin-root
+        required: false
+        description: "Path to plugin root (default: auto-detected from script location)"
+    output: "[PLUGIN SURFACE AUDIT] envelope. Exit non-zero on missing entrypoints or index drift."
+    tags: [audit, plugin-surface, hooks, index]
+    routing_key: "tier0:audit"
+
+  - id: plugin-audit
+    file: tools/plugin-audit.sh
+    description: "Run the repeatable ContextForge audit gate: index validation, parity, runtime/docs/surface audits, rule audit, token benchmark, and tests."
+    params:
+      - name: --plugin-root
+        required: false
+        description: "Path to plugin root (default: auto-detected from script location)"
+    output: "[PLUGIN AUDIT] envelope with PASS/FAIL per gate and final status. Exit non-zero on any failing gate."
+    tags: [audit, gate, validation, parity, runtime-artifacts, docs, surface]
+    routing_key: "tier1:audit"
+
+lib:
+  - id: yaml
+    file: lib/yaml.sh
+    description: "YAML field extraction functions: yaml_get, yaml_has, yaml_get_list. No yq required."
+    tags: [yaml, parsing, shared]
+
+  - id: rg-helpers
+    file: lib/rg-helpers.sh
+    description: "ripgrep wrapper functions: rg_count, rg_files, rg_lines. Enforce progressive disclosure pattern."
+    tags: [rg, search, shared]
+
+  - id: script-manager
+    file: lib/script-manager.sh
+    description: "resolve_script() and list_scripts() — route script IDs to file paths via _index.yaml."
+    tags: [routing, script-index, shared]

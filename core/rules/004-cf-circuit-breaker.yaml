@@ -1,0 +1,12 @@
+id: cf-circuit-breaker
+number: 004
+name: "Circuit Breaker"
+activation:
+  mode: always
+  description: "2-failure halt, failure ledger YAML schema, degraded state enforcement, 3-strike escalation."
+  patterns: []
+cursor:
+  alwaysApply: true
+claude:
+  rule_file: true
+content_file: 004-cf-circuit-breaker.md

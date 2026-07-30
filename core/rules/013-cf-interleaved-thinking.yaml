@@ -1,0 +1,15 @@
+id: cf-interleaved-thinking
+number: 013
+name: "Interleaved Thinking Protocol"
+activation:
+  mode: intelligent
+  description: "Claude 4 interleaved thinking: budget caps, cache implications, agentic flows"
+  patterns: ["budget_tokens", "extended thinking", "interleaved thinking", "adaptive thinking", "effort", "opus 4", "thinking blocks", "claude 4", "fable"]
+cursor:
+  alwaysApply: false
+claude:
+  include_in_claude_md: false
+  skip_on_bugfix: true
+  rule_file: true
+  paths: []
+content_file: 013-cf-interleaved-thinking.md

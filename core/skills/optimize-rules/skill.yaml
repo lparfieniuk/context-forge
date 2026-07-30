@@ -1,0 +1,8 @@
+id: optimize-rules
+type: skill
+category: admin
+tier: 2
+model: sonnet
+ownership: owned
+trigger: "/optimize-rules or periodic token audit after adding rules"
+tags: [rules, tokens, audit, optimization, duplication, budget]

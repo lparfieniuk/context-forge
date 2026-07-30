@@ -1,0 +1,92 @@
+---
+description: Tool Result Clearing and Context Management
+alwaysApply: false
+globs: []
+---
+# Tool Result Clearing and Context Management
+
+## SYSTEM CONSTRAINTS
+
+NEVER let accumulated tool results exceed 30K tokens — ALWAYS clear with `context_management.edits` using `clear_tool_uses_20250919` at that threshold.
+NEVER use LLM summarization for re-fetchable tool results when clearing is available — clearing reduces serialized context without a summarization call.
+ALWAYS use `keep: {"type": "tool_uses", "value": N}` to retain recent tool uses when clearing older ones.
+ALWAYS send beta header `context-management-2025-06-27` when using `context_management.edits` (the SDK does not add it automatically).
+Accumulating tool results past 30K tokens is BANNED — it causes both cost bloat and context rot.
+
+## Context Management Edits
+
+| Primitive | API | Cost | Use when |
+|---|---|---|---|
+| Tool result clearing | `clear_tool_uses_20250919` | No summarization call | Results re-fetchable; >30K tool result tokens |
+| Thinking clearing | `clear_thinking_20251015` | No summarization call | Thinking blocks are stale or too large |
+| Server-side compaction | `compact_20260112` (beta `compact-2026-01-12`) | Summarizes history server-side | Conversation approaching the context-window limit |
+
+Context editing (clearing) uses beta header `context-management-2025-06-27`; server-side compaction uses beta header `compact-2026-01-12` — they are separate features. When using compaction, append `response.content` (including the compaction block) back on every turn, not just the text.
+
+## Tool Result Clearing
+
+```python
+response = client.messages.create(
+    model="claude-sonnet-5",
+    system=[{"type": "text", "text": "...", "cache_control": {"type": "ephemeral"}}],
+    context_management={
+        "edits": [{
+            "type": "clear_tool_uses_20250919",
+            "trigger": {"type": "input_tokens", "value": 30000},
+            "keep": {"type": "tool_uses", "value": 3},
+            "clear_at_least": {"type": "input_tokens", "value": 5000},
+        }]
+    },
+)
+```
+
+Only use for re-fetchable outputs (file reads, search results — NOT decisions, root causes, or irreversible state).
+
+## Thinking Block Clearing
+
+```python
+response = client.messages.create(
+    model="claude-sonnet-5",
+    context_management={
+        "edits": [{
+            "type": "clear_thinking_20251015",
+            "trigger": {"type": "input_tokens", "value": 30000},
+            "keep": {"type": "thinking_turns", "value": 2},
+        }]
+    },
+)
+```
+
+Use `keep: "all"` when thinking blocks must be preserved but tool uses can still be cleared separately.
+
+## Decision Tree
+
+1. Tool results >30K tokens AND re-fetchable? → `clear_tool_uses_20250919`
+2. Thinking blocks stale or too large? → `clear_thinking_20251015`
+3. Conversation approaching the context-window limit and needs summarization? → server-side compaction (`compact_20260112`, beta `compact-2026-01-12`)
+4. None of the above? → NEVER let context grow unchecked
+
+## Few-shot example
+
+**Input:** Agentic session after 50 file reads and 20 search operations — tool results at 45K tokens.
+
+**Reasoning:** Tool results exceed 30K threshold. Results are re-fetchable (file reads, search). Use clearing, not summarization.
+
+**Output:**
+```
+context_management={
+  "edits": [{
+    "type": "clear_tool_uses_20250919",
+    "trigger": {"type": "input_tokens", "value": 30000},
+    "keep": {"type": "tool_uses", "value": 3}
+  }]
+}
+```
+
+## Validation gate (MANDATORY before large agentic sessions)
+
+- [ ] Tool result accumulation monitored (threshold: 30K tokens)?
+- [ ] `context_management.edits` uses `clear_tool_uses_20250919` for re-fetchable results?
+- [ ] Thinking blocks cleared with `clear_thinking_20251015` only when safe?
+- [ ] `keep` uses typed object syntax (`tool_uses` or `thinking_turns`)?
+If any unchecked → apply tool result clearing before proceeding.

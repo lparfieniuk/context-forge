@@ -1,0 +1,13 @@
+id: cf-module-index
+number: 009
+name: "Module Index"
+activation:
+  mode: intelligent
+  description: "_index.yaml source of truth, source vs installed paths, validate before commit."
+  patterns: [_index.yaml, module, skill, rule, agent, install, convert]
+cursor:
+  alwaysApply: false
+claude:
+  skip_on_bugfix: true
+  rule_file: true
+content_file: 009-cf-module-index.md

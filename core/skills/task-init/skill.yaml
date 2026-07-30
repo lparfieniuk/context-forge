@@ -1,0 +1,8 @@
+id: task-init
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Starting work on a new Jira task"
+tags: [worklog, jira, init, ticket, session-start]

@@ -1,0 +1,58 @@
+---
+description: Code Search
+alwaysApply: false
+globs: []
+---
+# Code Search
+
+## SYSTEM CONSTRAINTS
+
+NEVER use `grep` in Bash commands. `grep` is BANNED. ALWAYS use `rg` (ripgrep) instead.
+NEVER use `--json` or `--vimgrep` flags with `rg`. They cause token bloat.
+NEVER dump raw search results exceeding 50 matches directly into context.
+ALWAYS use progressive disclosure: counts first, then filenames, then targeted lines.
+ALWAYS use context flags (`-A`, `-B`, `-C`) instead of reading full files for a single method.
+NEVER load >5 raw source files without escalating to pack-context skill.
+
+## Progressive Disclosure Chain
+
+Step 1: Count occurrences — `rg -c "pattern" path/`
+Step 2: List filenames — `rg -l "pattern" path/`
+Step 3: Extract targeted context — `rg -n -B 2 -A 8 "pattern" file.ts`
+
+NEVER skip to Step 3 without first checking Step 1 count.
+
+## Ripgrep Quick Reference
+
+| Goal | Command |
+|------|---------|
+| Count matches | `rg -c "pattern"` |
+| Files only | `rg -l "pattern"` |
+| With context | `rg -n -B 2 -A 8 "pattern" file` |
+| Multiline | `rg -U "pattern"` |
+| Exact match only | `rg -o -P "pattern"` |
+| Case-insensitive | `rg -i "pattern"` |
+
+## Few-shot example
+
+**Input:** "Find where AuthenticationError is thrown and handled."
+**Reasoning:** Progressive disclosure — count first, then files, then targeted lines. Never dump everything.
+**Output:**
+```bash
+# Step 1: count
+rg -c "AuthenticationError" src/
+
+# Step 2: files
+rg -l "throw new AuthenticationError" src/
+
+# Step 3: targeted context
+rg -n -B 2 -A 8 "throw new AuthenticationError" src/auth/auth.service.ts
+```
+
+## Validation gate (MANDATORY before each search)
+
+- [ ] Using `rg`, not `grep`?
+- [ ] Starting with count (`rg -c`) before filenames or full lines?
+- [ ] Not dumping >50 matches directly into context?
+- [ ] Context flags (`-A/-B`) used instead of reading whole files?
+If any unchecked → fix before searching.

@@ -1,0 +1,8 @@
+id: pre-review
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: delegates
+trigger: "Before git commit or MR creation (pre-review context gathering)"
+tags: [review, git, diff, impact, superpowers, delegation, pre-commit]

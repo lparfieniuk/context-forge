@@ -1,0 +1,26 @@
+{
+  "name": "context-forge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deterministic context engineering for AI coding agents",
+  "scripts": {
+    "convert": "ts-node scripts/convert.ts --target both",
+    "convert:claude": "ts-node scripts/convert.ts --target claude",
+    "convert:cursor": "ts-node scripts/convert.ts --target cursor",
+    "generate-manifest": "ts-node scripts/generate-manifest.ts",
+    "validate-index": "bash core/scripts/tools/validate-index.sh --plugin-root .",
+    "test": "vitest run scripts",
+    "test:audit": "bash core/scripts/tools/plugin-audit.sh --plugin-root ."
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.19.39",
+    "js-yaml": "^4.1.1",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-javascript": "^0.23.1",
+    "tree-sitter-typescript": "^0.23.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.0"
+  }
+}

@@ -1,0 +1,12 @@
+id: cf-shadow-index
+number: 002
+name: "Shadow Index Protocol"
+activation:
+  mode: always
+  description: "3-tier deterministic symbol lookup, manifest-first, IDE auto-detect, escalation path."
+  patterns: []
+cursor:
+  alwaysApply: true
+claude:
+  rule_file: true
+content_file: 002-cf-shadow-index.md
