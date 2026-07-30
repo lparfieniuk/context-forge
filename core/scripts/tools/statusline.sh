@@ -55,7 +55,12 @@ else STATUS="CRITICAL"; fi
 CACHE="cache n/a"
 if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   now="$(date +%s)"
-  mtime="$(stat -f %m "$TRANSCRIPT" 2>/dev/null || stat -c %Y "$TRANSCRIPT" 2>/dev/null || echo "$now")"
+  # GNU stat must be tried FIRST: `stat -f %m FILE` on GNU means "filesystem
+  # status", takes %m as an operand, prints filesystem info to stdout AND exits
+  # non-zero — so a BSD-first chain concatenates that garbage with the fallback.
+  # BSD stat has no -c, so it fails silently and cleanly the other way round.
+  mtime="$(stat -c %Y "$TRANSCRIPT" 2>/dev/null || stat -f %m "$TRANSCRIPT" 2>/dev/null || true)"
+  case "$mtime" in ''|*[!0-9]*) mtime="$now" ;; esac
   age_min=$(( (now - mtime) / 60 ))
   [ "$age_min" -lt 0 ] && age_min=0   # guard clock skew / future mtime
   if [ "$age_min" -ge 5 ]; then

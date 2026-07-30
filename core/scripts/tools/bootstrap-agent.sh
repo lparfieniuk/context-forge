@@ -59,7 +59,10 @@ CACHE_AGE=0
 
 if [[ -f "$BOOTSTRAP_FILE" ]] && [[ "$_REFRESH" != "true" ]]; then
   # Check cache age
-  MTIME=$(stat -f%m "$BOOTSTRAP_FILE" 2>/dev/null || stat -c%Y "$BOOTSTRAP_FILE" 2>/dev/null || echo "0")
+  # GNU stat first — see statusline.sh: a BSD-first chain leaks `stat -f` output
+  # on GNU because %m is taken as an operand there.
+  MTIME=$(stat -c%Y "$BOOTSTRAP_FILE" 2>/dev/null || stat -f%m "$BOOTSTRAP_FILE" 2>/dev/null || true)
+  case "$MTIME" in ''|*[!0-9]*) MTIME=0 ;; esac
   NOW=$(date +%s)
   CACHE_AGE=$((NOW - MTIME))
 
