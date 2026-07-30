@@ -15,6 +15,7 @@ ALWAYS route by problem type (Source Router below) — NEVER blindly web-search 
 ALWAYS record the research trace (queries + verdict) in the failure ledger (rule 004) so the 3-strike `/evolve` pass sees what was tried.
 NEVER send secrets, tokens, credentials, or proprietary code/error text containing them to any web search or scrape.
 NEVER let a research finding auto-apply — a fix from the web is a hypothesis, verified against docs/source before the edit.
+ALWAYS settle a question about a third-party tool's BEHAVIOR by reading its installed/upstream source — docs and reasoning describe intent, source describes what runs. When reviewing a claim about a tool, verify it in that tool's source, NEVER in its README alone.
 
 ## Escalation Ladder (integrates with rule 004)
 

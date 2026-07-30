@@ -59,3 +59,4 @@ ALWAYS treat any failing gate as blocking for PR or commit readiness.
 ALWAYS report runtime artifacts as failures without deleting them.
 NEVER delete runtime artifacts from this skill.
 NEVER bypass `plugin-audit.sh` by running the individual gate commands manually.
+NEVER treat a clean working tree as proof a repo is safe to publish — before any public release ALWAYS scan git HISTORY (`git log --all --diff-filter=A --name-only`, plus a secret/private-path grep over `git rev-list --all`). A file deleted from HEAD still lives in every earlier commit.

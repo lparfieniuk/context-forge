@@ -14,7 +14,10 @@ On repeated failures: enter DEGRADED state — read-only tools only, escalate to
 Failure ledger path: `<IDE_DIR>/lessons/YYYY/MM/DD/<2-char-prefix>/<UUID>-<slug>.yaml`
 NEVER use JSON for failure logs. ALWAYS use minimalist YAML.
 Error snippet MUST be truncated to <500 characters.
+NEVER record a conclusion read off a log line as a measured fact — it is a HYPOTHESIS until a direct measurement reproduces it. ALWAYS keep `error_trajectory` raw and uninterpreted, and mark the inference as an assumption in `agent_reflection`.
 NEVER infer success from a pipeline whose last element is `tail`, `echo`, `head`, or `grep` — the exit code belongs to that element, not to the command that matters. ALWAYS capture the real status (`set -o pipefail`, or `cmd; rc=$?`) before any transformation. A failure you cannot see is a strike the breaker cannot count.
+NEVER treat a scripted in-place edit (`sed -i`, `awk`, `patch`) as applied because it exited 0 — a whitespace mismatch is a silent no-op indistinguishable from success. ALWAYS re-read or diff the target afterwards.
+NEVER assume an external tool's output shape — it may ignore the filename you passed, drop sidecar files beside the real one, or write to stdout AND exit non-zero (GNU `stat -f`, which makes a `stat -f … || stat -c …` chain emit both). ALWAYS check what actually landed before consuming it.
 ALWAYS extend the two-strike halt to metered work: after two identical failures against a paid resource (GPU pod, serverless worker, paid API), STOP and record cost-to-date instead of retrying.
 
 ## Failure Response Chain

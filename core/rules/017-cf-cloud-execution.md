@@ -12,6 +12,8 @@ NEVER background a long remote job with `&` inside an already-backgrounded launc
 NEVER restart a long-lived service inside an SSH heredoc — the background child holds the session open (`nohup`/`setsid`/`</dev/null` are all insufficient). ALWAYS use separate SSH invocations.
 NEVER spawn pods from inside an agent session for unattended work — session limits orphan them, and idle-stop kills CPU-pod containers mid-job.
 ALWAYS verify a control-plane mutation persisted by re-reading it — `runpodctl serverless update --workers-max 0` silently does not persist (verified 3x); hard pause and spend limits are web-console-only.
+NEVER size a watchdog or poll timeout from an extrapolated rate or a flat iteration count — ALWAYS derive it from measured job parameters (job count × measured per-job time + buffer). An under-budgeted watchdog kills a paid run that was working, and its cleanup trap can delete the pod mid-job.
+NEVER let a poll loop block on a bare `sleep` — it defers the bash trap, so cancelling leaves the rented resource running. Background the sleep and wait on it so the trap fires.
 
 ## Failure Modes Observed
 
