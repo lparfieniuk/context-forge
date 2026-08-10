@@ -7,6 +7,8 @@ ALWAYS run the cheapest preflight check (image digest, model file present, disk 
 NEVER require a live worker before submitting on a scale-to-zero endpoint — that deadlocks the cold start it is waiting for.
 NEVER re-push a mutable image tag and assume workers picked it up — ALWAYS build a new immutable tag per build and verify the running digest before debugging the code.
 NEVER treat a config/env change as applied to a running worker — ALWAYS force a fresh worker and verify, NEVER trust the control-plane response alone.
+NEVER assume a long-running process picked up an edited file — it holds the modules and schema it imported at startup, so a correct fix reads as "no effect" until restart. ALWAYS restart it (or verify the loaded state directly) BEFORE re-debugging the code.
+NEVER assume exclusive write access to a store a second process can reach (single-writer DB file, shared mount, queue) — ALWAYS route writes through one owner or a lock, and confirm no other writer is live before blaming the data.
 NEVER delete a pod or volume before confirming the artifact transfer completed — ALWAYS quote remote globs (the local shell expands unquoted ones).
 NEVER background a long remote job with `&` inside an already-backgrounded launcher — the completion signal fires for the launcher, not the work. ALWAYS verify the process is alive and monitor a real output signal.
 NEVER restart a long-lived service inside an SSH heredoc — the background child holds the session open (`nohup`/`setsid`/`</dev/null` are all insufficient). ALWAYS use separate SSH invocations.
