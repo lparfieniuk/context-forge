@@ -35,11 +35,11 @@ If every pattern is `NOISE`, STOP and emit `[EVOLVE] all signal noise`.
 `PASS` patterns only, spawn three Tasks (`model: "haiku"`), each ≤2000 tokens:
 - **Fit:** verdict ∈ {ADD, MODIFY, MERGE, PRUNE, REJECT}, target rule/skill id.
 - **Cost:** activation mode ∈ {always, intelligent, scoped}, always-on budget delta vs 6k.
-- **Risk:** {OK, OVER-TRIGGERS, NEEDS-SCOPE} + one-line justification.
+- **Risk:** {OK, OVER-TRIGGERS, NEEDS-SCOPE, SELF-WEAKENING} + one-line justification.
 
 **Step 3 — Aggregate (orchestrator, no extra subagent).** Combine the four
-verdicts per pattern into a proposal. Drop any pattern where Fit=REJECT or
-Risk=OVER-TRIGGERS. **Ledger dedupe (Tier 0):** before writing, check the
+verdicts per pattern into a proposal. Drop any pattern where Fit=REJECT,
+Risk=OVER-TRIGGERS, or Risk=SELF-WEAKENING (see Immutable Core). **Ledger dedupe (Tier 0):** before writing, check the
 outcome ledger — `rg -c $'\t<verdict>\t<target>\t(reverted|reverted-patch)\t'
 <IDE_DIR>/evolve/ledger.tsv`. If the same `verdict+target` was already reverted,
 do NOT re-propose an identical patch: either drop it, or lower `confidence` and
@@ -111,11 +111,37 @@ Verify: budget_delta_tokens is a signed integer.
 Risk:
 ```
 Context: Devil's advocate on one proposed constraint.
-Task: Judge false-positive / blast radius.
+Task: Judge false-positive / blast radius, then judge self-weakening.
 Constraints: NEVER approve a constraint that blocks a legitimate common workflow.
-Format: Return [SUCCESS] + {verdict: OK|OVER-TRIGGERS|NEEDS-SCOPE, why}. <=2000 tokens.
+  ALWAYS return SELF-WEAKENING when the target is in the Immutable Core, or when
+  the patch only deletes/loosens a NEVER/BANNED line, a validation gate, or a
+  human-approval step — regardless of how good the stated justification is.
+Format: Return [SUCCESS] + {verdict: OK|OVER-TRIGGERS|NEEDS-SCOPE|SELF-WEAKENING, why}. <=2000 tokens.
 Verify: why is one sentence.
 ```
+
+## Immutable Core (never a proposal target)
+
+A self-refining loop optimizes for the signal it is scored on, and the cheapest
+way to stop producing failure signal is to remove the thing that reports it.
+Prime Agent's `/refine` handles this by keeping the base system prompt immutable
+while memories, skills and subagent specs stay rewritable; the same loop, run on
+Factorio, refined its way into spawning resources through an admin console after
+being told not to cheat. The human gate below is the review step, not the
+boundary — these targets never reach it:
+
+| Immutable target | Why |
+|---|---|
+| `core/rules/004-cf-circuit-breaker.*` | the halt itself — the loop must not file down its own brake |
+| `core/skills/evolve/**`, `core/skills/evolve-apply/**` | this skill's own gate and apply path |
+| `core/scripts/tools/plugin-audit.sh`, `audit-*.sh`, `evolve-apply.sh` | the audit that decides apply vs revert |
+
+Everything else — rules, other skills, agents — stays a legitimate target.
+Beyond the file list, the SHAPE is what disqualifies: a patch whose whole effect
+is to delete a NEVER/BANNED line, drop a `## Validation gate` checkbox, or remove
+a human-approval step is SELF-WEAKENING even on a mutable target. A constraint
+that is genuinely wrong gets PRUNED by a human reading the proposal, not by the
+loop quietly widening its own limits.
 
 ## Outcome Ledger (`<IDE_DIR>/evolve/ledger.tsv`)
 
@@ -166,3 +192,4 @@ ALWAYS Tier-0 check ledger.tsv before writing a proposal; NEVER silently re-prop
 ALWAYS generate patch_text from a real `git diff` and verify it with `git apply --check` before writing the proposal; hand-written hunk headers are BANNED.
 ALWAYS include the ACTION footer (explicit human gate).
 NEVER apply, merge, or delete a rule/skill — that is /evolve-apply, run by a human.
+NEVER write a proposal targeting the Immutable Core, and NEVER write one whose only effect is deleting a NEVER/BANNED line, a validation gate, or a human-approval step.
