@@ -12,6 +12,9 @@ NEVER take a full-resolution screenshot (`chrome-devtools` or `playwright`) when
 NEVER run a Firecrawl crawl/batch job without an explicit `limit`/`maxDepth` — uncapped crawls are BANNED (unbounded token cost).
 ALWAYS prefer `firecrawl_scrape` with `onlyMainContent: true` and `formats: ["markdown"]` (or `["json"]` + `schema` for structured extraction) over raw HTML.
 ALWAYS prefer `chrome-devtools`'s `take_snapshot` (accessibility tree, text) over `take_screenshot` (image) unless visual verification is the actual goal.
+NEVER pass `--slim` to `chrome-devtools` — it does NOT trim the tool list, it REPLACES it with 3 tools (`navigate`, `evaluate`, `screenshot`), dropping `take_snapshot`, console, network and performance: every reason to route here instead of `playwright`. Trim with `--no-category-emulation` / `--no-category-network` / `--no-category-performance` instead.
+ALWAYS cap screenshot cost in the `chrome-devtools` server args (`--screenshotFormat webp --screenshotQuality 60 --screenshotMaxWidth 1280`), NEVER by remembering per-call format params — a server default is deterministic, agent discipline is not.
+ALWAYS run `chrome-devtools` with `--redactNetworkHeaders` — `list_network_requests` otherwise pulls Authorization/Cookie headers straight into context (rule 016).
 NEVER use `playwright` and `chrome-devtools` for the same task — pick one (see decision table) to avoid double tool-list overhead.
 NEVER call `glif`'s discovery tools (`search_workflows`, `list_featured_workflows`) once the target glif ID is already known — call `run_workflow`/`workflow_info` directly.
 ALWAYS treat MCP tool output >3KB the same as any other tool result under rule 014 (`cf-tool-result-clearing`) — clear or summarize, don't let it accumulate raw.
@@ -21,7 +24,7 @@ ALWAYS treat MCP tool output >3KB the same as any other tool result under rule 0
 | Server | Type | Purpose | Config key |
 |---|---|---|---|
 | `playwright` | stdio (`npx @playwright/mcp@latest`) | Scripted browser interaction/testing (click, fill, navigate, assert) | global `~/.claude.json` → `mcpServers.playwright` |
-| `chrome-devtools` | stdio (`npx chrome-devtools-mcp@latest --headless --isolated`) | Live debugging: console, network, performance traces, lighthouse, heap snapshots | `mcpServers.chrome-devtools` |
+| `chrome-devtools` | stdio (`npx chrome-devtools-mcp@latest --headless --isolated` + screenshot caps, see below) | Live debugging: console, network, performance traces, lighthouse, emulation, heap snapshots | `mcpServers.chrome-devtools` |
 | `firecrawl-mcp` | stdio (`npx firecrawl-mcp`) | Web scrape/crawl/search/extract into clean markdown or schema-typed JSON | `mcpServers.firecrawl-mcp` (needs `FIRECRAWL_API_KEY`) |
 | `glif` | stdio (`npx @glifxyz/glif-mcp-server@latest`) | Run a hosted glif.app workflow (image/video/LLM pipelines) by ID | `mcpServers.glif` (needs `GLIF_API_TOKEN`) |
 | `knowledge` | sse (`http://localhost:3711/mcp`) | Query the local ai_knowledge base (`search_knowledge`, `recent_entries`, `search_by_tags`, `list_tags`, `get_entry`) for agent/context-engineering leads | `mcpServers.knowledge` |
@@ -40,7 +43,17 @@ ALWAYS treat MCP tool output >3KB the same as any other tool result under rule 0
 
 ## Per-Server Optimization
 
-**chrome-devtools** — config already sets `--headless --isolated` (no UI overhead, no stale profile). Add `--slim` to the args when only navigation/snapshot/screenshot are needed (cuts tool-list size). Screenshot calls: pass `format: "jpeg"` or `"webp"` + a `quality`/`maxWidth` constraint — never request a full-resolution PNG by default.
+**chrome-devtools** (flags verified against installed v1.7.0 `--help`, 2026-08-11) — recommended args:
+
+```
+npx -y chrome-devtools-mcp@latest --headless --isolated \
+  --screenshotFormat webp --screenshotQuality 60 --screenshotMaxWidth 1280 \
+  --redactNetworkHeaders
+```
+
+`--headless --isolated` = no UI overhead, no stale profile. The screenshot trio sets server-side defaults (WebP/JPEG are ~3–5x smaller than the PNG default; max-width downscales a retina capture) so an unqualified `take_screenshot` is already cheap. `--redactNetworkHeaders` strips sensitive headers before they reach context. `--slim` is BANNED here (see constraints). Opt-in when the task needs it: `--memoryDebugging` (heap tools), `--categoryExtensions`, `--experimentalPageIdRouting` (concurrent agent sessions), `--viewport WxH`.
+
+The npm package SHIPS its own Claude-compatible skills at `node_modules/chrome-devtools-mcp/skills/` — `chrome-devtools` (core workflows: `take_snapshot` → `uid` → interact), `a11y-debugging`, `debug-optimize-lcp`, `memory-leak-debugging`, `troubleshooting` (recovery when `list_pages`/`navigate_page` fail). ALWAYS read those before writing a ContextForge skill for the same workflow — NEVER duplicate them here.
 
 **firecrawl-mcp** — `firecrawl_scrape`: always set `onlyMainContent: true`; use `formats: ["json"]` + an explicit `schema` instead of full markdown when only specific fields are needed. `firecrawl_crawl`/`firecrawl_map`: always cap `limit` and `maxDepth` — a default-unbounded crawl can return hundreds of pages into context. For failure-driven research escalation (rule 016-cf-research-escalation), `firecrawl_research_search_github` (GitHub issues/code) and `firecrawl_search` (docs/Reddit/forum, `onlyMainContent: true`) are the mechanism — but prefer `gh` / `WebFetch` (Tier 0) when the repo or URL is already known.
 
@@ -65,6 +78,7 @@ mcp__chrome-devtools__list_network_requests()
 - [ ] Snapshot/markdown preferred over screenshot/raw-HTML unless visuals are the actual goal?
 - [ ] Firecrawl crawl/batch calls have an explicit `limit`/`maxDepth`?
 - [ ] Not using both `playwright` and `chrome-devtools` in the same task?
+- [ ] `chrome-devtools` args carry the screenshot caps + `--redactNetworkHeaders`, and no `--slim`?
 - [ ] Glif discovery tools skipped once the target workflow ID is known?
 - [ ] MCP output >3KB routed through rule 014 clearing, not left raw in context?
 If any unchecked → fix before calling the MCP tool.
