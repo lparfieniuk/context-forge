@@ -1,0 +1,26 @@
+{
+  "name": "context-forge",
+  "description": "Deterministic context engineering for AI coding agents — structure over search, tokens over brute force.",
+  "owner": {
+    "name": "Lukasz Parfieniuk",
+    "email": "lukasz.parfieniuk@gmail.com",
+    "url": "https://github.com/lparfieniuk"
+  },
+  "plugins": [
+    {
+      "name": "context-forge",
+      "source": ".",
+      "version": "1.1.0",
+      "description": "18 rules, 20 skills, 1 agent, 11 hooks for token-efficient agent workflows.",
+      "author": {
+        "name": "Lukasz Parfieniuk",
+        "email": "lukasz.parfieniuk@gmail.com"
+      },
+      "homepage": "https://github.com/lparfieniuk/context-forge",
+      "repository": "https://github.com/lparfieniuk/context-forge",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": ["context-engineering", "token-efficiency", "rules", "skills", "hooks"]
+    }
+  ]
+}
