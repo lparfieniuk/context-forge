@@ -10,6 +10,7 @@ globs: []
 ALWAYS use KERNEL template structure for every Task() prompt.
 NEVER spawn a Task() with a vague prompt lacking Context, Task, Constraints, Format, and Verify sections.
 NEVER accept conversational filler back from subagents — mandate exact return format in prompt.
+NEVER paste file contents, log bodies, or search dumps INTO a Task() prompt — ALWAYS pass paths, line ranges, or a query string and let the child read what it needs. A child's empty context is the entire reason delegating is cheaper than doing the work inline; a pasted payload spends that budget before the child has read its first instruction, and it is paid twice (once in the parent, once in the child).
 NEVER spawn >2 concurrent Tier 3 Tasks without explicit authorization.
 ALWAYS set `model: "haiku"` for Tier 2 tasks. NEVER use `model: "sonnet"` for Tier 2.
 NEVER pass thinking parameters to `claude-haiku-4-5-20251001` — it does not support thinking.

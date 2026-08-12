@@ -9,6 +9,7 @@ NEVER escalate Haiku to Sonnet unless all 3 escalation gate conditions are met.
 ALWAYS check `core/scripts/_index.yaml` before spawning any Task().
 If task touches ≤2 files: BANNED to spawn sub-agent. Apply change directly.
 ALWAYS use KERNEL template structure for all Task() prompts (rule 011).
+NEVER let a spawned sub-agent spawn its own sub-agents — delegation depth is capped at 1. An independent reproduction of Recursive Language Models (arXiv:2603.02615, verified 2026-08-12) measured depth-2 turning a 3.6s retrieval into 344.5s (~95x) while DEGRADING accuracy on the simpler tasks: depth-1 fan-out is the win, depth-2 is overthinking with a bill attached.
 
 ## Cost Hierarchy
 

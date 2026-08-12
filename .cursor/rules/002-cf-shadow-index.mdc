@@ -13,6 +13,7 @@ NEVER read more than 5 raw source files without escalating to pack-context skill
 ALWAYS resolve `<IDE_DIR>` (`.claude` or `.cursor`) before manifest lookup.
 ALWAYS generate manifest immediately when absent — NEVER ask user, NEVER skip.
 NEVER hardcode `.cursor/shadow/` — ALWAYS use IDE-resolved `<IDE_DIR>`.
+EXEMPTION — ONE self-contained artifact under ~30k tokens, read once to answer one question (a downloaded transcript, a single log, one PDF): read it directly. NEVER build a manifest, bundle, or sub-agent pipeline around it — the scaffolding costs more than the artifact. The manifest protocol governs REPEATED discovery across a codebase, not a single read.
 
 ## IDE Auto-Detection
 
