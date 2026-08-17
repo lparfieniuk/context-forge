@@ -3,6 +3,17 @@ description: "ContextForge script library. All tool scripts are plugin-agnostic 
 # Script IDs MUST use kebab-case ONLY. No underscores or mixed_case.
 
 tools:
+  - id: session-handoff
+    file: tools/session-handoff.sh
+    description: "Emit the deterministic half of a session handoff payload: branch, recent commits, dirty files, diff-vs-merge-base, worklog tail"
+    params:
+      - name: --worklog
+        required: false
+        description: "Worklog YAML to tail (default: newest in ~/worklogs/tickets/)"
+    output: "Markdown block (~150-300 tokens). Judgment half is filled by the model — see skills/session-handoff."
+    tags: [handoff, context-rot, state, session]
+    routing_key: "tier1:handoff"
+
   - id: extract-signatures
     file: tools/extract-signatures.sh
     description: "Extract TypeScript/PHP method stubs (names, parameters, return types — no bodies) from a source file"

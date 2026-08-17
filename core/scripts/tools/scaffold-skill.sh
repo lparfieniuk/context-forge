@@ -122,11 +122,17 @@ If any unchecked → fix before proceeding.
 SKILLMD
 
 # Replace placeholders
-sed -i '' "s/SKILLNAME/$NAME/g" "$SKILL_DIR/SKILL.md" 2>/dev/null || \
-  sed -i "s/SKILLNAME/$NAME/g" "$SKILL_DIR/SKILL.md"
+# Escape sed replacement metacharacters. Without this a description containing
+# "/" (e.g. "so /clear costs no context") breaks the s/// delimiter.
+_sed_escape() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
+NAME_ESC=$(_sed_escape "$NAME")
+DESCRIPTION_ESC=$(_sed_escape "$DESCRIPTION")
 
-sed -i '' "s/DESCRIPTION_HERE/$DESCRIPTION/g" "$SKILL_DIR/SKILL.md" 2>/dev/null || \
-  sed -i "s/DESCRIPTION_HERE/$DESCRIPTION/g" "$SKILL_DIR/SKILL.md"
+sed -i '' "s|SKILLNAME|$NAME_ESC|g" "$SKILL_DIR/SKILL.md" 2>/dev/null || \
+  sed -i "s|SKILLNAME|$NAME_ESC|g" "$SKILL_DIR/SKILL.md"
+
+sed -i '' "s|DESCRIPTION_HERE|$DESCRIPTION_ESC|g" "$SKILL_DIR/SKILL.md" 2>/dev/null || \
+  sed -i "s|DESCRIPTION_HERE|$DESCRIPTION_ESC|g" "$SKILL_DIR/SKILL.md"
 
 # Write skill.yaml
 cat > "$SKILL_DIR/skill.yaml" <<YAML

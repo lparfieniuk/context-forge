@@ -1,19 +1,19 @@
 ---
 name: help
 description: >
-  Lists all 20 ContextForge skills grouped by category, shows ownership and Superpowers
+  Lists all 21 ContextForge skills grouped by category, shows ownership and Superpowers
   delegation links, and reports current system status (manifests, worklogs, context capacity).
   <example>
   Context: Developer wants to know what skills are available
   user: "/help"
-  assistant: "ContextForge 1.1.0 — 20 skills across 4 categories. System status: manifests FRESH, worklogs active."
+  assistant: "ContextForge 1.1.0 — 21 skills across 4 categories. System status: manifests FRESH, worklogs active."
   </example>
 model: none
 ---
 
 ## What This Does
 
-Renders a static capability reference listing all 20 ContextForge skills organized into 4
+Renders a static capability reference listing all 21 ContextForge skills organized into 4
 categories. No LLM processing required — this is a template response.
 
 Also checks and reports:
@@ -32,7 +32,7 @@ Return the template below, substituting live system status values.
 ## Output Format
 
 ```
-ContextForge v1.1.0 — 20 skills, 4 categories
+ContextForge v1.1.0 — 21 skills, 4 categories
 
 ## Discovery (4 skills)
 | Skill              | Tier | Ownership | Trigger |
@@ -62,6 +62,7 @@ ContextForge v1.1.0 — 20 skills, 4 categories
 | evolve-apply      | 1    | OWNED     | Human approved a pending /evolve proposal |
 | pre-review        | 1    | DELEGATES | Before git commit or MR; /pre-review |
 | end-session       | 1    | OWNED     | Session close-out; /end-session |
+| session-handoff   | 1    | OWNED     | State payload for /clear; /session-handoff |
 
 ## Admin (3 skills)
 | Skill          | Tier | Ownership | Trigger |
@@ -81,7 +82,7 @@ pre-review → superpowers:requesting-code-review → code-reviewer agent
 
 ## Constraints
 
-ALWAYS list all 20 skills from `core/_index.yaml` — NEVER omit any skill.
+ALWAYS list all 21 skills from `core/_index.yaml` — NEVER omit any skill.
 ALWAYS show ownership column (OWNED vs DELEGATES).
 NEVER require LLM processing — this is a static template with live status substitution.
 ALWAYS include Superpowers delegation link for pre-review.

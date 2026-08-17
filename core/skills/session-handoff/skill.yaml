@@ -1,0 +1,9 @@
+id: session-handoff
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: owned
+trigger: "Context capacity at WARNING/PRESSURE, before /clear, or handing work to a fresh session"
+script: core/scripts/tools/session-handoff.sh
+tags: [handoff, context-rot, state, session, clear]

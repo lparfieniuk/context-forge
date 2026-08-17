@@ -182,6 +182,16 @@ rules:
     activation: intelligent
     tags: [cost, pricing, tokens, batch, cache, tokenizer, tier-routing, spend]
 
+  - id: cf-critical-response
+    type: rule
+    number: 19
+    source: core/rules/019-cf-critical-response.md
+    yaml: core/rules/019-cf-critical-response.yaml
+    installed_claude: .claude/rules/cf-critical-response.md
+    installed_cursor: .cursor/rules/019-cf-critical-response.mdc
+    activation: always
+    tags: [anti-sycophancy, verdict-first, counter-position, response-budget, verification]
+
 skills:
   - id: extract-signatures
     type: skill
@@ -404,6 +414,18 @@ skills:
     tier: 3
     model: sonnet
     tags: [workflow, self-evolving, panel, governance, human-gate]
+
+  - id: session-handoff
+    type: skill
+    category: workflow
+    source: core/skills/session-handoff/SKILL.md
+    yaml: core/skills/session-handoff/skill.yaml
+    installed_claude: skills/session-handoff/SKILL.md
+    installed_cursor: null
+    tier: 1
+    model: haiku
+    script: core/scripts/tools/session-handoff.sh
+    tags: [handoff, context-rot, state, session, clear]
 
   - id: evolve-apply
     type: skill

@@ -40,6 +40,7 @@
 | 016 | cf-research-escalation | intelligent | ALWAYS local-first before web; research bounded (≤2 queries) before the halt. NEVER treat Reddit/forum as truth — lead, verify against docs/source. |
 | 017 | cf-cloud-execution | intelligent | NEVER submit a paid remote job without TTL + cancel path. NEVER re-push a mutable image tag and assume workers picked it up. |
 | 018 | cf-cost-model | intelligent | ALWAYS reason routing cost in dollars (doc-verified prices). NEVER price output like input (5x); ALWAYS Batch non-interactive work (50% off). |
+| 019 | cf-critical-response | always | NEVER open with praise/agreement; verdict first. ALWAYS carry the counter-position; reverse only on evidence, never on pushback. |
 
 ## Skills
 
@@ -62,6 +63,7 @@
 | workflow | evolve-apply | 1 | haiku | Apply a human-approved /evolve proposal; patch + convert + audit, revert on failure |
 | workflow | pre-review | 1 | haiku | Pre-commit review delegating to superpowers:requesting-code-review |
 | workflow | end-session | 1 | haiku | Session close-out: diary + learnings, commit, merge working branch |
+| workflow | session-handoff | 1 | haiku | Compress live state into a paste-able payload so `/clear` costs no context |
 | admin | optimize-rules | 2 | sonnet | Audit and optimize rules for token efficiency |
 | admin | plugin-audit | 1 | none | Validate plugin/index/parity gates via audit tooling |
 | admin | help | 0 | none | List available skills grouped by category |
