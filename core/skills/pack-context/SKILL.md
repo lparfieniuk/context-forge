@@ -1,12 +1,6 @@
 ---
 name: pack-context
-description: >
-  Bundles multiple source files matching a regex pattern into a compact XML context block for tasks touching 3+ interrelated files. Max 15 files, ~10-30k tokens. Needs Sonnet to judge which files to include.
-  <example>
-  Context: Refactoring BillingFacade across multiple files.
-  user: "Bundle all billing files for the cancelSubscription refactor"
-  assistant: "Running pack-context with pattern 'billing|subscription' — returns XML bundle of up to 15 matching files."
-  </example>
+description: Bundles up to 15 related source files into one XML context block. Use when a task touches 3+ interrelated files and full method bodies are actually needed.
 model: sonnet
 ---
 

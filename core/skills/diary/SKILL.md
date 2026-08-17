@@ -1,14 +1,6 @@
 ---
 name: diary
-description: >
-  Appends a decision/outcome entry to the current session's diary so the
-  self-evolving loop learns from successes and failures, not just ledgers.
-  Enriches the baseline entry written automatically at session end.
-  <example>
-  Context: Just chose count-based deltas over mtime math for portability.
-  user: "/diary chose count-based signal delta — BSD find has no -newermt"
-  assistant: "[DIARY] appended decision (outcome: worked) to today's diary entry."
-  </example>
+description: Appends a decision and its outcome to the session diary so the self-evolving loop learns from failures and successes alike. Use after a choice proves out or fails.
 model: haiku
 ---
 

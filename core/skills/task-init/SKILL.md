@@ -1,13 +1,6 @@
 ---
 name: task-init
-description: >
-  Initializes a new Jira task by creating ~/worklogs/tickets/<KEY>.yaml, updating INDEX.yaml,
-  and detecting branch/task-type metadata. Use at the start of every new Jira ticket session.
-  <example>
-  Context: Starting work on a new feature ticket
-  user: "task-init PROJ-3456"
-  assistant: "[TASK INIT] created ~/worklogs/tickets/PROJ-3456.yaml and updated INDEX.yaml"
-  </example>
+description: Creates a ticket worklog YAML and registers it in the worklog index. Use at the start of work on a new ticket.
 model: haiku
 ---
 

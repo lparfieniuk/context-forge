@@ -1,6 +1,6 @@
 ---
 description: Code Search
-alwaysApply: false
+alwaysApply: true
 globs: []
 ---
 # Code Search

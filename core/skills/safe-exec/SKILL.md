@@ -1,12 +1,6 @@
 ---
 name: safe-exec
-description: >
-  Runs a shell command with automatic output compression. If output exceeds 5 KB, writes full output to a timestamped log file and returns a concise summary. Prevents context bloat from large build/test/lint outputs.
-  <example>
-  Context: Running npm run build which produces large output.
-  user: "Run npm run build and check for errors"
-  assistant: "Running safe-exec for npm run build — output exceeding 5 KB will be stored and summarized."
-  </example>
+description: Runs a shell command and compresses output over 5 KB into a log file plus a short summary. Use for builds, tests, and installs that would otherwise flood context.
 model: haiku
 ---
 

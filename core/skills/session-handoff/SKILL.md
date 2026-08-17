@@ -1,16 +1,6 @@
 ---
 name: session-handoff
-description: >
-  Compresses live session state into a paste-able payload so `/clear` costs no
-  context. Runs session-handoff.sh for the deterministic half (git, worklog),
-  then the model fills the judgment half (locked decisions, verified vs assumed,
-  next step). Use when context capacity hits WARNING/PRESSURE, before `/clear`,
-  or when handing work to a fresh session.
-  <example>
-  Context: Capacity at 72%, refactor half-finished, user wants a clean window.
-  user: "/session-handoff"
-  assistant: "[HANDOFF] payload ready — 11 decisions, 3 unverified. Copy, /clear, paste."
-  </example>
+description: Compresses live session state into a paste-able payload so /clear costs no context. Use at high context capacity, before /clear, or when handing work to a fresh session.
 model: haiku
 tier: 1
 ---

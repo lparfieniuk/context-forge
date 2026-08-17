@@ -1,12 +1,6 @@
 ---
 name: shadow-lookup
-description: >
-  Zero-LLM-cost symbol-to-file-path lookup using the shadow manifest. Returns TSV: symbol → kind → file → repo. ~50 tokens per lookup vs ~30k for full manifest read.
-  <example>
-  Context: Need to find where BillingFacade is defined.
-  user: "Where is BillingFacade defined?"
-  assistant: "Running shadow-lookup for BillingFacade — returns file path and kind from manifest."
-  </example>
+description: Finds which file defines a symbol by reading the shadow manifest (~50 tokens, no LLM call). Use to answer 'where is X defined' before opening any source file.
 model: none
 ---
 

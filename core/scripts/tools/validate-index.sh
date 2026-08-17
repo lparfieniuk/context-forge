@@ -75,7 +75,12 @@ awk '
     # skip null values
     if (v != "null") icursor = v
   }
-  /^    installed_claude:/ { iclaude = $NF }
+  /^    installed_claude:/ {
+    v = $NF
+    # skip null values — an on-demand rule (activation != always) is
+    # deliberately not installed into .claude/rules/; see convert.ts.
+    if (v != "null") iclaude = v
+  }
   END { if (id != "") flush() }
 
   function flush() {

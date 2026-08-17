@@ -1,12 +1,6 @@
 ---
 name: log-analyzer
-description: >
-  Distills build, test, or lint failure logs into a structured Root Cause Analysis (RCA) block. Extracts root cause, failing file, line number, and a 1-line fix suggestion. Returns [RCA] envelope.
-  <example>
-  Context: npm run build failed, safe-exec stored the log at a path.
-  user: "Analyze the build failure log at ~/worklogs/logs/run_20260414_101530_a1b2c3d4.log"
-  assistant: "Running log-analyzer — returns RCA block with root cause and fix suggestion."
-  </example>
+description: Distills a build, test, or lint log into a root cause, failing file and line, and a one-line fix. Use after a failure instead of reading the raw log.
 model: haiku
 ---
 

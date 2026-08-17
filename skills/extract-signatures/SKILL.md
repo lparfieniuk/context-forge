@@ -1,12 +1,6 @@
 ---
 name: extract-signatures
-description: >
-  Extracts method stubs (names, parameters, return types — no bodies) from TypeScript or PHP source files using a live ripgrep-based script. Returns ~500-2k tokens per file, always fresh.
-  <example>
-  Context: User needs to understand AuthService API before editing it.
-  user: "Extract signatures from libs/auth/src/lib/auth.service.ts"
-  assistant: "Running extract-signatures on auth.service.ts — returns class/method stubs without bodies."
-  </example>
+description: Extracts function and class signatures (names, parameters, return types — no bodies) from TypeScript or PHP files. Use before editing an unfamiliar file, to learn its API for ~500-2k tokens instead of a full read.
 model: haiku
 ---
 

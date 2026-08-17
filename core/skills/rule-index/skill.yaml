@@ -1,0 +1,8 @@
+id: rule-index
+type: skill
+category: discovery
+tier: 0
+model: haiku
+ownership: owned
+trigger: "About to design an API call, route to MCP/sub-agent, recover from a failure, or make a spend decision"
+tags: [rules, on-demand, context-budget, discovery]

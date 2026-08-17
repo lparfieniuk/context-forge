@@ -1,14 +1,6 @@
 ---
 name: clear-context
-description: >
-  Orchestrates tool result and thinking block clearing. Checks accumulated context
-  pressure (threshold: 30K tokens) and emits correct context_management.edits params.
-  Implements rule 014-cf-tool-result-clearing workflow.
-  <example>
-  Context: Agentic session, tool results at 45K tokens
-  user: "/clear-context"
-  assistant: "[CLEAR-CONTEXT] Action: clear_tool_uses_20250919 via context_management.edits; keeping 3 tool uses."
-  </example>
+description: Emits the context_management parameters that clear accumulated tool results or thinking blocks. Use when tool results approach 30K tokens.
 model: none
 ---
 

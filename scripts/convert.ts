@@ -260,6 +260,19 @@ function convertClaudeRules(
   for (const rule of rules) {
     if (!rule.installed_claude) continue;
 
+    // Every file in .claude/rules/ is loaded as a project instruction on EVERY
+    // session — an `intelligent` rule installed here is force-loaded and its
+    // activation mode becomes a lie. Measured 2026-08-17: 12 such rules cost
+    // 14968 tokens per session. On-demand rules reach the agent through the
+    // rule-index skill instead; only `always` rules earn a permanent slot.
+    if (rule.activation !== 'always') {
+      result.errors.push({
+        file: rule.installed_claude,
+        error: `activation "${rule.activation}" must not set installed_claude — .claude/rules/ is always-on. Set installed_claude: null and let rule-index carry it.`,
+      });
+      continue;
+    }
+
     const destPath = path.join(pluginRoot, rule.installed_claude);
 
     try {

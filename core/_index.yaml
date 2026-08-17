@@ -49,7 +49,7 @@ rules:
     yaml: core/rules/005-cf-code-search.yaml
     installed_claude: .claude/rules/cf-code-search.md
     installed_cursor: .cursor/rules/005-cf-code-search.mdc
-    activation: intelligent
+    activation: always
     tags: [search, ripgrep, progressive-disclosure]
 
   - id: cf-prompt-caching
@@ -57,7 +57,7 @@ rules:
     number: 6
     source: core/rules/006-cf-prompt-caching.md
     yaml: core/rules/006-cf-prompt-caching.yaml
-    installed_claude: .claude/rules/cf-prompt-caching.md
+    installed_claude: null
     installed_cursor: .cursor/rules/006-cf-prompt-caching.mdc
     activation: intelligent
     tags: [caching, kv-cache, prompt-prefix]
@@ -67,7 +67,7 @@ rules:
     number: 7
     source: core/rules/007-cf-context-loading.md
     yaml: core/rules/007-cf-context-loading.yaml
-    installed_claude: .claude/rules/cf-context-loading.md
+    installed_claude: null
     installed_cursor: .cursor/rules/007-cf-context-loading.mdc
     activation: intelligent
     tags: [context-loading, task-type, rule-budget]
@@ -77,7 +77,7 @@ rules:
     number: 8
     source: core/rules/008-cf-worklog.md
     yaml: core/rules/008-cf-worklog.yaml
-    installed_claude: .claude/rules/cf-worklog.md
+    installed_claude: null
     installed_cursor: .cursor/rules/008-cf-worklog.mdc
     activation: intelligent
     tags: [worklog, state-externalization, session-start]
@@ -87,7 +87,7 @@ rules:
     number: 9
     source: core/rules/009-cf-module-index.md
     yaml: core/rules/009-cf-module-index.yaml
-    installed_claude: .claude/rules/cf-module-index.md
+    installed_claude: null
     installed_cursor: .cursor/rules/009-cf-module-index.mdc
     activation: intelligent
     tags: [module-index, source-of-truth, convert-pipeline]
@@ -107,7 +107,7 @@ rules:
     number: 11
     source: core/rules/011-cf-kernel-prompts.md
     yaml: core/rules/011-cf-kernel-prompts.yaml
-    installed_claude: .claude/rules/cf-kernel-prompts.md
+    installed_claude: null
     installed_cursor: .cursor/rules/011-cf-kernel-prompts.mdc
     activation: intelligent
     tags: [kernel, task-prompts, subagent-templates]
@@ -117,7 +117,7 @@ rules:
     number: 12
     source: core/rules/012-cf-rule-authoring.md
     yaml: core/rules/012-cf-rule-authoring.yaml
-    installed_claude: .claude/rules/cf-rule-authoring.md
+    installed_claude: null
     installed_cursor: .cursor/rules/012-cf-rule-authoring.mdc
     activation: intelligent
     tags: [rule-authoring, yaml-md-format, validation-gates]
@@ -127,7 +127,7 @@ rules:
     number: 13
     source: core/rules/013-cf-interleaved-thinking.md
     yaml: core/rules/013-cf-interleaved-thinking.yaml
-    installed_claude: .claude/rules/cf-interleaved-thinking.md
+    installed_claude: null
     installed_cursor: .cursor/rules/013-cf-interleaved-thinking.mdc
     activation: intelligent
     tags: [interleaved-thinking, cache, budget-tokens, claude-4]
@@ -137,7 +137,7 @@ rules:
     number: 14
     source: core/rules/014-cf-tool-result-clearing.md
     yaml: core/rules/014-cf-tool-result-clearing.yaml
-    installed_claude: .claude/rules/cf-tool-result-clearing.md
+    installed_claude: null
     installed_cursor: .cursor/rules/014-cf-tool-result-clearing.mdc
     activation: intelligent
     tags: [context-editing, tool-result-clearing, compaction, context-management]
@@ -147,7 +147,7 @@ rules:
     number: 15
     source: core/rules/015-cf-mcp-tools.md
     yaml: core/rules/015-cf-mcp-tools.yaml
-    installed_claude: .claude/rules/cf-mcp-tools.md
+    installed_claude: null
     installed_cursor: .cursor/rules/015-cf-mcp-tools.mdc
     activation: intelligent
     tags: [mcp, playwright, chrome-devtools, firecrawl, glif, tool-routing]
@@ -157,7 +157,7 @@ rules:
     number: 16
     source: core/rules/016-cf-research-escalation.md
     yaml: core/rules/016-cf-research-escalation.yaml
-    installed_claude: .claude/rules/cf-research-escalation.md
+    installed_claude: null
     installed_cursor: .cursor/rules/016-cf-research-escalation.mdc
     activation: intelligent
     tags: [research, circuit-breaker, github, autonomous, failure, verified-research]
@@ -167,7 +167,7 @@ rules:
     number: 17
     source: core/rules/017-cf-cloud-execution.md
     yaml: core/rules/017-cf-cloud-execution.yaml
-    installed_claude: .claude/rules/cf-cloud-execution.md
+    installed_claude: null
     installed_cursor: .cursor/rules/017-cf-cloud-execution.mdc
     activation: intelligent
     tags: [cloud, gpu, runpod, serverless, container, spend, lifecycle, image-tags]
@@ -177,7 +177,7 @@ rules:
     number: 18
     source: core/rules/018-cf-cost-model.md
     yaml: core/rules/018-cf-cost-model.yaml
-    installed_claude: .claude/rules/cf-cost-model.md
+    installed_claude: null
     installed_cursor: .cursor/rules/018-cf-cost-model.mdc
     activation: intelligent
     tags: [cost, pricing, tokens, batch, cache, tokenizer, tier-routing, spend]
@@ -204,6 +204,17 @@ skills:
     tier: 1
     model: haiku
     tags: [discovery, typescript, signatures]
+
+  - id: rule-index
+    type: skill
+    category: discovery
+    source: core/skills/rule-index/SKILL.md
+    yaml: core/skills/rule-index/skill.yaml
+    installed_claude: skills/rule-index/SKILL.md
+    installed_cursor: null
+    tier: 0
+    model: haiku
+    tags: [rules, on-demand, context-budget, discovery]
 
   - id: pack-context
     type: skill

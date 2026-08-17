@@ -1,12 +1,6 @@
 ---
 name: refresh-manifest
-description: >
-  Regenerates the lightweight shadow manifest for symbol lookup. Auto-detects IDE (.claude or .cursor), dual-writes to both shadow directories. Use when manifest is missing, stale, or broken.
-  <example>
-  Context: Symbol lookup returns no results — manifest is missing.
-  user: "The manifest is missing, I need to regenerate it"
-  assistant: "Running refresh-manifest — will auto-detect IDE and generate manifests for both .claude/shadow/ and .cursor/shadow/."
-  </example>
+description: Regenerates the shadow index manifest of top-level exports for fast symbol lookup. Use when the manifest is missing or stale, or symbol lookup returns nothing.
 model: haiku
 ---
 

@@ -1,15 +1,6 @@
 ---
 name: end-session
-description: >
-  Runs the end-of-session close-out sequence for a work repo: capture diary +
-  session-learnings, then commit all changes and auto-merge the working branch
-  into the main branch. Invoke when the user signals the session is over
-  ("kończymy sesję", "we're done", "wrap up", "/end-session").
-  <example>
-  Context: Feature work finished on branch feature/x, user wants to close out.
-  user: "kończymy sesję"
-  assistant: "[END-SESSION] diary + learnings captured, committed 6 files, merged feature/x → main."
-  </example>
+description: Closes out a session: diary, learnings, commit, and merge of the working branch. Use when the user signals the work is finished.
 model: none
 ---
 
