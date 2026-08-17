@@ -23,12 +23,11 @@
 | # | ID | Mode | Top 2 Constraints |
 |---|---|---|---|
 | 001 | cf-token-efficiency | always | ALWAYS lead with conclusion. NEVER use conversational filler. |
-| 002 | cf-shadow-index | always | NEVER read raw source for discovery — manifest first. NEVER skip Tier 1. |
+| 002 | cf-shadow-index | on-demand | NEVER read raw source for discovery — manifest first. NEVER skip Tier 1. |
 | 003 | cf-tier-routing | always | NEVER spawn Task() when Tier 0/1 exists. NEVER >2 concurrent Tier 3. |
 | 004 | cf-circuit-breaker | always | NEVER retry after 2nd identical failure. ALWAYS generate Failure Ledger YAML. |
 | 005 | cf-code-search | always | NEVER use `grep` — BANNED, use `rg`. NEVER use `--json`/`--vimgrep` with rg. |
 | 006 | cf-prompt-caching | on-demand | NEVER interleave static files with conversation. NEVER put timestamps in system prompt. |
-| 007 | cf-context-loading | on-demand | ALWAYS detect task_type before loading rules. NEVER load domain rules for single-file fix. |
 | 008 | cf-worklog | on-demand | ALWAYS externalize to YAML scratchpads. ALWAYS read INDEX.yaml at session start. |
 | 009 | cf-module-index | on-demand | NEVER invent paths — ALWAYS check `core/_index.yaml` first. NEVER assume installed=source. |
 | 010 | cf-context-budget | always | ALWAYS treat capacity as 60–70% of advertised window. NEVER spawn Tier 3 without checking capacity. |
@@ -97,6 +96,10 @@ Run `npm run convert` after editing source files to propagate changes to install
 
 ## Rule Activation Contract
 
-`.claude/rules/` is loaded as a project instruction on EVERY session — a file there costs its full token count unconditionally. Only `activation: always` rules earn a slot (7 rules, 6353 tokens). The 12 `on-demand` rules set `installed_claude: null` and are reached through the `rule-index` skill or read directly from `core/rules/`.
+`.claude/rules/` is loaded as a project instruction on EVERY session — a file there costs its full token count unconditionally. Only `activation: always` rules earn a slot (6 rules, 5491 tokens measured 2026-08-18). The 12 `on-demand` rules (002 shadow-index among them) set `installed_claude: null` and are reached through the `rule-index` skill or read directly from `core/rules/`.
 
-`convert.ts` refuses to install a non-`always` rule, and `scripts/rule-activation.test.ts` fails if one regains an `installed_claude` path or if `rule-index` points at a missing file. Measured 2026-08-17: installing all of them always-on cost **14968 tokens per session** for rules that were authored to load conditionally.
+Rule 002 (shadow-index) left the always-on set on 2026-08-18: 862 tokens in every session of every repo to describe a protocol most sessions never enter. `hooks/session-start.sh` now prints one line carrying the operative part — the Tier 0 lookup command when a manifest exists, the command that creates one when it does not (and only in repos with ≥30 source files). Counter-position on record: without the rule resident, an agent that ignores that line will read raw source and never reach for the manifest; the line is the whole mitigation, so keep it actionable.
+
+Rule 007 (context-loading) was deleted, not demoted. Its decision table routed on `Domain`/`Integration`/`Boundary` rule categories this plugin never had, and nothing consumed its output — `hooks/session-start.sh` printed a `rule_budget` figure no code or rule read. Rule loading is routed by concern through `rule-index`, which is precise where a branch prefix is a guess.
+
+`convert.ts` refuses to install a non-`always` rule, and `scripts/rule-activation.test.ts` fails if one regains an `installed_claude` path, if `rule-index` points at a missing file, or if `.claude/rules/` holds a file the index does not list as always-on — `convert.ts` writes but never prunes, so a demoted rule's installed copy kept billing until the directory itself was measured. Measured 2026-08-17: installing all of them always-on cost **14968 tokens per session** for rules that were authored to load conditionally.

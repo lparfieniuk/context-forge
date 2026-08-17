@@ -1,6 +1,6 @@
 ---
 description: Shadow Index Protocol
-alwaysApply: true
+alwaysApply: false
 globs: []
 ---
 # Shadow Index Protocol

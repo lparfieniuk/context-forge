@@ -17,9 +17,9 @@ rules:
     number: 2
     source: core/rules/002-cf-shadow-index.md
     yaml: core/rules/002-cf-shadow-index.yaml
-    installed_claude: .claude/rules/cf-shadow-index.md
+    installed_claude: null
     installed_cursor: .cursor/rules/002-cf-shadow-index.mdc
-    activation: always
+    activation: intelligent
     tags: [core, shadow-index, symbol-lookup]
 
   - id: cf-tier-routing
@@ -61,16 +61,6 @@ rules:
     installed_cursor: .cursor/rules/006-cf-prompt-caching.mdc
     activation: intelligent
     tags: [caching, kv-cache, prompt-prefix]
-
-  - id: cf-context-loading
-    type: rule
-    number: 7
-    source: core/rules/007-cf-context-loading.md
-    yaml: core/rules/007-cf-context-loading.yaml
-    installed_claude: null
-    installed_cursor: .cursor/rules/007-cf-context-loading.mdc
-    activation: intelligent
-    tags: [context-loading, task-type, rule-budget]
 
   - id: cf-worklog
     type: rule

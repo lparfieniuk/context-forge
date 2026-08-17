@@ -5,7 +5,9 @@
 # Output: TIER:<n>\nACTION:<cmd>\nREASON:<text>
 set -euo pipefail
 
-PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# Three levels down from plugin root (core/scripts/tools/). `../..` landed on
+# core/, so INDEX_FILE never existed and every task fell through to TIER:2.
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
 
 # Parse args
 _TASK=""

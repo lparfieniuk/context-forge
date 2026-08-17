@@ -126,12 +126,11 @@ so they cannot collide with Superpowers or your own rules.
 | # | ID | Mode | What it enforces |
 |---|---|---|---|
 | 001 | cf-token-efficiency | always | Lead with the conclusion; diff-only edits; tables over JSON; no filler |
-| 002 | cf-shadow-index | always | Manifest before raw reads; 3-step lookup escalation; IDE auto-detect |
+| 002 | cf-shadow-index | intelligent | Manifest before raw reads; 3-step lookup escalation; IDE auto-detect |
 | 003 | cf-tier-routing | always | Cheapest-tier routing; Haiku-first; concurrency ceilings; Scribe dispatch |
 | 004 | cf-circuit-breaker | always | Two-strike halt; failure-ledger YAML; DEGRADED read-only state |
 | 005 | cf-code-search | intelligent | `rg` only (`grep` banned); progressive disclosure: count → files → lines |
 | 006 | cf-prompt-caching | intelligent | KV prefix stability; static-first placement; TTL and breakpoint budget |
-| 007 | cf-context-loading | intelligent | Task-type detection from branch; minimal rule set per task type |
 | 008 | cf-worklog | intelligent | State externalization; append gates; `supersedes` backlinks for reversals |
 | 009 | cf-module-index | intelligent | `_index.yaml` first; source path ≠ installed path |
 | 010 | cf-context-budget | always | 60–70% effective capacity; threshold actions at 70% / 80% |

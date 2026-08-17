@@ -14,3 +14,4 @@ This directory contains ADRs for the ContextForge plugin.
 | [ADR-008](2026-04-26-008-context-editing-api-integration.md) | Anthropic Context Editing API Integration | 2026-04-26 | Accepted |
 | [ADR-009](2026-04-26-009-adaptive-thinking-context-rot.md) | Adaptive Thinking Mode and Context Rot Warning | 2026-04-26 | Accepted |
 | [ADR-010](2026-04-26-010-real-usage-benchmark.md) | Real-Usage Benchmark and Bug Fix Pass | 2026-04-26 | Accepted |
+| [ADR-011](2026-08-18-011-self-referential-skill-cost.md) | Keep Self-Referential Skills in One Plugin | 2026-08-18 | Accepted |
