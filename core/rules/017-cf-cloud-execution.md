@@ -16,6 +16,8 @@ NEVER spawn pods from inside an agent session for unattended work — session li
 ALWAYS verify a control-plane mutation persisted by re-reading it — `runpodctl serverless update --workers-max 0` silently does not persist (verified 3x); hard pause and spend limits are web-console-only.
 NEVER size a watchdog or poll timeout from an extrapolated rate or a flat iteration count — ALWAYS derive it from measured job parameters (job count × measured per-job time + buffer). An under-budgeted watchdog kills a paid run that was working, and its cleanup trap can delete the pod mid-job.
 NEVER let a poll loop block on a bare `sleep` — it defers the bash trap, so cancelling leaves the rented resource running. Background the sleep and wait on it so the trap fires.
+NEVER read a record of what was REQUESTED as proof of what was PERFORMED — a queued row, a submitted config, or a returned job id proves intent only. ALWAYS verify the effect at the resource itself before reporting success.
+NEVER assume resource consumption (disk, quota, connections, memory) is visible while it is still under the cap — it surfaces first as an unrelated failure at the limit. ALWAYS check headroom in the preflight, NEVER after the crash.
 
 ## Failure Modes Observed
 
@@ -48,4 +50,6 @@ NEVER let a poll loop block on a bare `sleep` — it defers the bash trap, so ca
 - [ ] Backgrounded job has a real liveness/output signal (not just launcher exit)?
 - [ ] Control-plane mutation re-read and confirmed persisted?
 - [ ] Artifacts transferred and verified before deleting the pod?
+- [ ] Success confirmed at the resource itself, not read off a request/queue record?
+- [ ] Resource headroom (disk/quota/connections/memory) checked in the preflight?
 If any unchecked → fix before spending.

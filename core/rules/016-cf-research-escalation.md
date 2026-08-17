@@ -12,6 +12,8 @@ NEVER send secrets, tokens, credentials, or proprietary code/error text containi
 NEVER let a research finding auto-apply — a fix from the web is a hypothesis, verified against docs/source before the edit.
 NEVER treat an effect measured on a narrow sample as a finding — a verdict read off one run or a small slice routinely reverses when the sample widens. ALWAYS re-run wider (or repeat and measure variance) before reporting a difference as real.
 ALWAYS settle a question about a third-party tool's BEHAVIOR by reading its installed/upstream source — docs and reasoning describe intent, source describes what runs. When reviewing a claim about a tool, verify it in that tool's source, NEVER in its README alone.
+NEVER revise the hypothesis before auditing the instrument — when a measurement contradicts expectation, ALWAYS check the harness that produced it (its inputs, filters, units, and sample) BEFORE changing the thing being measured.
+ALWAYS check a tool's own `--help` and installed source for a built-in flag that already does the job BEFORE writing code to do it by hand — this is part of local-first, NEVER an optional optimisation.
 
 ## Escalation Ladder (integrates with rule 004)
 
@@ -65,6 +67,8 @@ Prefer `gh` / `WebFetch` (Tier 0) over the firecrawl MCP when the repo or URL is
 - [ ] Forum/Reddit/SO treated as lead — verified against official docs/source before acting?
 - [ ] No secrets / proprietary text sent to the web?
 - [ ] Any measured effect re-run wider (or variance measured) before being reported as a finding?
+- [ ] Measurement harness audited before the hypothesis was revised?
+- [ ] Tool's `--help`/installed source checked for a built-in before hand-rolling it?
 - [ ] Research trace recorded in the failure ledger (rule 004)?
 - [ ] Still unresolved after budget → let the circuit breaker halt (not endless research)?
 If any unchecked → fix before continuing.
