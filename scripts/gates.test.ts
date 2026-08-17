@@ -213,6 +213,29 @@ describe('extract-signatures.sh', () => {
   });
 });
 
+describe('tool scripts expose --help', () => {
+  // 30 of 32 did. `task-init.sh` answered "Unknown arg: --help" (exit 1) and
+  // `evolve-apply.sh` treated the flag as a proposal id and went looking for
+  // `pending/--help.yaml` (exit 2). A flag that is silently read as data is the
+  // same defect class as a documented flag the parser never had.
+  const toolsDir = path.join(PLUGIN_ROOT, 'core/scripts/tools');
+  const scripts = fs.readdirSync(toolsDir).filter((f) => f.endsWith('.sh'));
+
+  it('finds the tool scripts (guards against a vacuous scan)', () => {
+    expect(scripts.length).toBeGreaterThan(20);
+  });
+
+  it.each(scripts)('%s --help exits 0 and prints usage', (script) => {
+    const r = spawnSync('bash', [path.join(toolsDir, script), '--help'], {
+      encoding: 'utf-8',
+      cwd: PLUGIN_ROOT,
+      timeout: 20000,
+    });
+    expect(r.status).toBe(0);
+    expect(r.stdout.toLowerCase()).toContain('usage');
+  });
+});
+
 describe('skill docs vs script argument parsers', () => {
   // Every flag a SKILL.md advertises must exist in the script it points at.
   // Three did not: extract-signatures documented `--kind` and `--repo`,

@@ -11,6 +11,15 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --key) KEY="$2"; shift 2 ;;
     --scope) SCOPE="$2"; shift 2 ;;
+    --help|-h)
+      echo "Usage: task-init.sh --key <TICKET> [--scope <text>]"
+      echo ""
+      echo "Creates ~/worklogs/tickets/<TICKET>.yaml and registers it in the worklog index."
+      echo ""
+      echo "  --key <TICKET>   ticket id, required"
+      echo "  --scope <text>   one-line scope note"
+      exit 0
+      ;;
     *) echo "Unknown arg: $1"; exit 1 ;;
   esac
 done

@@ -4,6 +4,18 @@ set -euo pipefail
 # Tier 0 pre-filter for /evolve. Counts NEW signals since INDEX.last_processed_total.
 # Portable: count-based delta (no mtime math). Always exits 0.
 
+case "${1:-}" in
+  --help|-h)
+    cat <<'USAGE'
+Usage: evolve-signal.sh
+
+Tier 0 pre-filter for /evolve. Counts NEW signals since INDEX.last_processed_total.
+Prints "SIGNAL <count> READY|NO-SIGNAL". Takes no arguments; always exits 0.
+USAGE
+    exit 0
+    ;;
+esac
+
 DIARY_ROOT="${CF_DIARY_ROOT:-$HOME/worklogs/diaries}"
 LEARN_ROOT="${CF_LEARN_ROOT:-$HOME/worklogs/learnings}"
 LESSONS_ROOT="${CF_LESSONS_ROOT:-.claude/lessons}"

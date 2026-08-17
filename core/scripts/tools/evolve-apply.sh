@@ -5,6 +5,19 @@ set -euo pipefail
 # promotes the proposal to applied/ or reverts. HUMAN-INVOKED ONLY.
 
 ID="${1:-}"
+# `--help` is a request for usage, not a proposal id. Without this it was taken
+# as one and the script reported "no pending proposal: …/--help.yaml".
+case "$ID" in
+  --help|-h)
+    echo "Usage: evolve-apply.sh <proposal-id> [--skip-audit]"
+    echo ""
+    echo "Applies a human-approved /evolve proposal from .claude/evolve/pending/<id>.yaml:"
+    echo "patch, convert, audit, then promote to applied/ — or revert on failure."
+    echo ""
+    echo "  --skip-audit   apply and convert without running plugin-audit"
+    exit 0
+    ;;
+esac
 SKIP_AUDIT=0
 [ "${2:-}" = "--skip-audit" ] && SKIP_AUDIT=1
 if [ -z "$ID" ]; then
