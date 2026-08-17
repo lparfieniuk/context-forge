@@ -9,6 +9,18 @@
 
 set -uo pipefail   # no `-e`: the digest must never break session startup
 
+case "${1:-}" in
+  --help|-h)
+    cat <<'USAGE'
+Usage: session-digest.sh
+
+Between-session event digest: git working-tree delta, sync state, last commit,
+and the confidence gate. Takes no arguments.
+USAGE
+    exit 0
+    ;;
+esac
+
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "not a git repository"
   echo "gate: claim \"done\" only with test/build evidence (verification-before-completion)"

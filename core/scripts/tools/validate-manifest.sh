@@ -80,7 +80,7 @@ GENERATED=""
 if command -v rg &>/dev/null; then
   GENERATED=$(rg "^  generated:" "$MANIFEST" | head -1 | sed 's/.*generated:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "")
 else
-  GENERATED=$(grep "generated:" "$MANIFEST" | head -1 | sed 's/.*generated:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "")
+  GENERATED=$(rg "generated:" "$MANIFEST" | head -1 | sed 's/.*generated:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "")
 fi
 
 AGE_DAYS=0

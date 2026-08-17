@@ -27,7 +27,6 @@ bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/pack-context.sh \
 Optional flags:
 - `--max-files <n>` — override default 15-file cap (max 15)
 - `--max-lines <n>` — per-file line budget (default 400); files over it show a head+tail window (first 75% + last 25% of the budget) with the elided count reported, not a fixed 30-line stub
-- `--exclude <pattern>` — exclude files matching pattern (e.g. `*.spec.ts`)
 
 Step 2: Consume the XML output — parse `<f p="...">` blocks for file path and content.
 

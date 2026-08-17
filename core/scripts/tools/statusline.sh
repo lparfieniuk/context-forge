@@ -12,6 +12,18 @@
 
 set -uo pipefail   # no `-e`: a status line must always print something
 
+case "${1:-}" in
+  --help|-h)
+    cat <<'USAGE'
+Usage: statusline.sh
+
+One-line Claude Code status line (rule 010 + rule 006). Reads session JSON on
+stdin. Wire it into settings.json under "statusLine"; takes no arguments.
+USAGE
+    exit 0
+    ;;
+esac
+
 INPUT="$(cat 2>/dev/null || true)"
 
 jqr() { echo "$INPUT" | jq -r "$1" 2>/dev/null || echo ""; }

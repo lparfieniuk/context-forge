@@ -61,7 +61,9 @@ describe('check-parity CLI', () => {
   it('detects drift, missing, and orphan claude rules from core index', () => {
     const tempPlugin = makeTempPluginCopy();
     const staleRule = path.join(tempPlugin, '.claude/rules/cf-token-efficiency.md');
-    const missingRule = path.join(tempPlugin, '.claude/rules/cf-shadow-index.md');
+    // cf-shadow-index moved to on-demand and is no longer installed here;
+    // any still-always-on rule serves as the "missing" fixture.
+    const missingRule = path.join(tempPlugin, '.claude/rules/cf-circuit-breaker.md');
     const orphanRule = path.join(tempPlugin, '.claude/rules/cf-orphan.md');
 
     fs.appendFileSync(staleRule, '\nSTALE CONTENT\n', 'utf-8');
@@ -78,7 +80,7 @@ describe('check-parity CLI', () => {
     expect(result.stdout).toContain('NOT_INSTALLED:');
     expect(result.stdout).toContain('ORPHAN:');
     expect(result.stdout).toContain('cf-token-efficiency.md');
-    expect(result.stdout).toContain('cf-shadow-index.md');
+    expect(result.stdout).toContain('cf-circuit-breaker.md');
     expect(result.stdout).toContain('cf-orphan.md');
   });
 });

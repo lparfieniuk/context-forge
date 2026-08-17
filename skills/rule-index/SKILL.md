@@ -7,7 +7,7 @@ tier: 0
 
 # Rule Index
 
-12 ContextForge rules load ON DEMAND instead of occupying context every session.
+13 ContextForge rules load ON DEMAND instead of occupying context every session.
 Measured 2026-08-17: installing them as always-on project instructions cost
 **14968 tokens per session**. This index costs ~250 and reads only what the task
 needs.
@@ -23,8 +23,8 @@ NEVER guess a rule's content from its name. Read it or do not cite it.
 
 | Read when you are about to… | Rule | File |
 |---|---|---|
+| look a symbol up, or decide between manifest / signatures / raw source | 002 shadow-index | `002-cf-shadow-index.md` |
 | design a prompt/cache layout, choose a TTL, place static context | 006 prompt-caching | `006-cf-prompt-caching.md` |
-| decide which rules a task needs (branch → task_type budget) | 007 context-loading | `007-cf-context-loading.md` |
 | write a worklog/ticket entry, or resume from one | 008 worklog | `008-cf-worklog.md` |
 | add or move a ContextForge module (rule/skill/agent) | 009 module-index | `009-cf-module-index.md` |
 | write a `Task()` prompt or evaluate a sub-agent's return | 011 kernel-prompts | `011-cf-kernel-prompts.md` |
@@ -42,9 +42,9 @@ NEVER guess a rule's content from its name. Read it or do not cite it.
 cat "${CLAUDE_PLUGIN_ROOT}/core/rules/<file>"
 ```
 
-Always-on rules (001 token-efficiency, 002 shadow-index, 003 tier-routing,
-004 circuit-breaker, 005 code-search, 010 context-budget, 019 critical-response)
-are already loaded — NEVER read those from disk.
+Always-on rules (001 token-efficiency, 003 tier-routing, 004 circuit-breaker,
+005 code-search, 010 context-budget, 019 critical-response) are already loaded —
+NEVER read those from disk.
 
 ## Few-shot example
 

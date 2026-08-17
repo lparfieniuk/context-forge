@@ -57,6 +57,22 @@ for script_id in audit-runtime-artifacts audit-doc-claims audit-plugin-surface; 
   fi
 done
 
+# Execute every shipped script, do not merely confirm it is indexed. Four tools
+# were dead for months — refresh-manifest exited 1 everywhere, route-to-tier
+# answered TIER:2 for everything — while this audit reported PASS, because
+# presence was all it ever checked. `--help` is the cheapest invocation that
+# proves a script parses its arguments and reaches its own usage text.
+# Self-exclusion: this script is the one running the loop.
+for tool in "$PLUGIN_ROOT"/core/scripts/tools/*.sh; do
+  tool_name="$(basename "$tool")"
+  [[ "$tool_name" == "audit-plugin-surface.sh" ]] && continue
+  if ! tool_help="$(bash "$tool" --help 2>&1)"; then
+    fail "tool script fails --help: ${tool_name}"
+  elif ! printf '%s' "$tool_help" | rg -qi 'usage'; then
+    fail "tool script --help prints no usage: ${tool_name}"
+  fi
+done
+
 for skill_id in plugin-audit evolve; do
   if ! has_index_id "$INDEX" "$skill_id"; then
     fail "core/_index.yaml missing ${skill_id}"

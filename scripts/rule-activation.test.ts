@@ -88,6 +88,20 @@ describe('rule activation contract', () => {
     expect(broken).toEqual([]);
   });
 
+  it('.claude/rules/ on disk holds exactly the always-on set (no orphans)', () => {
+    // convert.ts writes but never prunes: demoting a rule to on-demand left its
+    // installed file in place, still costing its full token count every session
+    // while core/_index.yaml claimed it was gone. The index is not the bill —
+    // the directory is. Measure the directory.
+    const dir = path.join(PLUGIN_ROOT, '.claude/rules');
+    const onDisk = fs.readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+    const expected = rules
+      .filter((r) => r.activation === 'always' && r.installedClaude)
+      .map((r) => path.basename(r.installedClaude!))
+      .sort();
+    expect(onDisk).toEqual(expected);
+  });
+
   it('rule-index never lists an always-on rule (it is already loaded)', () => {
     const skillBody = fs.readFileSync(RULE_INDEX_SKILL, 'utf-8').split('## How to read one')[0];
     const alwaysOn = rules.filter((r) => r.activation === 'always');

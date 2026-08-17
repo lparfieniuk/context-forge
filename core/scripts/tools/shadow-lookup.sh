@@ -60,8 +60,10 @@ if [[ ! -d ".claude" ]] && [[ -d ".cursor" ]]; then
   IDE_DIR=".cursor"
 fi
 
-# Detect repo (context-forge by default)
-REPO="${_REPO:-context-forge}"
+# Detect repo. Defaulting to "context-forge" made every lookup in a foreign
+# checkout miss — the manifest refresh-manifest.sh writes is named after the repo
+# you are standing in.
+REPO="${_REPO:-$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")}"
 
 # Manifest path
 MANIFEST_PATH="$IDE_DIR/shadow/$REPO/_manifest.lightweight.yaml"
@@ -72,17 +74,29 @@ if [[ ! -f "$MANIFEST_PATH" ]]; then
   exit 1
 fi
 
-# Search manifest by symbol and optional kind/repo filter
-if [[ -n "$_KIND" ]]; then
-  # Filter by both symbol and kind
-  rg -A 2 "symbol:\s*${SYMBOL}$" "$MANIFEST_PATH" 2>/dev/null | \
-    rg -B 2 -A 2 "kind:\s*${_KIND}" | \
-    rg "file:|repo:" -o || echo "ERROR: symbol '$SYMBOL' (kind: $_KIND) not found"
-else
-  # Filter by symbol only
-  rg -A 3 "symbol:\s*${SYMBOL}$" "$MANIFEST_PATH" 2>/dev/null | \
-    rg "kind:|file:|repo:" -o || echo "ERROR: symbol '$SYMBOL' not found"
+# Search the manifest and emit the documented TSV: symbol<TAB>kind<TAB>file<TAB>repo.
+# The previous `rg "kind:|file:|repo:" -o` printed the bare field labels — the
+# pattern captured no values — so every successful lookup returned three useless
+# lines. One awk pass over the entry blocks instead.
+RESULT=$(awk -v want="$SYMBOL" -v kindf="$_KIND" '
+  /^  - symbol:/ { sym=$3; kind=""; file=""; repo=""; next }
+  /^    kind:/   { kind=$2; next }
+  /^    file:/   { file=$2; next }
+  /^    repo:/ {
+    repo=$2
+    if (sym == want && (kindf == "" || kind == kindf))
+      printf "%s\t%s\t%s\t%s\n", sym, kind, file, repo
+    sym=""
+  }
+' "$MANIFEST_PATH")
+
+if [[ -z "$RESULT" ]]; then
+  if [[ -n "$_KIND" ]]; then
+    echo "ERROR: symbol '$SYMBOL' (kind: $_KIND) not found in $MANIFEST_PATH"
+  else
+    echo "ERROR: symbol '$SYMBOL' not found in $MANIFEST_PATH"
+  fi
+  exit 1
 fi
 
-# Output as TSV for downstream processing
-# Format: symbol<TAB>kind<TAB>file<TAB>repo
+printf '%s\n' "$RESULT"

@@ -39,26 +39,13 @@ else
   IDE_DIR=".claude"  # fallback
 fi
 
-# Detect task type from branch name
-detect_task_type() {
-  local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
-
-  if [[ "$branch" =~ ^fix/ ]]; then
-    echo "bugfix"
-  elif [[ "$branch" =~ ^feat/ ]]; then
-    echo "new_feature"
-  elif [[ "$branch" =~ ^refactor/ ]]; then
-    echo "refactor"
-  elif [[ "$branch" =~ ^spike/ ]] || [[ "$branch" =~ ^research/ ]]; then
-    echo "spike"
-  elif [[ "$branch" =~ ^ipa-[0-9]+ ]]; then
-    # Jira ticket branches (ipa-NNN-description) — unknown task type
-    # Ticket type not determinable from prefix alone; downstream code uses heuristic
-    echo "unknown"
-  else
-    echo "unknown"
-  fi
-}
+# task_type detection lived here and fed nothing but two printed lines: the type
+# itself and a `rule_budget` figure no code or rule consumed. Rule 007, which the
+# lines referenced, routed on rule categories (domain/integration/boundary) that
+# this plugin never had — it was removed rather than wired to a taxonomy invented
+# to justify it. Rule loading is routed by concern through the rule-index skill.
+# hooks/diary-capture.sh still derives task_type for the diary record; that is a
+# real consumer and keeps its own copy.
 
 # Check manifest freshness for a repo
 check_manifest_freshness() {
@@ -70,14 +57,17 @@ check_manifest_freshness() {
     return 1
   fi
 
-  local generated=$(grep "^  generated:" "$manifest_path" | head -1 | awk '{print $2}' | tr -d '"')
-  local generated_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$generated" "+%s" 2>/dev/null || echo "0")
+  # rg, not grep — rule 005 bans grep, and this hook shipped violating it.
+  local generated=$(rg "^  generated:" "$manifest_path" 2>/dev/null | head -1 | awk '{print $2}' | tr -d '"')
+  # -u: the manifest stamps UTC. Parsing it as local time made a minute-old
+  # manifest report as hours old (and would report negative age east of UTC).
+  local generated_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$generated" "+%s" 2>/dev/null || echo "0")
   local now_epoch=$(date +%s)
   local age_seconds=$((now_epoch - generated_epoch))
   local age_hours=$((age_seconds / 3600))
   local age_days=$((age_hours / 24))
 
-  local symbols=$(grep "^  total_symbols:" "$manifest_path" | awk '{print $2}')
+  local symbols=$(rg "^  total_symbols:" "$manifest_path" 2>/dev/null | awk '{print $2}')
 
   if [ "$age_days" -lt 1 ]; then
     echo "✓ FRESH (${symbols} symbols, ${age_hours}h old)"
@@ -197,12 +187,11 @@ get_model_info() {
 }
 
 # Main execution
-TASK_TYPE=$(detect_task_type)
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
 # Detect active ticket — branch name is primary source, INDEX.yaml is fallback
 ACTIVE_TICKET=""
-BRANCH_TICKET=$(echo "$BRANCH" | grep -oE '(CRISP|IC|IMM)-[0-9]+' | head -1 || true)
+BRANCH_TICKET=$(echo "$BRANCH" | rg -o '(CRISP|IC|IMM)-[0-9]+' | head -1 || true)
 if [ -n "$BRANCH_TICKET" ]; then
   ACTIVE_TICKET="$BRANCH_TICKET"
 elif [ -f ~/worklogs/INDEX.yaml ]; then
@@ -282,17 +271,7 @@ if [ -f "$LEARNINGS_INDEX" ]; then
 fi
 
 echo ""
-echo "🎯 TASK CONTEXT:"
-echo "  task_type: $TASK_TYPE"
-echo "  branch: $BRANCH"
-
-case "$TASK_TYPE" in
-  bugfix) echo "  rule_budget: ~3k tokens (bugfix)" ;;
-  new_feature) echo "  rule_budget: ~9k tokens (new_feature)" ;;
-  refactor) echo "  rule_budget: ~5k tokens (refactor)" ;;
-  spike) echo "  rule_budget: ~2k tokens (spike)" ;;
-  *) echo "  rule_budget: ~5k tokens (unknown)" ;;
-esac
+echo "🎯 branch: $BRANCH"
 
 # Between-session event digest: where the last session left off + confidence gate.
 if [ -f "${PLUGIN_ROOT}/core/scripts/tools/session-digest.sh" ]; then
@@ -310,6 +289,11 @@ fi
 # rules 003/005 verbatim for ~250 tokens a session. Print a line only when it
 # tells the agent something it cannot already read off the always-on rules.
 
+# Rule 002 (shadow-index) went on-demand — it cost 655 tokens in every session of
+# every repo to describe a protocol most sessions never enter. These two lines
+# carry the operative part instead: with a manifest, the Tier 0 command to use;
+# without one, the single command that creates it. Everything else stays in the
+# rule, reachable through the rule-index skill.
 if [ "$REPO_COUNT" -gt 0 ]; then
   echo ""
   echo "📦 MANIFESTS:"
@@ -318,14 +302,32 @@ if [ "$REPO_COUNT" -gt 0 ]; then
     freshness=$(check_manifest_freshness "$repo_name" || true)
     echo "  $repo_name: $freshness"
   done < <(rg "\"name\": \"" "$REPOS_JSON" 2>/dev/null | sed 's/.*"name": "\([^"]*\)".*/\1/' || true)
-elif [ -n "$SHADOW_REPOS" ]; then
-  echo ""
-  echo "📦 MANIFESTS (unconfigured, found on disk):"
-  for repo_name in $SHADOW_REPOS; do
-    [ -z "$repo_name" ] && continue
-    freshness=$(check_manifest_freshness "$repo_name" || true)
-    echo "  $repo_name: $freshness"
-  done
+fi
+# The old "unconfigured, found on disk" fallback listed the current repo's own
+# manifest, which the SYMBOLS line below already reports — two lines for one fact.
+
+# Symbol lookup — one actionable line, only inside a git repo.
+CF_REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
+if [ -n "$CF_REPO_ROOT" ]; then
+  CF_REPO_NAME=$(basename "$CF_REPO_ROOT")
+  CF_MANIFEST="${IDE_DIR}/shadow/${CF_REPO_NAME}/_manifest.lightweight.yaml"
+  if [ -f "$CF_MANIFEST" ]; then
+    CF_SYMS=$(rg -c "^  - symbol:" "$CF_MANIFEST" 2>/dev/null || echo 0)
+    # An empty index is not worth a line — pointing at a lookup that can only
+    # miss is worse than silence.
+    if [ "$CF_SYMS" -gt 0 ]; then
+      echo ""
+      echo "🔎 SYMBOLS: ${CF_SYMS} indexed — \`shadow-lookup.sh --symbol X\` before reading source (rule 002)"
+    fi
+  else
+    # Only nudge where an index would actually pay for itself. A repo with a
+    # handful of source files is faster to read than to index.
+    CF_SRC=$(rg --files -g '*.{ts,tsx,js,jsx,mjs,py,php}' "$CF_REPO_ROOT" 2>/dev/null | rg -c . || echo 0)
+    if [ "$CF_SRC" -ge 30 ]; then
+      echo ""
+      echo "🔎 SYMBOLS: none indexed (${CF_SRC} source files) — run \`refresh-manifest.sh\` once to enable Tier 0 lookup"
+    fi
+  fi
 fi
 
 # rg missing is actionable (rule 005 bans grep, so search would be blocked).

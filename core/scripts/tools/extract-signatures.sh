@@ -59,31 +59,74 @@ echo ""
 # Count lines to decide strategy
 LINE_COUNT=$(wc -l < "$FILE" | tr -d ' ')
 
+FILE_BYTES=$(wc -c < "$FILE" | tr -d ' ')
+
 if [[ $LINE_COUNT -le 50 ]]; then
-  echo "## File ($LINE_COUNT lines) — reading directly"
-  cat "$FILE"
+  BODY="## File ($LINE_COUNT lines) — reading directly
+$(cat "$FILE")"
 else
-  echo "## Exported top-level symbols"
-  echo ""
-  rg -n "^export (default )?(abstract )?(class|interface|enum|type|function|const|let|var|async function)" "$FILE" 2>/dev/null || echo "  (none found)"
-  echo ""
+  # One pass over the top-level declarations, exported or not.
+  #
+  # This used to be three rg passes under three headings ("Exported top-level
+  # symbols", "All top-level declarations", "Public class members") whose
+  # matches almost entirely overlapped — the third pattern, an identifier
+  # followed by `:` or `(`, matches most lines of most files. On a 3456-byte
+  # module the tool emitted 4213 bytes: a signature extractor that cost more
+  # than reading the source it was meant to replace.
+  # TS/JS declarations, plus the PHP forms — `class`/`interface`/`trait`/
+  # `function`, optionally preceded by a visibility or abstract/final modifier.
+  # PHP was claimed as supported by the skill description, this script's own
+  # header and the rule table, while the pattern only ever matched `export …`:
+  # every PHP file produced an empty extraction.
+  DECLS=$(rg -n "^(export )?(default )?(public |protected |private )?(abstract |final )?(static )?(async )?(class|interface|trait|enum|type|function|const|let|var) " "$FILE" 2>/dev/null || true)
+  if [[ -z "$DECLS" ]]; then
+    DECLS="  (none found)"
+  fi
 
-  echo "## All top-level declarations"
-  echo ""
-  rg -n "^(export |async )?(class|interface|function|const|type|enum) " "$FILE" 2>/dev/null || echo "  (none found)"
-  echo ""
+  BODY="## Top-level declarations
 
-  echo "## Public class members"
-  echo ""
-  rg -n "(public |readonly |static |abstract )?[a-zA-Z_\$][a-zA-Z0-9_\$]*\s*[:\(]" "$FILE" 2>/dev/null | \
-    rg -v "(private |protected )" | \
-    head -40 || echo "  (none found)"
-  echo ""
+$DECLS"
 
-  echo "## Decorators (Angular, NestJS, etc.)"
-  echo ""
-  rg -n "^@(Component|Injectable|NgModule|Directive|Pipe|Input|Output|ViewChild|HostListener|Controller|Get|Post|Put|Delete)" "$FILE" 2>/dev/null | head -20 || true
+  # Class members are only worth a section when the file declares a class.
+  if rg -q "^\s*(export |default |abstract |final )*(class|trait) " "$FILE" 2>/dev/null; then
+    # Both `|| true`s are load-bearing under `set -o pipefail`: rg exits 1 on
+    # zero matches, so a class with no public members failed the assignment and
+    # killed the script instead of printing the declarations it had.
+    MEMBERS=$({ rg -n "^\s+(public |readonly |static |abstract |async |function )*[a-zA-Z_\$][a-zA-Z0-9_\$]*\s*[:\(]" "$FILE" 2>/dev/null || true; } \
+      | { rg -v "(private |protected )" || true; } | head -40)
+    # A plain `if`, not `[[ … ]] && …`: as the last command of this block the
+    # && list's failure aborted the script under `set -e` on any class file
+    # with no visible members.
+    if [[ -n "$MEMBERS" ]]; then
+      BODY="$BODY
+
+## Public class members
+
+$MEMBERS"
+    fi
+  fi
+
+  DECOS=$(rg -n "^@(Component|Injectable|NgModule|Directive|Pipe|Input|Output|ViewChild|HostListener|Controller|Get|Post|Put|Delete)" "$FILE" 2>/dev/null | head -20 || true)
+  if [[ -n "$DECOS" ]]; then
+    BODY="$BODY
+
+## Decorators
+
+$DECOS"
+  fi
 fi
+
+# The tool exists to cost less than reading the file. On a dense module that is
+# nearly all declarations it cannot — and reprinting the source here would only
+# add a header to it. Say so and send the caller to the file, which is the one
+# answer that is both cheaper and correct.
+BODY_BYTES=$(printf '%s' "$BODY" | wc -c | tr -d ' ')
+if [[ $LINE_COUNT -gt 50 && $BODY_BYTES -ge $FILE_BYTES ]]; then
+  BODY="## Extraction would cost more than the source ($BODY_BYTES B vs $FILE_BYTES B).
+## Read $FILE directly — it is almost entirely declarations."
+fi
+
+printf '%s\n' "$BODY"
 
 echo ""
 echo "METRICS:"
