@@ -25,7 +25,6 @@ bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/refresh-manifest.sh
 
 Optional flags:
 - `--repo <repo>` — regenerate for a specific repository only
-- `--force` — skip staleness check and always regenerate
 
 Step 2: Verify output shows `[MANIFEST GENERATED]` with FRESH verdict.
 

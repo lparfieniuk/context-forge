@@ -171,10 +171,88 @@ describe('extract-signatures.sh', () => {
     expect(r.stdout).toContain('Public class members');
   });
 
+  it('extracts PHP, which was claimed as supported but matched nothing', () => {
+    // The pattern only ever matched `export …`, so every PHP file produced an
+    // empty extraction — and a class file with no public members aborted the
+    // script under `set -e` with exit 1.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'context-forge-php-'));
+    const file = path.join(dir, 'sample.php');
+    const body = [
+      '<?php',
+      'class Billing {',
+      '    public function charge(int $amount): bool { return true; }',
+      '    private function secret(): void {}',
+      '}',
+      'function helper(string $s): string { return $s; }',
+    ];
+    for (let i = 0; i < 60; i++) body.push(`// filler ${i}`);
+    fs.writeFileSync(file, body.join('\n'), 'utf-8');
+
+    const r = run(file);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('class Billing');
+    expect(r.stdout).toContain('function helper');
+    expect(r.stdout).toContain('charge');
+    expect(r.stdout).not.toContain('secret'); // private stays private
+  });
+
+  it('exits 0 on a class file whose members are all private', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'context-forge-priv-'));
+    const file = path.join(dir, 'sample.php');
+    const body = ['<?php', 'class Vault {'];
+    for (let i = 0; i < 60; i++) body.push(`    private function h${i}(): void {}`);
+    body.push('}');
+    fs.writeFileSync(file, body.join('\n'), 'utf-8');
+    expect(run(file).status).toBe(0);
+  });
+
   it('reads a short file directly instead of extracting', () => {
     const r = run(tempSource(['export const a = 1;', 'export const b = 2;']));
     expect(r.stdout).toContain('reading directly');
     expect(r.stdout).toContain('export const b = 2;');
+  });
+});
+
+describe('skill docs vs script argument parsers', () => {
+  // Every flag a SKILL.md advertises must exist in the script it points at.
+  // Three did not: extract-signatures documented `--kind` and `--repo`,
+  // refresh-manifest `--force`, pack-context `--exclude`. All four are rejected
+  // with "ERROR: Unknown flag" and exit 1 — the doc was the only place they
+  // ever existed, and nothing compared the two.
+  const skillsDir = path.join(PLUGIN_ROOT, 'core/skills');
+  const toolsDir = path.join(PLUGIN_ROOT, 'core/scripts/tools');
+
+  const cases = fs
+    .readdirSync(skillsDir)
+    .map((skill) => ({ skill, md: path.join(skillsDir, skill, 'SKILL.md') }))
+    .filter(({ md }) => fs.existsSync(md))
+    .flatMap(({ skill, md }) => {
+      const body = fs.readFileSync(md, 'utf-8');
+      // Which tool scripts does this skill actually invoke?
+      const scripts = [...new Set([...body.matchAll(/tools\/([a-z0-9-]+)\.sh/g)].map((m) => m[1]))]
+        .filter((name) => fs.existsSync(path.join(toolsDir, `${name}.sh`)));
+      if (scripts.length !== 1) return []; // ambiguous or none — nothing to compare
+      // Only count a flag as *documented* when it heads a bullet — the shape a
+      // flag reference list uses. Prose that merely names a flag (including a
+      // sentence saying one does not exist) is not a claim about the parser.
+      const flags = [
+        ...new Set([...body.matchAll(/^\s*[-*]\s+`(--[a-z][a-z-]*)/gm)].map((m) => m[1])),
+      ];
+      return flags.length ? [{ skill, script: scripts[0], flags }] : [];
+    });
+
+  it('finds skills that document flags (guards against the scan silently matching nothing)', () => {
+    expect(cases.length).toBeGreaterThan(2);
+  });
+
+  it.each(cases)('$skill documents only flags $script accepts', ({ script, flags }) => {
+    const src = fs.readFileSync(path.join(toolsDir, `${script}.sh`), 'utf-8');
+    // Case labels alternate: `--log|--log-file)` accepts both.
+    const accepted = new Set(
+      [...src.matchAll(/^\s*(--[a-z][a-z-|]*)\)/gm)].flatMap((m) => m[1].split('|')),
+    );
+    const phantom = flags.filter((f) => !accepted.has(f));
+    expect(phantom).toEqual([]);
   });
 });
 
