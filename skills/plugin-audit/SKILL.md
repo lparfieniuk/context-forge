@@ -1,9 +1,6 @@
 ---
 name: plugin-audit
-description: >
-  Runs the repeatable ContextForge audit gate after change packages, before PRs or commits,
-  after convert, and after runtime artifact cleanup. Uses plugin-audit.sh as the only
-  supported entrypoint.
+description: Runs the ContextForge validation gates: index, parity, doc claims, rules, and tests. Use before a commit or after running convert.
 model: none
 ---
 

@@ -1,15 +1,6 @@
 ---
 name: evolve
-description: >
-  Runs the self-evolving loop v2 reviewer panel. Pre-filters signal, gates on
-  Evidence, then spawns a Fit/Cost/Risk Haiku panel, and writes human-gated
-  proposals (ADD/MODIFY/MERGE/PRUNE/REJECT) to <IDE_DIR>/evolve/pending/.
-  NEVER edits rules or skills — proposals only.
-  <example>
-  Context: SessionStart showed "SELF-EVOLVE: 7 new signals — run /evolve".
-  user: "/evolve"
-  assistant: "[EVOLVE DIGEST] 2 proposals written to .claude/evolve/pending/ — human approval needed."
-  </example>
+description: Reviews accumulated failure and diary signal, then writes human-gated rule proposals. Use when signal crosses threshold or on request. Never edits rules itself.
 model: sonnet
 ---
 

@@ -122,26 +122,31 @@ EOF
 # Validate the plugin manifest description counts against the index/source of truth.
 # Catches stale component claims (e.g. "4 agents" when there is 1) that the
 # markdown count parser above does not cover.
-PLUGIN_JSON="$PLUGIN_ROOT/.claude-plugin/plugin.json"
-if [[ -f "$PLUGIN_JSON" ]]; then
-  PLUGIN_DESC="$(rg -o '"description"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" | head -1)"
-  HOOK_COUNT="$(find "$PLUGIN_ROOT/hooks" -maxdepth 1 -name '*.sh' -type f 2>/dev/null | wc -l | tr -d ' ')"
+HOOK_COUNT="$(find "$PLUGIN_ROOT/hooks" -maxdepth 1 -name '*.sh' -type f 2>/dev/null | wc -l | tr -d ' ')"
 
-  check_plugin_count() {
-    local label="$1" actual="$2" claimed display
-    display="${label/\?/}"
-    claimed="$(printf '%s' "$PLUGIN_DESC" | sed -nE "s/.*[^0-9]([0-9]+) ${label}.*/\1/p")"
-    if [[ -n "$claimed" && "$claimed" != "$actual" ]]; then
-      record_failure ".claude-plugin/plugin.json" 4 "count mismatch" \
-        "description claims ${claimed} ${display}, actual ${actual}"
-    fi
-  }
+check_plugin_count() {
+  local label="$1" actual="$2" claimed display
+  display="${label/\?/}"
+  claimed="$(printf '%s' "$PLUGIN_DESC" | sed -nE "s/.*[^0-9]([0-9]+) ${label}.*/\1/p" | head -1)"
+  if [[ -n "$claimed" && "$claimed" != "$actual" ]]; then
+    record_failure "$MANIFEST_REL" 4 "count mismatch" \
+      "description claims ${claimed} ${display}, actual ${actual}"
+  fi
+}
+
+# Both manifests carry component counts in their descriptions; marketplace.json
+# drifted unnoticed while only plugin.json was audited. All "description" values
+# are concatenated because marketplace.json nests a second one under plugins[].
+for MANIFEST_REL in ".claude-plugin/plugin.json" ".claude-plugin/marketplace.json"; do
+  PLUGIN_JSON="$PLUGIN_ROOT/$MANIFEST_REL"
+  [[ -f "$PLUGIN_JSON" ]] || continue
+  PLUGIN_DESC="$(rg -o '"description"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" | tr '\n' ' ')"
 
   check_plugin_count "rules" "$RULE_COUNT"
   check_plugin_count "skills" "$SKILL_COUNT"
   check_plugin_count "agents?" "$AGENT_COUNT"
   check_plugin_count "hooks" "$HOOK_COUNT"
-fi
+done
 
 echo "[DOC CLAIMS AUDIT]"
 echo "- plugin-root: $PLUGIN_ROOT"

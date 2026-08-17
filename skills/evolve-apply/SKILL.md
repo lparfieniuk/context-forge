@@ -1,14 +1,6 @@
 ---
 name: evolve-apply
-description: >
-  Applies a human-approved /evolve proposal. Runs evolve-apply.sh to patch
-  core/, convert, and audit; reverts and records a failure ledger if the audit
-  fails. NEVER run without explicit human approval of the proposal.
-  <example>
-  Context: Human reviewed proposal abc12345 and approved it.
-  user: "/evolve-apply abc12345"
-  assistant: "[EVOLVE-APPLY] abc12345 applied — convert + audit green."
-  </example>
+description: Applies a human-approved evolve proposal, then converts, audits, and reverts on failure. Use only after explicit approval of a specific proposal id.
 model: haiku
 ---
 

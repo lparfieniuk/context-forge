@@ -1,13 +1,6 @@
 ---
 name: pre-review
-description: >
-  Gathers code review context (git diff, changed files, manifest freshness, impact radius) and
-  delegates to superpowers:requesting-code-review. Sets review marker to satisfy pre-commit hook.
-  <example>
-  Context: Feature implementation complete, about to commit
-  user: "/pre-review"
-  assistant: "Context gathered (14 files, impact radius 23). Delegating to superpowers:requesting-code-review."
-  </example>
+description: Gathers the diff, impact radius, and manifest freshness, then delegates to code review. Use before a commit or merge request.
 model: haiku
 ---
 

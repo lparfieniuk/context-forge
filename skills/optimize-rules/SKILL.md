@@ -1,13 +1,6 @@
 ---
 name: optimize-rules
-description: >
-  Audits all rules for token cost, detects cross-rule duplication, and suggests activation mode
-  changes to keep the always-on budget at or below 6k tokens. Reports full budget vs target.
-  <example>
-  Context: Rules have grown after several sessions; time to trim token cost
-  user: "/optimize-rules"
-  assistant: "Audit complete — always-on budget 7.2k (target ≤6k). 2 duplication clusters found. 3 mode-change suggestions."
-  </example>
+description: Audits ContextForge rules for token cost, cross-rule duplication, and wrong activation mode. Use when the always-on rule budget grows.
 model: sonnet
 ---
 

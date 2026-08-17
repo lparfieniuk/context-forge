@@ -1,12 +1,6 @@
 ---
 name: compile-wiki
-description: >
-  Karpathy Wiki pattern: reads source files for a domain, generates structured wiki pages (one per major concept/module), and builds an index. Stored persistently so future sessions read the index (~500 tokens) instead of raw source files.
-  <example>
-  Context: Starting work on the billing domain and need persistent reference docs.
-  user: "/compile-wiki --domain billing --sources libs/billing/src/"
-  assistant: "Running compile-wiki for billing domain — generates wiki pages and index at ~/worklogs/wiki/billing/."
-  </example>
+description: Compiles the source files of a domain into persistent wiki pages plus an index. Use to replace repeated source reading with a ~500-token index in later sessions.
 model: sonnet
 ---
 

@@ -10,6 +10,7 @@ globs: []
 NEVER let accumulated tool results exceed 30K tokens — ALWAYS clear with `context_management.edits` using `clear_tool_uses_20250919` at that threshold.
 NEVER use LLM summarization for re-fetchable tool results when clearing is available — clearing reduces serialized context without a summarization call.
 ALWAYS use `keep: {"type": "tool_uses", "value": N}` to retain recent tool uses when clearing older ones.
+NEVER hand-roll selective pruning that removes tool results from the middle of the array — it mutates the layout and invalidates the KV prefix from the edit point (rule 006). `clear_tool_uses_20250919` + `keep` clears the oldest contiguous span and is the ONLY sanctioned mechanism.
 ALWAYS send beta header `context-management-2025-06-27` when using `context_management.edits` (the SDK does not add it automatically).
 Accumulating tool results past 30K tokens is BANNED — it causes both cost bloat and context rot.
 

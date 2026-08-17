@@ -26,20 +26,21 @@
 | 002 | cf-shadow-index | always | NEVER read raw source for discovery — manifest first. NEVER skip Tier 1. |
 | 003 | cf-tier-routing | always | NEVER spawn Task() when Tier 0/1 exists. NEVER >2 concurrent Tier 3. |
 | 004 | cf-circuit-breaker | always | NEVER retry after 2nd identical failure. ALWAYS generate Failure Ledger YAML. |
-| 005 | cf-code-search | intelligent | NEVER use `grep` — BANNED, use `rg`. NEVER use `--json`/`--vimgrep` with rg. |
-| 006 | cf-prompt-caching | intelligent | NEVER interleave static files with conversation. NEVER put timestamps in system prompt. |
-| 007 | cf-context-loading | intelligent | ALWAYS detect task_type before loading rules. NEVER load domain rules for single-file fix. |
-| 008 | cf-worklog | intelligent | ALWAYS externalize to YAML scratchpads. ALWAYS read INDEX.yaml at session start. |
-| 009 | cf-module-index | intelligent | NEVER invent paths — ALWAYS check `core/_index.yaml` first. NEVER assume installed=source. |
+| 005 | cf-code-search | always | NEVER use `grep` — BANNED, use `rg`. NEVER use `--json`/`--vimgrep` with rg. |
+| 006 | cf-prompt-caching | on-demand | NEVER interleave static files with conversation. NEVER put timestamps in system prompt. |
+| 007 | cf-context-loading | on-demand | ALWAYS detect task_type before loading rules. NEVER load domain rules for single-file fix. |
+| 008 | cf-worklog | on-demand | ALWAYS externalize to YAML scratchpads. ALWAYS read INDEX.yaml at session start. |
+| 009 | cf-module-index | on-demand | NEVER invent paths — ALWAYS check `core/_index.yaml` first. NEVER assume installed=source. |
 | 010 | cf-context-budget | always | ALWAYS treat capacity as 60–70% of advertised window. NEVER spawn Tier 3 without checking capacity. |
-| 011 | cf-kernel-prompts | intelligent | ALWAYS use KERNEL template for every Task() prompt. NEVER spawn Task() with vague prompt. |
-| 012 | cf-rule-authoring | intelligent | ALWAYS use hard constraints: ALWAYS/NEVER/BANNED. NEVER mix constraints with guidance. |
-| 013 | cf-interleaved-thinking | intelligent | ALWAYS pass `effort` via `output_config` (never inside `thinking`). NEVER use `budget_tokens` on Opus 4.6+/Fable (400) — use adaptive thinking + effort. |
-| 014 | cf-tool-result-clearing | intelligent | NEVER let tool results exceed 30K tokens. NEVER use LLM summarization for re-fetchable tool results. |
-| 015 | cf-mcp-tools | intelligent | NEVER use an MCP tool when a Tier 0/1 alternative exists. NEVER run an uncapped Firecrawl crawl. |
-| 016 | cf-research-escalation | intelligent | ALWAYS local-first before web; research bounded (≤2 queries) before the halt. NEVER treat Reddit/forum as truth — lead, verify against docs/source. |
-| 017 | cf-cloud-execution | intelligent | NEVER submit a paid remote job without TTL + cancel path. NEVER re-push a mutable image tag and assume workers picked it up. |
-| 018 | cf-cost-model | intelligent | ALWAYS reason routing cost in dollars (doc-verified prices). NEVER price output like input (5x); ALWAYS Batch non-interactive work (50% off). |
+| 011 | cf-kernel-prompts | on-demand | ALWAYS use KERNEL template for every Task() prompt. NEVER spawn Task() with vague prompt. |
+| 012 | cf-rule-authoring | on-demand | ALWAYS use hard constraints: ALWAYS/NEVER/BANNED. NEVER mix constraints with guidance. |
+| 013 | cf-interleaved-thinking | on-demand | ALWAYS pass `effort` via `output_config` (never inside `thinking`). NEVER use `budget_tokens` on Opus 4.6+/Fable (400) — use adaptive thinking + effort. |
+| 014 | cf-tool-result-clearing | on-demand | NEVER let tool results exceed 30K tokens. NEVER use LLM summarization for re-fetchable tool results. |
+| 015 | cf-mcp-tools | on-demand | NEVER use an MCP tool when a Tier 0/1 alternative exists. NEVER run an uncapped Firecrawl crawl. |
+| 016 | cf-research-escalation | on-demand | ALWAYS local-first before web; research bounded (≤2 queries) before the halt. NEVER treat Reddit/forum as truth — lead, verify against docs/source. |
+| 017 | cf-cloud-execution | on-demand | NEVER submit a paid remote job without TTL + cancel path. NEVER re-push a mutable image tag and assume workers picked it up. |
+| 018 | cf-cost-model | on-demand | ALWAYS reason routing cost in dollars (doc-verified prices). NEVER price output like input (5x); ALWAYS Batch non-interactive work (50% off). |
+| 019 | cf-critical-response | always | NEVER open with praise/agreement; verdict first. ALWAYS carry the counter-position; reverse only on evidence, never on pushback. |
 
 ## Skills
 
@@ -62,6 +63,8 @@
 | workflow | evolve-apply | 1 | haiku | Apply a human-approved /evolve proposal; patch + convert + audit, revert on failure |
 | workflow | pre-review | 1 | haiku | Pre-commit review delegating to superpowers:requesting-code-review |
 | workflow | end-session | 1 | haiku | Session close-out: diary + learnings, commit, merge working branch |
+| workflow | session-handoff | 1 | haiku | Compress live state into a paste-able payload so `/clear` costs no context |
+| discovery | rule-index | 0 | haiku | Load an on-demand rule before the action it governs |
 | admin | optimize-rules | 2 | sonnet | Audit and optimize rules for token efficiency |
 | admin | plugin-audit | 1 | none | Validate plugin/index/parity gates via audit tooling |
 | admin | help | 0 | none | List available skills grouped by category |
@@ -91,3 +94,9 @@
 | Module map | `core/_index.yaml` | anywhere else |
 
 Run `npm run convert` after editing source files to propagate changes to installed paths.
+
+## Rule Activation Contract
+
+`.claude/rules/` is loaded as a project instruction on EVERY session — a file there costs its full token count unconditionally. Only `activation: always` rules earn a slot (7 rules, 6353 tokens). The 12 `on-demand` rules set `installed_claude: null` and are reached through the `rule-index` skill or read directly from `core/rules/`.
+
+`convert.ts` refuses to install a non-`always` rule, and `scripts/rule-activation.test.ts` fails if one regains an `installed_claude` path or if `rule-index` points at a missing file. Measured 2026-08-17: installing all of them always-on cost **14968 tokens per session** for rules that were authored to load conditionally.

@@ -263,10 +263,20 @@ fi
 # Cross-session recall: show 3 most recent learnings if available
 LEARNINGS_INDEX=~/worklogs/learnings/INDEX.yaml
 if [ -f "$LEARNINGS_INDEX" ]; then
-  RECENT_LEARNINGS=$( (rg "^  - " "$LEARNINGS_INDEX" 2>/dev/null || true) | tail -3 | sed 's/^/    /')
+  # A bare timestamp carries no information — the point of the index is recall,
+  # so emit ts + slug + repo. Same 3 lines, actually usable.
+  RECENT_LEARNINGS=$(awk '
+    /^  - ts:/   { if (ts != "") emit(); ts=$3; gsub(/"/,"",ts); slug=""; repo="" }
+    /^    slug:/ { slug=$2 }
+    /^    repo:/ { repo=$2 }
+    END { if (ts != "") emit() }
+    function emit() {
+      printf "  %s %s%s\n", ts, slug, (repo != "" ? " ("repo")" : "")
+    }
+  ' "$LEARNINGS_INDEX" 2>/dev/null | tail -3)
   if [ -n "$RECENT_LEARNINGS" ]; then
     echo ""
-    echo "📚 RECENT LEARNINGS (last 3):"
+    echo "📚 RECENT LEARNINGS:"
     echo "$RECENT_LEARNINGS"
   fi
 fi
@@ -293,74 +303,63 @@ if [ -f "${PLUGIN_ROOT}/core/scripts/tools/session-digest.sh" ]; then
   { bash "${PLUGIN_ROOT}/core/scripts/tools/session-digest.sh" 2>/dev/null | sed 's/^/  /'; } || true
 fi
 
-echo ""
-echo "📦 MANIFESTS:"
+# --- Actionable-only from here down -------------------------------------
+# This digest is injected into EVERY session in EVERY repo. A line that says
+# "ready", "indexed", or restates an always-on rule is pure cost: measured
+# 2026-08-17 the static blocks (TIERS, ROUTING, AGENTS, SEARCH) duplicated
+# rules 003/005 verbatim for ~250 tokens a session. Print a line only when it
+# tells the agent something it cannot already read off the always-on rules.
+
 if [ "$REPO_COUNT" -gt 0 ]; then
-  echo "  $REPO_COUNT repo(s) configured:"
-  # Check freshness for each configured repo
+  echo ""
+  echo "📦 MANIFESTS:"
   while IFS= read -r repo_name; do
     [ -z "$repo_name" ] && continue
     freshness=$(check_manifest_freshness "$repo_name" || true)
-    echo "    $repo_name: $freshness"
+    echo "  $repo_name: $freshness"
   done < <(rg "\"name\": \"" "$REPOS_JSON" 2>/dev/null | sed 's/.*"name": "\([^"]*\)".*/\1/' || true)
 elif [ -n "$SHADOW_REPOS" ]; then
-  echo "  (manifest-repos.json empty — shadow manifests found: $SHADOW_REPOS)"
-  # Check freshness for each shadow manifest
+  echo ""
+  echo "📦 MANIFESTS (unconfigured, found on disk):"
   for repo_name in $SHADOW_REPOS; do
     [ -z "$repo_name" ] && continue
     freshness=$(check_manifest_freshness "$repo_name" || true)
-    echo "    $repo_name: $freshness"
+    echo "  $repo_name: $freshness"
   done
-else
-  echo "  (no repos configured — run /refresh-manifest to generate)"
+fi
+
+# rg missing is actionable (rule 005 bans grep, so search would be blocked).
+# rg present is not — say nothing.
+if [ "$RG_STATUS" != "✓" ]; then
+  echo ""
+  echo "⚠ rg NOT available — rule 005 bans grep; install ripgrep before searching"
 fi
 
 echo ""
-echo "🔍 SEARCH: rg available $RG_STATUS | grep $GREP_STATUS"
-
-echo ""
 CAPACITY_STATUS=$(get_capacity_status "$HOOK_MODEL")
-echo "📊 CAPACITY:"
-echo "  estimated: $CAPACITY_STATUS"
-echo "  model: $(get_model_info)"
-echo "  threshold: WARNING at 60% | PRESSURE at 70% | CRITICAL at 80%"
+echo "📊 CAPACITY: $CAPACITY_STATUS | model: $(get_model_info)"
 
-echo ""
-echo "🤖 AGENTS:"
-echo "  cf-scribe: ready (haiku)"
-echo "  tier3_active: 0/2"
+# Integrations and MCP: report only what is MISSING or DOWN.
+INTEG_WARN=""
+[ "$(check_superpowers)" != "✓ detected" ] && INTEG_WARN="${INTEG_WARN} superpowers:$(check_superpowers)"
+for _srv in playwright chrome-devtools firecrawl-mcp glif; do
+  _st=$(check_mcp_server "$_srv")
+  [ "$_st" != "✓" ] && INTEG_WARN="${INTEG_WARN} ${_srv}:${_st}"
+done
+_kn=$(check_knowledge_live)
+case "$_kn" in *"⚠"*|*"✗"*) INTEG_WARN="${INTEG_WARN} knowledge:${_kn}" ;; esac
+if [ -n "$INTEG_WARN" ]; then
+  echo ""
+  echo "⚠ UNAVAILABLE:${INTEG_WARN}"
+fi
 
-echo ""
-echo "🧭 ROUTING:"
-echo "  enforce-tier-routing.sh: ready"
-echo "  route-to-tier.sh: indexed"
-
-echo ""
-echo "⚡ TIERS:"
-echo "  tier0: rg, diff, wc, git, shadow-lookup.sh"
-echo "  tier1: $SCRIPT_COUNT scripts indexed"
-echo "  tier2: Task(model: \"haiku\") — cf-scribe"
-echo "  tier3: Task(model: \"sonnet\") — max 2 concurrent"
-
-echo ""
-echo "🔌 INTEGRATIONS:"
-echo "  superpowers: $(check_superpowers)"
-echo "  code-review-graph: $(check_code_review_graph)"
-
-echo ""
-echo "🌐 MCP (see rule 015-cf-mcp-tools):"
-echo "  playwright $(check_mcp_server playwright) | chrome-devtools $(check_mcp_server chrome-devtools) | firecrawl-mcp $(check_mcp_server firecrawl-mcp) | glif $(check_mcp_server glif)"
-echo "  knowledge: $(check_knowledge_live)  [local ai_knowledge base, consumed via mcp__knowledge__*]"
-
-echo ""
-echo "🔁 SELF-EVOLVE:"
+# Self-evolve: only worth a line when it is actionable.
 EVOLVE_SIGNAL=$(bash "${PLUGIN_ROOT}/core/scripts/tools/evolve-signal.sh" 2>/dev/null || echo "SIGNAL 0 NO-SIGNAL")
 EVOLVE_COUNT=$(echo "$EVOLVE_SIGNAL" | awk '{print $2}')
 EVOLVE_STATE=$(echo "$EVOLVE_SIGNAL" | awk '{print $3}')
 if [ "$EVOLVE_STATE" = "READY" ]; then
-  echo "  SELF-EVOLVE: ${EVOLVE_COUNT} new signals — run /evolve"
-else
-  echo "  SELF-EVOLVE: ${EVOLVE_COUNT} new signals (below threshold)"
+  echo ""
+  echo "🔁 SELF-EVOLVE: ${EVOLVE_COUNT} new signals — run /evolve"
 fi
 
 echo ""

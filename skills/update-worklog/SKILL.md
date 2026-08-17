@@ -1,13 +1,6 @@
 ---
 name: update-worklog
-description: >
-  Appends a structured entry to the active ticket's worklog YAML when a significant decision,
-  phase completion, or cross-boundary impact is identified. Auto-extracts entity names from scope.
-  <example>
-  Context: Just chose ts-morph over string templates for codegen
-  user: "log: chose ts-morph for code generation"
-  assistant: "Appended entry to ~/worklogs/tickets/PROJ-3456.yaml"
-  </example>
+description: Appends a decision or phase-completion entry to the active ticket worklog. Use when a significant choice is made, never for routine steps.
 model: haiku
 ---
 

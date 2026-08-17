@@ -1,13 +1,6 @@
 ---
 name: session-learnings
-description: >
-  Captures key observations, anti-patterns, and rule improvement suggestions at the end of a
-  session. Writes a sharded YAML to ~/worklogs/learnings/YYYY/MM/ and updates the learnings index.
-  <example>
-  Context: End of a debugging session on manifest generation
-  user: "/session-learnings"
-  assistant: "Captured 3 observations, 1 anti-pattern, 2 rule suggestions → ~/worklogs/learnings/2026/04/2026-04-14-manifest-debug.yaml"
-  </example>
+description: Captures session observations, anti-patterns, and rule suggestions into the learnings index. Use at the end of a session that produced insights worth keeping.
 model: sonnet
 ---
 

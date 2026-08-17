@@ -123,11 +123,17 @@ RULEMD
 
 # Replace placeholders (BSD-compatible sed)
 TITLE="Rule ${NUMBER}: ${ID}"
-sed -i '' "s/RULE_TITLE/$TITLE/g" "$RULE_MD" 2>/dev/null || \
-  sed -i "s/RULE_TITLE/$TITLE/g" "$RULE_MD"
+# Escape sed replacement metacharacters — a title/description containing
+# "/", "|", "&" or "\" would otherwise break the s||| expression.
+_sed_escape() { printf '%s' "$1" | sed -e 's/[\\&|]/\\&/g'; }
+TITLE_ESC=$(_sed_escape "$TITLE")
+DESCRIPTION_ESC=$(_sed_escape "$DESCRIPTION")
 
-sed -i '' "s|DESCRIPTION_HERE|$DESCRIPTION|g" "$RULE_MD" 2>/dev/null || \
-  sed -i "s|DESCRIPTION_HERE|$DESCRIPTION|g" "$RULE_MD"
+sed -i '' "s|RULE_TITLE|$TITLE_ESC|g" "$RULE_MD" 2>/dev/null || \
+  sed -i "s|RULE_TITLE|$TITLE_ESC|g" "$RULE_MD"
+
+sed -i '' "s|DESCRIPTION_HERE|$DESCRIPTION_ESC|g" "$RULE_MD" 2>/dev/null || \
+  sed -i "s|DESCRIPTION_HERE|$DESCRIPTION_ESC|g" "$RULE_MD"
 
 # Write .yaml metadata
 cat > "$RULE_YAML" <<YAML

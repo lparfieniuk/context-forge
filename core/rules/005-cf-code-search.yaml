@@ -2,11 +2,11 @@ id: cf-code-search
 number: 005
 name: "Code Search"
 activation:
-  mode: intelligent
+  mode: always
   description: "rg enforcement, progressive disclosure, context flags, no grep."
   patterns: [grep, rg, search, find files, locate symbol]
 cursor:
-  alwaysApply: false
+  alwaysApply: true
 claude:
   skip_on_bugfix: true
   rule_file: true

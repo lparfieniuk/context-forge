@@ -1,13 +1,6 @@
 ---
 name: record-failure
-description: >
-  Creates a sharded failure ledger YAML at <IDE_DIR>/lessons/ when an unrecoverable error or
-  circuit-breaker halt occurs. Checks for 3-strike patterns and auto-triggers /evolve.
-  <example>
-  Context: npm run build failed twice with the same TS error (circuit breaker triggered)
-  user: "[CIRCUIT_BREAKER_HALT] — recording failure"
-  assistant: "Written .claude/lessons/2026/04/14/a1/a1b2c3d4-barrel-export-missing.yaml"
-  </example>
+description: Writes a sharded failure ledger YAML and checks for a 3-strike cross-session pattern. Use on an unrecoverable error or a circuit-breaker halt.
 model: haiku
 ---
 

@@ -17,6 +17,7 @@ NEVER use 5-min TTL for rules accessed less than once per 5 minutes — ALWAYS u
 NEVER exceed 4 cache breakpoints total (1 tools, 1 system, 2 messages).
 ALWAYS add a second cache breakpoint if conversation exceeds 20 message blocks.
 NEVER assume thinking blocks are free for caching — they invalidate KV cache in tool-heavy flows.
+NEVER prune or evict context from the MIDDLE of the message array — any mutation that shifts the layout behind an existing breakpoint causes a prefix mismatch and invalidates the cache from that point on. ALWAYS clear the OLDEST CONTIGUOUS block and keep the suffix layout stable (`keep: {"type": "tool_uses", "value": N}` does exactly this). TokenPilot (arXiv:2606.17016, abstract verified 2026-08-17) names this as the failure of naive text-pruning/memory-eviction schemes; its prefix-stabilising design reports 56–61% cost reduction in isolated mode and up to 87% in continuous mode.
 NEVER let tool results accumulate past 30K tokens — ALWAYS use `context_management.edits` with `clear_tool_uses_20250919` to clear re-fetchable results.
 ALWAYS use documented compaction controls only; SDK compaction uses `compaction_control` / `compactionControl`.
 
@@ -49,6 +50,8 @@ Max breakpoints: 4 total (1 tools, 1 system, 2 messages). System checks up to 20
 | Modify beginning of prompt | Cache invalidated |
 | Re-attach same bundle | Prefix broken → full re-tokenization |
 | Insert timestamp in system prompt | Cache invalidated every request |
+| Clear oldest contiguous tool results | Cache preserved — suffix layout unchanged |
+| Prune/evict a block from the middle | Prefix mismatch → cache invalid from that point |
 
 ## Context Management API
 

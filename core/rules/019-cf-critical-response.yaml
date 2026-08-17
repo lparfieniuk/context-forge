@@ -1,0 +1,13 @@
+id: cf-critical-response
+number: 019
+name: "Critical Response (Anti-Sycophancy)"
+activation:
+  mode: always
+  description: "Verdict-first, no praise openers, mandatory counter-position, verification before agreement, per-shape response budget"
+  patterns: []
+cursor:
+  alwaysApply: true
+claude:
+  include_in_claude_md: true
+  rule_file: true
+content_file: 019-cf-critical-response.md
