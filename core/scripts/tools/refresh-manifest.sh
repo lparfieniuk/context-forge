@@ -129,9 +129,15 @@ generate_manifest_for_repo() {
           "${SCAN_ARGS[@]}" 2>/dev/null || true
       } | awk -v repo="$repo_name" -v root="$repo_path/" '
         {
-          # rg emits "<path>:CF<kind>|CF<name>" — split on the marker so a colon
-          # inside the path cannot be mistaken for the separator.
-          i = index($0, ":CF")
+          # rg emits "<path>:CF<kind>|CF<name>". The payload is always the tail,
+          # so scan for the LAST marker: a path that itself contains ":CF"
+          # (legal on Unix) would otherwise split in the wrong place and yield a
+          # truncated path with the rest of it glued onto the kind.
+          i = 0
+          for (k = index($0, ":CF"); k > 0; k = index(substr($0, i + 1), ":CF")) {
+            i = i + k
+            if (i + 3 > length($0)) break
+          }
           if (i == 0) next
           file = substr($0, 1, i - 1)
           rest = substr($0, i + 3)

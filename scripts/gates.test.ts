@@ -213,6 +213,64 @@ describe('extract-signatures.sh', () => {
   });
 });
 
+describe('refresh-manifest.sh + shadow-lookup.sh round trip', () => {
+  const REFRESH = path.join(PLUGIN_ROOT, 'core/scripts/tools/refresh-manifest.sh');
+  const LOOKUP = path.join(PLUGIN_ROOT, 'core/scripts/tools/shadow-lookup.sh');
+
+  function makeRepo(files: Record<string, string>): string {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cfrepo-'));
+    spawnSync('git', ['init', '-q', '.'], { cwd: dir });
+    for (const [rel, body] of Object.entries(files)) {
+      const full = path.join(dir, rel);
+      fs.mkdirSync(path.dirname(full), { recursive: true });
+      fs.writeFileSync(full, body, 'utf-8');
+    }
+    return dir;
+  }
+
+  it('indexes a repo that has no config entry and no .claude dir', () => {
+    // Both were hard failures: the config was the only source of targets, and a
+    // missing .claude/ exited 1 — the foreign-repo case the tool exists for.
+    const dir = makeRepo({ 'src/a.ts': 'export function alpha(): number { return 1; }\n' });
+    const r = spawnSync('bash', [REFRESH], { cwd: dir, encoding: 'utf-8' });
+    expect(r.status).toBe(0);
+    const found = spawnSync('bash', [LOOKUP, '--symbol', 'alpha'], { cwd: dir, encoding: 'utf-8' });
+    expect(found.status).toBe(0);
+    expect(found.stdout.trim().split('\t')).toEqual(['alpha', 'function', 'src/a.ts', path.basename(dir)]);
+  });
+
+  it('survives a path containing the :CF field marker', () => {
+    // The awk parser split on the FIRST ":CF"; a directory legally named with
+    // that sequence truncated the path and glued its tail onto the kind.
+    const dir = makeRepo({
+      'src/we:CFird/mod.ts': 'export function alpha(): number { return 1; }\n',
+    });
+    spawnSync('bash', [REFRESH], { cwd: dir, encoding: 'utf-8' });
+    const found = spawnSync('bash', [LOOKUP, '--symbol', 'alpha'], { cwd: dir, encoding: 'utf-8' });
+    expect(found.stdout.trim().split('\t')[2]).toBe('src/we:CFird/mod.ts');
+  });
+
+  it('exits 1 and says so when the symbol is absent', () => {
+    const dir = makeRepo({ 'src/a.ts': 'export function alpha(): number { return 1; }\n' });
+    spawnSync('bash', [REFRESH], { cwd: dir, encoding: 'utf-8' });
+    const miss = spawnSync('bash', [LOOKUP, '--symbol', 'nope'], { cwd: dir, encoding: 'utf-8' });
+    expect(miss.status).toBe(1);
+    expect(miss.stdout).toContain('not found');
+  });
+
+  it('stamps a timestamp the session-start freshness parser can read', () => {
+    const dir = makeRepo({ 'src/a.ts': 'export function alpha(): number { return 1; }\n' });
+    spawnSync('bash', [REFRESH], { cwd: dir, encoding: 'utf-8' });
+    const manifest = fs.readFileSync(
+      path.join(dir, '.claude/shadow', path.basename(dir), '_manifest.lightweight.yaml'),
+      'utf-8',
+    );
+    // Raw epoch here made every manifest parse as epoch 0 and report BROKEN.
+    expect(manifest).toMatch(/generated: "\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"/);
+    expect(manifest).toMatch(/total_symbols: 1/);
+  });
+});
+
 describe('tool scripts expose --help', () => {
   // 30 of 32 did. `task-init.sh` answered "Unknown arg: --help" (exit 1) and
   // `evolve-apply.sh` treated the flag as a proposal id and went looking for
