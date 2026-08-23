@@ -350,6 +350,17 @@ tools:
     tags: [audit, gate, validation, parity, runtime-artifacts, docs, surface]
     routing_key: "tier1:audit"
 
+  - id: audit-portability
+    file: tools/audit-portability.sh
+    description: "Harness-coupling gate: core/skills + core/agents must reference the plugin root only via <CF_PLUGIN_ROOT>; dist/AGENTS.md must be fully resolved."
+    params:
+      - name: --plugin-root
+        required: false
+        description: "Path to plugin root (default: auto-detected from script location)"
+    output: "[AUDIT PORTABILITY] PASS/SKIP lines per check plus STATUS. Exit non-zero on any harness-env leak."
+    tags: [audit, portability, agnostic, gate]
+    routing_key: "tier1:portability"
+
 lib:
   - id: yaml
     file: lib/yaml.sh

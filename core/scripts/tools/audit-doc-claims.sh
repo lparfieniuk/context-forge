@@ -1,19 +1,27 @@
 #!/usr/bin/env bash
 # audit-doc-claims.sh — verify active docs do not contain stale ContextForge claims.
 #
+# Also emits WARN lines for doctrine whose verification dates have aged past
+# --staleness-days (default 60): rules carry dated claims ("verified 2026-07-21")
+# precisely so they can be re-checked; without a gate the re-check never happens
+# and the rule keeps asserting with confident tone long after its evidence rotted.
+# WARN does not fail the gate — plugin-audit surfaces the count next to PASS.
+#
 # Usage:
-#   bash core/scripts/tools/audit-doc-claims.sh [--plugin-root <path>]
+#   bash core/scripts/tools/audit-doc-claims.sh [--plugin-root <path>] [--staleness-days <n>]
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+STALENESS_DAYS=60
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --plugin-root) PLUGIN_ROOT="$2"; shift 2 ;;
+    --staleness-days) STALENESS_DAYS="$2"; shift 2 ;;
     --help|-h)
-      echo "Usage: audit-doc-claims.sh [--plugin-root <path>]"
+      echo "Usage: audit-doc-claims.sh [--plugin-root <path>] [--staleness-days <n>]"
       exit 0
       ;;
     *) echo "Unknown arg: $1" >&2; exit 1 ;;
@@ -44,8 +52,9 @@ count_section() {
 RULE_COUNT="$(count_section "rules")"
 SKILL_COUNT="$(count_section "skills")"
 AGENT_COUNT="$(count_section "agents")"
+STALE_TMPFILE="$(mktemp "${TMPDIR:-/tmp}/doc-claims-stale.XXXXXX")"
 TMPFILE="$(mktemp "${TMPDIR:-/tmp}/doc-claims.XXXXXX")"
-trap 'rm -f "$TMPFILE"' EXIT
+trap 'rm -f "$TMPFILE" "$STALE_TMPFILE"' EXIT
 
 DOCS="
 README.md
@@ -148,9 +157,59 @@ for MANIFEST_REL in ".claude-plugin/plugin.json" ".claude-plugin/marketplace.jso
   check_plugin_count "hooks" "$HOOK_COUNT"
 done
 
+# ---------------------------------------------------------------------------
+# Dated-claim staleness: rules must re-verify their evidence, not just carry it.
+# Scans doctrine (core/rules/000–799; the gitignored 800–899 range is
+# local-only and exempt) for verification dates and WARNs past the threshold.
+# Historical records (ADRs, CHANGELOG) are exempt by design.
+# ---------------------------------------------------------------------------
+
+TODAY_ISO="$(date +%Y-%m-%d)"
+stale_count=0
+
+for rule_file in "$PLUGIN_ROOT"/core/rules/[0-7]*.md; do
+  [[ -f "$rule_file" ]] || continue
+  rel="core/rules/$(basename "$rule_file")"
+  LC_ALL=C awk -v today="$TODAY_ISO" -v threshold="$STALENESS_DAYS" -v rel="$rel" '
+    function days_from_civil(y, m, d) {
+      y -= (m <= 2);
+      era = int(y / 400);
+      yoe = y - era * 400;
+      doy = int((153 * (m + ((m > 2) ? -3 : 9)) + 2) / 5) + d - 1;
+      doe = yoe * 365 + int(yoe / 4) - int(yoe / 100) + doy;
+      return era * 146097 + doe - 719468;
+    }
+    {
+      line = $0
+      re = "(verified|measured|re-checked|checked)[^0-9]{0,40}[0-9]{4}-[0-9]{2}-[0-9]{2}"
+      pos = match(line, re)
+      while (pos > 0) {
+        frag_len = RLENGTH
+        frag = substr(line, pos, frag_len)
+        match(frag, /[0-9]{4}-[0-9]{2}-[0-9]{2}/)
+        iso = substr(frag, RSTART, RLENGTH)
+        split(iso, p, "-")
+        age = days_from_civil(substr(today,1,4)+0, substr(today,6,2)+0, substr(today,9,2)+0) \
+            - days_from_civil(p[1]+0, p[2]+0, p[3]+0)
+        if (age > threshold + 0) {
+          printf "WARN: %s:%d: %s verified %d days ago (> %s)\n", rel, NR, iso, age, threshold
+        }
+        line = substr(line, pos + frag_len)
+        pos = match(line, re)
+      }
+    }
+  ' "$rule_file" >> "$STALE_TMPFILE"
+done
+
+if [[ -s "$STALE_TMPFILE" ]]; then
+  stale_count="$(wc -l < "$STALE_TMPFILE" | tr -d ' ')"
+fi
+sed 's/^/  /' "$STALE_TMPFILE"
+
 echo "[DOC CLAIMS AUDIT]"
 echo "- plugin-root: $PLUGIN_ROOT"
 echo "- index-counts: rules=$RULE_COUNT skills=$SKILL_COUNT agents=$AGENT_COUNT"
+echo "- dated-claims: ${stale_count} stale (>${STALENESS_DAYS}d), rest fresh"
 
 if [[ -s "$TMPFILE" ]]; then
   echo "- stale-claims: FAIL"

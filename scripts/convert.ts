@@ -3,6 +3,7 @@
  *
  * Reads core/_index.yaml and distributes modules to IDE-specific installed paths:
  *   - Skills:  core/skills/<id>/SKILL.md → skills/<id>/SKILL.md  (Claude Code)
+ *              resolves <CF_PLUGIN_ROOT> → ${CLAUDE_PLUGIN_ROOT}
  *   - Rules:   core/rules/<NNN>-cf-<id>.md + .yaml → .cursor/rules/<NNN>-cf-<id>.mdc
  *              core/rules/<NNN>-cf-<id>.md → .claude/rules/<id>.md
  *   - Agents:  core/agents/<id>.md → agents/<id>.md AND .cursor/agents/<id>.md
@@ -125,6 +126,21 @@ function loadIndex(indexPath: string): ModuleIndex {
 }
 
 // ---------------------------------------------------------------------------
+// Harness placeholder resolution
+//
+// Source files in core/ are harness-neutral: they reference the plugin root as
+// <CF_PLUGIN_ROOT>. Each emit target resolves it to that target's convention:
+//   - Claude Code: ${CLAUDE_PLUGIN_ROOT} (set by the plugin loader)
+//   - AGENTS.md family: the absolute path of this repo (no env var exists)
+// ---------------------------------------------------------------------------
+
+const PLUGIN_ROOT_PLACEHOLDER = /<CF_PLUGIN_ROOT>/g;
+
+function resolveForClaude(content: string): string {
+  return content.replace(PLUGIN_ROOT_PLACEHOLDER, '${CLAUDE_PLUGIN_ROOT}');
+}
+
+// ---------------------------------------------------------------------------
 // Rules: Cursor gets .mdc frontmatter; Claude gets source markdown as-is
 // ---------------------------------------------------------------------------
 
@@ -203,7 +219,8 @@ function convertSkills(
 
     try {
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
-      fs.copyFileSync(sourcePath, destPath);
+      const content = resolveForClaude(fs.readFileSync(sourcePath, 'utf-8'));
+      fs.writeFileSync(destPath, content, 'utf-8');
       result.written.push(skill.installed_claude);
     } catch (err) {
       result.errors.push({ file: skill.installed_claude, error: String(err) });

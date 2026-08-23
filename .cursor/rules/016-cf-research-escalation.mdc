@@ -40,7 +40,7 @@ Research NEVER adds a third attempt: the sequence stays fail → (research) retr
 | Library bug / regression | GitHub issues + release notes / CHANGELOG | Reddit |
 | "Does X work with Y" / approach / gotcha | Official docs | Reddit / forum / blog |
 
-Authority order: **official docs / source > GitHub issue > forum / Reddit**. Reddit is a strong lead source for version quirks and gotchas but is NEVER the final authority — same lead-not-truth discipline as the local ai-knowledge base (rule 015).
+Authority order: **official docs / source > GitHub issue > forum / Reddit**. Reddit is a strong lead source for version quirks and gotchas but is NEVER the final authority — same lead-not-truth discipline as any curated local source (e.g. a local knowledge base; see 815-cf-mcp-private if present on this machine).
 
 ## Tool Mapping (see rule 015-cf-mcp-tools)
 

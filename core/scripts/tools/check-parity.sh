@@ -43,6 +43,13 @@ INDEX_FILE="$PLUGIN_ROOT/core/_index.yaml"
 TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/check-parity.XXXXXX")"
 trap 'rm -rf "$TMPDIR"' EXIT
 
+# Sources reference the plugin root as the neutral <CF_PLUGIN_ROOT> placeholder;
+# convert.ts resolves it to ${CLAUDE_PLUGIN_ROOT} when installing for Claude Code.
+# Parity therefore compares the RESOLVED source against the installed artifact.
+normalize_claude_content() {
+  sed 's/<CF_PLUGIN_ROOT>/${CLAUDE_PLUGIN_ROOT}/g' "$1"
+}
+
 normalize_rule_content() {
   local file="$1"
   awk '
@@ -98,7 +105,7 @@ if [[ -d "$SKILLS_INSTALLED" ]]; then
     if [[ ! -f "$source_file" ]]; then
       echo "  ORPHAN: skills/$skill_name/SKILL.md (no source in core/skills/)"
       ORPHANS=$((ORPHANS + 1))
-    elif ! diff -qB "$source_file" "$installed" > /dev/null 2>&1; then
+    elif ! diff -qB <(normalize_claude_content "$source_file") "$installed" > /dev/null 2>&1; then
       echo "  DRIFT: core/skills/$skill_name/SKILL.md differs from skills/$skill_name/SKILL.md"
       DRIFT=$((DRIFT + 1))
     fi
@@ -135,7 +142,7 @@ for ide_dir in "agents" ".cursor/agents"; do
       if [[ ! -f "$source_file" ]]; then
         echo "  ORPHAN: $ide_dir/$fname (no source in core/agents/)"
         ORPHANS=$((ORPHANS + 1))
-      elif ! diff -qB "$source_file" "$installed" > /dev/null 2>&1; then
+      elif ! diff -qB <(normalize_claude_content "$source_file") "$installed" > /dev/null 2>&1; then
         echo "  DRIFT: core/agents/$fname differs from $ide_dir/$fname"
         DRIFT=$((DRIFT + 1))
       fi

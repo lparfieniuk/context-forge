@@ -1,0 +1,24 @@
+# Harness capability profile — Cursor.
+id: cursor
+display_name: Cursor
+family: cursor                 # emitter family: .mdc rules
+instructions:
+  project_rules_dir: .cursor/rules   # .mdc files with description/alwaysApply/globs frontmatter
+  skills_dir: null                   # no SKILL.md support — rules carry procedures instead
+  agents_dir: .cursor/agents
+  slash_commands: false
+capabilities:
+  hooks: none                        # no lifecycle hooks — enforcement degrades to rule-text (LLM compliance)
+  subagent_tool: null                # no user-spawnable subagent tool
+  subagent_model_param: false
+  skills_format: null
+  deterministic_enforcement: false
+models:                              # model routing is configured in Cursor, not addressable from rules
+  tier2: null
+  tier3: null
+  tier3plus: null
+notes: >
+  Rules + cf-scribe agent + Shadow Index only. Tier routing applies to the
+  agent's own effort allocation, not to spawned workers. Without hooks,
+  NEVER/ALWAYS enforcement relies on model compliance — keep always-on rules
+  small and let checklists do the gating.

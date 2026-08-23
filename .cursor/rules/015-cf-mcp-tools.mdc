@@ -21,17 +21,7 @@ ALWAYS treat MCP tool output >3KB the same as any other tool result under rule 0
 
 ## Server Inventory
 
-| Server | Type | Purpose | Config key |
-|---|---|---|---|
-| `playwright` | stdio (`npx @playwright/mcp@latest`) | Scripted browser interaction/testing (click, fill, navigate, assert) | global `~/.claude.json` → `mcpServers.playwright` |
-| `chrome-devtools` | stdio (`npx chrome-devtools-mcp@latest --headless --isolated` + screenshot caps, see below) | Live debugging: console, network, performance traces, lighthouse, emulation, heap snapshots | `mcpServers.chrome-devtools` |
-| `firecrawl-mcp` | stdio (`npx firecrawl-mcp`) | Web scrape/crawl/search/extract into clean markdown or schema-typed JSON | `mcpServers.firecrawl-mcp` (needs `FIRECRAWL_API_KEY`) |
-| `glif` | stdio (`npx @glifxyz/glif-mcp-server@latest`) | Run a hosted glif.app workflow (image/video/LLM pipelines) by ID | `mcpServers.glif` (needs `GLIF_API_TOKEN`) |
-| `knowledge` | sse (`http://localhost:3711/mcp`) | Query the local ai_knowledge base (`search_knowledge`, `recent_entries`, `search_by_tags`, `list_tags`, `get_entry`) for agent/context-engineering leads | `mcpServers.knowledge` |
-
-`FIRECRAWL_API_KEY` and `GLIF_API_TOKEN` are placeholders in the global config until the user supplies real keys — both servers will fail to authenticate until then.
-
-`knowledge` is different from the other four: it is **local and stateful**, served by the `ai_knowledge` backend (`~/Projects/ai_knowledge`) which runs under **DevHub** on fixed port **3711**. It is the only MCP with a real HTTP liveness endpoint (`/health`), so the SessionStart digest checks it live, not just for config presence. If DevHub is not running, every `mcp__knowledge__*` call fails — start it from the DevHub UI (http://localhost:8080) before relying on the knowledge base. Prefer `search_by_tags`/`search_knowledge` with a specific query over `recent_entries` dumps (187+ entries); route any result >3KB through rule 014 like every other MCP output. When an entry here feeds ContextForge, tag it `context-forge` in the base (`search_by_tags(["context-forge"])` = full crossover history).
+NEVER maintain a concrete server inventory in this rule — which servers exist on the current machine is per-user configuration, not doctrine. The local inventory (ports, config keys, credential env vars) lives in `815-cf-mcp-private.md` — range 800–899, gitignored, never shipped. This rule stays server-agnostic; the decision tree and optimization notes below use common public servers (`playwright`, `chrome-devtools`, `firecrawl-mcp`, `glif`) as standing examples.
 
 ## Decision Tree: playwright vs chrome-devtools
 

@@ -6,7 +6,7 @@ model: haiku
 
 ## What This Does
 
-Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/extract-signatures.sh --file <path>` and returns the file's declaration lines — the `line:source` of each top-level declaration, plus public class members and framework decorators when the file has any. Bodies are not shown because the lines that open them are not followed. Supports TypeScript/JavaScript and PHP. Always reads live source — no cache.
+Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/extract-signatures.sh --file <path>` and returns the file's declaration lines — the `line:source` of each top-level declaration, plus public class members and framework decorators when the file has any. Bodies are not shown because the lines that open them are not followed. Supports TypeScript/JavaScript and PHP. Always reads live source — no cache.
 
 Files of 50 lines or fewer are printed in full: below that size extraction saves nothing. If the extraction would be no smaller than the source (a module that is almost entirely declarations), the tool says so and tells you to read the file instead — it never costs more than the Read it replaces.
 
@@ -19,7 +19,7 @@ Files of 50 lines or fewer are printed in full: below that size extraction saves
 ## How to Use
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/extract-signatures.sh --file <path/to/file.ts>
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/extract-signatures.sh --file <path/to/file.ts>
 ```
 
 `--file` is the only argument. There is no `--kind` and no `--repo`; the script

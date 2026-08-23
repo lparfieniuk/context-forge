@@ -91,8 +91,9 @@
 | Skills | `core/skills/<id>/SKILL.md` | `skills/<id>/SKILL.md` |
 | Agents | `core/agents/<id>.md` | `agents/<id>.md`, `.cursor/agents/<id>.md` |
 | Module map | `core/_index.yaml` | anywhere else |
+| Harness profiles | `harnesses/<id>.yaml` | — (consumed by emitters, not edited ad hoc) |
 
-Run `npm run convert` after editing source files to propagate changes to installed paths.
+Run `npm run convert` after editing source files to propagate changes to installed paths. Run `npm run emit:agents` to regenerate the AGENTS.md-family distillation (`dist/AGENTS.md`, gitignored). Skills and agents sources reference the plugin root only as `<CF_PLUGIN_ROOT>`; each emitter resolves it for its harness — `audit-portability.sh` gates this on every plugin-audit run.
 
 ## Rule Activation Contract
 

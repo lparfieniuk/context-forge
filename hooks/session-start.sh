@@ -103,7 +103,7 @@ check_code_review_graph() {
   fi
 }
 
-# Check global ~/.claude.json mcpServers for a given server key (rule 015-cf-mcp-tools)
+# Check global ~/.claude.json mcpServers for a given server key (see 815-cf-mcp-private)
 check_mcp_server() {
   local key="$1"
   if [ -f "$HOME/.claude.json" ] && rg -q "\"$key\":" "$HOME/.claude.json" 2>/dev/null; then

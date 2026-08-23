@@ -6,7 +6,7 @@ model: none
 
 ## What This Does
 
-Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/shadow-lookup.sh --symbol <name>` against the pre-built lightweight shadow manifest. Returns a TSV-formatted result with symbol name, kind (class/interface/function/type), file path, and repository. Auto-detects IDE for manifest location. Cost: ~50 tokens per lookup (vs ~30k for reading the full manifest).
+Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/shadow-lookup.sh --symbol <name>` against the pre-built lightweight shadow manifest. Returns a TSV-formatted result with symbol name, kind (class/interface/function/type), file path, and repository. Auto-detects IDE for manifest location. Cost: ~50 tokens per lookup (vs ~30k for reading the full manifest).
 
 ## When to Use
 
@@ -18,7 +18,7 @@ Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/shadow-lookup.sh --symbol <n
 ## How to Use
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/shadow-lookup.sh --symbol <SymbolName>
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/shadow-lookup.sh --symbol <SymbolName>
 ```
 
 Optional flags:

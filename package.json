@@ -1,12 +1,13 @@
 {
   "name": "context-forge",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "Deterministic context engineering for AI coding agents",
   "scripts": {
     "convert": "ts-node scripts/convert.ts --target both",
     "convert:claude": "ts-node scripts/convert.ts --target claude",
     "convert:cursor": "ts-node scripts/convert.ts --target cursor",
+    "emit:agents": "ts-node scripts/emit-agents-md.ts --harness opencode",
     "generate-manifest": "ts-node scripts/generate-manifest.ts",
     "validate-index": "bash core/scripts/tools/validate-index.sh --plugin-root .",
     "test": "vitest run scripts",

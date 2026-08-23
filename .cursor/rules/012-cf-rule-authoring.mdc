@@ -93,8 +93,8 @@ If any unchecked → fix before returning output.
 **Reasoning:** New rule → YAML+MD dual format. Must have SYSTEM CONSTRAINTS at top, few-shot, validation gate.
 **Output:**
 ```
-core/rules/015-cf-api-boundary.yaml  — metadata (mode: intelligent, alwaysApply: false)
-core/rules/015-cf-api-boundary.md    — content (SYSTEM CONSTRAINTS + example + gate)
+core/rules/020-cf-api-boundary.yaml  — metadata (mode: intelligent, alwaysApply: false)
+core/rules/020-cf-api-boundary.md    — content (SYSTEM CONSTRAINTS + example + gate)
 ```
 
 ## Validation gate (MANDATORY before creating/modifying a rule)

@@ -6,7 +6,7 @@ model: haiku
 
 ## What This Does
 
-Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/log-context-analyzer.sh --file <path>` to parse error logs using pattern matching for TypeScript, Jest, ESLint, Angular, and safe-exec observation formats. Uses contextual `rg` extraction and returns a structured RCA block with: root cause, failing file and line number when available, error message, and a 1-line fix suggestion. Never dumps raw log content into context.
+Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/log-context-analyzer.sh --file <path>` to parse error logs using pattern matching for TypeScript, Jest, ESLint, Angular, and safe-exec observation formats. Uses contextual `rg` extraction and returns a structured RCA block with: root cause, failing file and line number when available, error message, and a 1-line fix suggestion. Never dumps raw log content into context.
 
 ## When to Use
 
@@ -22,7 +22,7 @@ Step 1: Obtain the log file path (from safe-exec output or direct path).
 Step 2: Run log-analyzer.
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/log-context-analyzer.sh --file <path/to/logfile>
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/log-context-analyzer.sh --file <path/to/logfile>
 ```
 
 Optional flags:

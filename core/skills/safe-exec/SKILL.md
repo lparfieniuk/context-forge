@@ -6,7 +6,7 @@ model: haiku
 
 ## What This Does
 
-Wraps command execution via `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/safe-exec.sh -- <command>`. Captures stdout/stderr and checks output size. If output is ≤5 KB: returns full output inline. If output >5 KB: writes full output to `~/worklogs/logs/run_<timestamp>_<rand>.log` and returns a concise summary (<500 chars) with exit code and key error lines. Never written inside the project tree — `${CLAUDE_PLUGIN_DATA}` is not a real Claude Code env var (only Codex/Copilot expose an equivalent); `~/worklogs/` is the same out-of-repo convention rule 008-cf-worklog already uses.
+Wraps command execution via `bash <CF_PLUGIN_ROOT>/core/scripts/tools/safe-exec.sh -- <command>`. Captures stdout/stderr and checks output size. If output is ≤5 KB: returns full output inline. If output >5 KB: writes full output to `~/worklogs/logs/run_<timestamp>_<rand>.log` and returns a concise summary (<500 chars) with exit code and key error lines. Logs land in `~/worklogs/` — outside any project tree and any git repo, per rule 008-cf-worklog.
 
 ## When to Use
 
@@ -17,14 +17,14 @@ Wraps command execution via `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/safe-
 ## How to Use
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/safe-exec.sh -- <command>
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/safe-exec.sh -- <command>
 ```
 
 Examples:
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/safe-exec.sh -- npm run build
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/safe-exec.sh -- nx test billing
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/safe-exec.sh -- ng lint
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/safe-exec.sh -- npm run build
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/safe-exec.sh -- nx test billing
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/safe-exec.sh -- ng lint
 ```
 
 If exit code is non-zero and summary is insufficient for diagnosis, follow up with log-analyzer skill on the stored log file path.

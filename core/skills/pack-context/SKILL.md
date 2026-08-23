@@ -6,7 +6,7 @@ model: sonnet
 
 ## What This Does
 
-Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/pack-context.sh --pattern <regex> --search-path <dir>` and returns a compact XML bundle of matching files (Minimum Viable Context, max 15 files). Uses keyword-filtered selection so only files matching the regex are included. Token cost: ~10–30k depending on file count and size.
+Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/pack-context.sh --pattern <regex> --search-path <dir>` and returns a compact XML bundle of matching files (Minimum Viable Context, max 15 files). Uses keyword-filtered selection so only files matching the regex are included. Token cost: ~10–30k depending on file count and size.
 
 ## When to Use
 
@@ -19,7 +19,7 @@ Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/pack-context.sh --pattern <r
 Step 1: Identify the pattern and search path.
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/pack-context.sh \
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/pack-context.sh \
   --pattern "billing|subscription" \
   --search-path libs/billing/src/
 ```

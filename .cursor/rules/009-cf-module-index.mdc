@@ -34,8 +34,12 @@ ALWAYS run `npm run convert` after adding a module — installed files do NOT up
 | `core/agents/<id>.md` | Agent source (edit this) |
 | `agents/<id>.md` | Installed Claude Code agent (auto-generated) |
 | `.cursor/agents/<id>.md` | Installed Cursor agent (auto-generated) |
+| `harnesses/<id>.yaml` | Harness capability profile (what a harness can do; consumed by emitters) |
+| `dist/AGENTS.md` | Emitted AGENTS.md-family distillation (auto-generated, gitignored — embeds absolute paths) |
 
-`convert.ts` DOES generate `.claude/rules/<id>.md` (one file per rule with `installed_claude` set — 18 today) and `.cursor/rules/*.mdc`. It does NOT generate `.cursor/skills/`; do not present that path as an active runtime artifact.
+`convert.ts` DOES generate `.claude/rules/<id>.md` (one file per rule with `installed_claude` set — 18 today) and `.cursor/rules/*.mdc`. It does NOT generate `.cursor/skills/`; do not present that path as an active runtime artifact. `emit-agents-md.ts` (`npm run emit:agents`) generates `dist/AGENTS.md` from a harness profile; it is the only emitter for the AGENTS.md family.
+
+Harness neutrality contract: sources in `core/skills/` and `core/agents/` reference the plugin root ONLY as `<CF_PLUGIN_ROOT>` — convert resolves it to `${CLAUDE_PLUGIN_ROOT}` for Claude Code, the emitter to the absolute repo path for AGENTS.md. `audit-portability.sh` enforces this in every plugin-audit run. Rules numbered 800–899 are LOCAL-ONLY: gitignored, never registered in `_index.yaml`, never installed.
 
 Cost note (measured 2026-07-22): every file in `.claude/rules/` is loaded as a project instruction on every session in this repo — currently ~13.5k tokens. `activation: intelligent` and `claude.include_in_claude_md: false` do NOT gate that: `convertClaudeRules()` writes any rule with `installed_claude` set and never reads either flag. Treat the rule count as a live context-budget cost (rule 010), not as free metadata.
 

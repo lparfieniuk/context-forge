@@ -39,12 +39,15 @@ NEVER guess a rule's content from its name. Read it or do not cite it.
 ## How to read one
 
 ```bash
-cat "${CLAUDE_PLUGIN_ROOT}/core/rules/<file>"
+cat "<CF_PLUGIN_ROOT>/core/rules/<file>"
 ```
 
 Always-on rules (001 token-efficiency, 003 tier-routing, 004 circuit-breaker,
 005 code-search, 010 context-budget, 019 critical-response) are already loaded —
-NEVER read those from disk.
+NEVER read those from disk. Rules in the 800–899 range (e.g.
+`815-cf-mcp-private.md`, machine-specific MCP inventory) are LOCAL-ONLY:
+gitignored, absent from this index and from fresh clones — read by direct path
+only when they exist on this machine.
 
 ## Few-shot example
 
@@ -54,7 +57,7 @@ NEVER read those from disk.
 
 **Output:**
 ```bash
-cat "${CLAUDE_PLUGIN_ROOT}/core/rules/015-cf-mcp-tools.md"
+cat "<CF_PLUGIN_ROOT>/core/rules/015-cf-mcp-tools.md"
 # → uncapped crawl is BANNED; set limit + maxDepth, onlyMainContent: true
 ```
 

@@ -18,4 +18,11 @@ docs/knowledge-base/
 docs/audits/
 PRE-PUBLICATION-AUDIT.md
 
+# private rules — range 800–899 per rule 012 (per-user, machine-specific)
+core/rules/8*.md
+core/rules/8*.yaml
+
+# generated AGENTS.md distillation — embeds absolute plugin-root path
+dist/
+
 .DS_Store

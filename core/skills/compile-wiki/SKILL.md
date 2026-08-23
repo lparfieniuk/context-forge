@@ -26,7 +26,7 @@ Step 1: Identify the domain and source path.
 Step 2: Use pack-context to gather source files (if not already in context).
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/pack-context.sh \
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/pack-context.sh \
   --pattern "<domain-pattern>" \
   --search-path <sources-path>
 ```

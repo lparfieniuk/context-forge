@@ -6,7 +6,7 @@ model: haiku
 
 ## What This Does
 
-Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/refresh-manifest.sh` to regenerate lightweight shadow manifests. Reads `config/manifest-repos.json` (relative to plugin root) to discover target repositories, their absolute paths, and which subdirectories to scan. For each repository, scans TypeScript/JavaScript source files, extracts top-level exports (classes, interfaces, functions, types, enums), and generates `_manifest.lightweight.yaml` with proper metadata. Auto-detects the active IDE by checking whether `.claude` or `.cursor` directories exist. Dual-writes to both `.claude/shadow/` and `.cursor/shadow/` to keep both IDEs in sync. Manifests include YAML `metadata.generated` timestamp for freshness validation.
+Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/refresh-manifest.sh` to regenerate lightweight shadow manifests. Reads `config/manifest-repos.json` (relative to plugin root) to discover target repositories, their absolute paths, and which subdirectories to scan. For each repository, scans TypeScript/JavaScript source files, extracts top-level exports (classes, interfaces, functions, types, enums), and generates `_manifest.lightweight.yaml` with proper metadata. Auto-detects the active IDE by checking whether `.claude` or `.cursor` directories exist. Dual-writes to both `.claude/shadow/` and `.cursor/shadow/` to keep both IDEs in sync. Manifests include YAML `metadata.generated` timestamp for freshness validation.
 
 ## When to Use
 
@@ -20,7 +20,7 @@ Runs `bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/refresh-manifest.sh` to rege
 Step 1: Run refresh-manifest.
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/core/scripts/tools/refresh-manifest.sh
+bash <CF_PLUGIN_ROOT>/core/scripts/tools/refresh-manifest.sh
 ```
 
 Optional flags:

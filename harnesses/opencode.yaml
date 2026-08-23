@@ -1,0 +1,33 @@
+# Harness capability profile — OpenCode (AGENTS.md family).
+#
+# The AGENTS.md convention (opencode, Codex CLI, Copilot, Gemini CLI, Aider,
+# Cline/Roo) reads one markdown instruction file per project. One emitter
+# serves the whole family; per-tool differences live in `notes`, not in code.
+id: opencode
+display_name: OpenCode
+family: agents-md              # emitter family: single AGENTS.md distillation
+instructions:
+  project_rules_dir: null            # no per-file rules dir — AGENTS.md is loaded wholesale
+  skills_dir: null                   # SKILL.md frontmatter not auto-listed; bodies are plain instructions
+  agents_dir: null
+  slash_commands: false
+capabilities:
+  hooks: none                        # no lifecycle hooks — enforcement degrades to rule-text
+  subagent_tool: task                # lowercase `task` tool; model chosen via agent config
+  subagent_model_param: true         # model is set per agent definition, not per call
+  skills_format: markdown-instructions  # skill bodies usable as pasted/reference instructions
+  deterministic_enforcement: false
+models:                              # format provider_id/model_id (opencode docs); adjust to your provider
+  tier2: anthropic/claude-haiku-4-5  # cheap/fast dispatch — opencode's documented small_model
+  tier3: anthropic/claude-sonnet-4-5 # strong planning model — opencode's documented main-model example
+  tier3plus: null                    # left null = Tier 3+ escalation stays BANNED on this harness
+notes: >
+  Consume via symlink or copy of dist/AGENTS.md into the project root:
+    ln -sf ~/Projects/context-forge/dist/AGENTS.md <project>/AGENTS.md
+  Fill models.tier2/tier3 above if your provider differs — until then the
+  emitted file marks them UNSET instead of guessing an id. tier3plus stays
+  null on purpose: no Opus-class escalation without an explicit decision.
+  Rule examples reference Claude Code vocabulary (Task(), CLAUDE.md, hook
+  events) — map them: Task() → task tool, .claude/rules/ → this file, hooks →
+  discipline only. Scripts under core/scripts/tools/ are plain bash and work
+  unchanged; the plugin-root placeholder resolves to the absolute path here.

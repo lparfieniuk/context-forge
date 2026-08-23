@@ -1,0 +1,27 @@
+# Harness capability profile — Claude Code (reference implementation).
+#
+# A profile declares what a harness can do so emitters and rules can adapt
+# without hardcoding per-harness facts in doctrine. Fields a harness lacks
+# are null, never guessed. See scripts/emit-agents-md.ts for the consumer.
+id: claude-code
+display_name: Claude Code
+family: claude-plugin          # emitter family: .claude-plugin/ plugin layout
+instructions:
+  project_rules_dir: .claude/rules   # every file here loads EVERY session (activation contract)
+  skills_dir: skills                 # SKILL.md frontmatter (name + description) auto-listed
+  agents_dir: agents
+  slash_commands: true
+capabilities:
+  hooks: full                        # hooks.json: SessionStart, PreToolUse, PostToolUse, SubagentStop, PreCompact, SessionEnd
+  subagent_tool: Task                # tool name used to spawn subagents
+  subagent_model_param: true         # Task(model: ...) is the only routing lever (rule 013 scope note)
+  skills_format: skill-md            # YAML frontmatter + markdown body
+  deterministic_enforcement: true    # hooks gate policy; other harnesses degrade to rule-text
+models:                              # anchored IDs per ADR-2026-04-26-003
+  tier2: claude-haiku-4-5-20251001
+  tier3: claude-sonnet-5
+  tier3plus: claude-opus-4-8
+notes: >
+  Primary target. All hooks, skills, and deterministic enforcement are
+  available. Rules may reference Task(), CLAUDE.md, and hook event names
+  directly because this profile resolves them.

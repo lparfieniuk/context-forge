@@ -87,7 +87,15 @@ run_step() {
         fi
         ;;
       *)
-        print_result "$name" "PASS"
+        # exit-code gates may emit WARN lines (e.g. audit-doc-claims staleness)
+        # without failing — surface the count so a PASS never hides them.
+        warn_count="$(awk '/^WARN:/ { n++ } END { print n + 0 }' "$output")"
+        if [[ "$warn_count" -gt 0 ]]; then
+          detail="$(first_matching_line "$output" "^WARN:")"
+          print_result "$name" "PASS" "${warn_count} warning(s): ${detail}"
+        else
+          print_result "$name" "PASS"
+        fi
         ;;
     esac
   else
@@ -106,6 +114,7 @@ run_step "audit-runtime-artifacts" "exit-code" bash core/scripts/tools/audit-run
 run_step "audit-doc-claims" "exit-code" bash core/scripts/tools/audit-doc-claims.sh --plugin-root .
 run_step "audit-plugin-surface" "exit-code" bash core/scripts/tools/audit-plugin-surface.sh --plugin-root .
 run_step "audit-rules" "fail-token" bash core/scripts/tools/audit-rules.sh
+run_step "audit-portability" "exit-code" bash core/scripts/tools/audit-portability.sh --plugin-root .
 run_step "benchmark-tokens" "exit-code" bash core/scripts/tools/benchmark-tokens.sh --compare core/benchmarks/baseline-2026-06-19.tsv
 run_step "npm-test" "exit-code" npm test
 
