@@ -1,17 +1,23 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.0] - 2026-08-23
+
+### Added
+
+- **Harness-agnostic emission: the AGENTS.md family.** ContextForge now runs outside Claude Code and Cursor. Sources in `core/skills/` and `core/agents/` reference the plugin root only via a neutral `<CF_PLUGIN_ROOT>` placeholder — `convert.ts` resolves it to `${CLAUDE_PLUGIN_ROOT}` for Claude Code (installed output byte-compatible with what shipped before), while the new `scripts/emit-agents-md.ts` (`npm run emit:agents`) distills the plugin into a single `dist/AGENTS.md` for opencode, Codex CLI, Copilot, Gemini CLI, Aider and Cline/Roo: always-on rules verbatim, on-demand rules indexed by path, script catalog with absolute paths, and a harness-adaptation section generated from a capability profile under `harnesses/<id>.yaml` (three profiles shipped: claude-code, cursor, opencode). The emitter is deterministic (byte-identical across runs, no timestamps), refuses non-agents-md profiles, and marks unset tier models UNSET instead of inventing ids. Enforcement honesty: without hooks, NEVER/ALWAYS rules bind by compliance only — stated in every emitted file. Gated by `audit-portability.sh` (new step in plugin-audit) and `scripts/emitters.test.ts`.
+- **Dated-claim staleness gate.** Rules carry verification dates ("verified 2026-07-21") precisely so they get re-checked; nothing enforced the re-check. `audit-doc-claims.sh` now scans doctrine (000–799) for those dates and emits `WARN:` lines past `--staleness-days` (default 60); `plugin-audit` surfaces the warning count next to a PASS so a green gate can never hide an aging claim again.
+- **Duplication-parity pins.** The deliberately duplicated numbers (cache multipliers in rules 006↔018, tier token-cost ranges rule 003↔CLAUDE.md, tier model anchors rule 003↔harnesses/claude-code.yaml) are pinned by `scripts/duplication-parity.test.ts` — drift between copies now fails CI instead of surfacing as contradictory doctrine.
+- **Private rule range activated: 800–899 is now real.** Rule 015's machine-specific MCP server inventory (local ports, config keys, credential env vars) moved to `815-cf-mcp-private.md` — gitignored, unregistered in `_index.yaml`, never installed or shipped; rule 015 keeps the server-agnostic routing doctrine. Until now the range existed only as a line in rule 012's number table.
+- Five agent-governance constraints from an `/evolve` panel run: log-line conclusions are hypotheses rather than measurements, and scripted in-place edits plus external tool output shape can both lie at exit 0 (rule 004); settle third-party tool behavior by reading its source (rule 016); derive watchdog timeouts from measured job parameters, and a bare `sleep` in a poll loop defers the bash trap and leaks rented resources (rule 017); a clean working tree does not prove a repo is safe to publish (`plugin-audit` skill).
 
 ### Fixed
 
+- **Rule 012's own few-shot example collided with a real rule** — it numbered a hypothetical API-boundary rule `015`, which has been `cf-mcp-tools` since publication; renumbered to `020`.
+- **Emitter model wording:** an unset `tier3plus` is policy (escalation BANNED), not missing config — phrased accordingly; only genuinely unconfigured tier2/tier3 emit UNSET.
 - **`audit-runtime-artifacts.sh` failed on artifacts git never publishes.** The gate exists to keep runtime artifacts out of the *published* tree, but it tested existence rather than publishability — so `.claude/lessons/`, which rule 004 tells the agent to write to and which `.gitignore` has always excluded, failed the audit and blocked commits. An artifact is now exempt only when git proves it can never ship: untracked **and** ignored. Untracked-but-not-ignored still fails, since the audit runs before `git add` — exactly when a stray artifact is most worth catching. Covered by `scripts/audit-runtime-artifacts.test.ts`.
 - **The same audit never scanned the marketplace copy.** It looked for `.local-marketplace/` as a child of the plugin root; the marketplace is a *sibling*, as `convert.ts` and `hooks.test.ts` have always had it. The scan silently found nothing for its entire existence and reported `marketplace-root: absent` on a machine where the copy was present.
 - **A root path containing glob metacharacters silently skipped its artifacts** — `${path#$root/}` treated the root as a pattern, leaving the path unstripped.
 - **`/evolve` wrote patch_text it never verified.** Hand-written unified diffs fail `git apply` (`corrupt patch`) because hunk headers must agree with the body line counts. The skill now requires patches generated from a real `git diff` and verified with `git apply --check` before a proposal is written, and documents the two traps found in practice: restoring the edited file with `git checkout` wipes an earlier proposal already applied but uncommitted, and a HEAD-relative diff double-counts one.
-
-### Added
-
-- Five agent-governance constraints from an `/evolve` panel run: log-line conclusions are hypotheses rather than measurements, and scripted in-place edits plus external tool output shape can both lie at exit 0 (rule 004); settle third-party tool behavior by reading its source (rule 016); derive watchdog timeouts from measured job parameters, and a bare `sleep` in a poll loop defers the bash trap and leaks rented resources (rule 017); a clean working tree does not prove a repo is safe to publish (`plugin-audit` skill).
 
 ## [1.1.0] - 2026-07-30
 
