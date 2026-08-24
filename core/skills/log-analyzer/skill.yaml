@@ -6,3 +6,5 @@ model: haiku
 ownership: owned
 trigger: "Build, test, or lint failure that needs root cause analysis"
 tags: [rca, logs, build, test, eslint, typescript, angular, debugging]
+
+output_contract: core/skills/log-analyzer/contract.sh

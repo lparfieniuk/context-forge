@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Output contracts as a gate, not prose** (schema-contracts idea): a skill can declare `output_contract` in `skill.yaml` pointing at an executable validator plus a `contract-sample.txt`. `audit-plugin-surface.sh` now proves the validator accepts its own conforming sample AND rejects empty input — a validator that accepts anything fails the gate, because it validates nothing. Shipped for the three envelope skills: `safe-exec` (`[SAFE-EXEC]`), `log-analyzer` (`[RCA]`), `shadow-lookup` (4-column TSV).
+- **Failure replay → regression case** (failure-replay idea): new Tier-1 script `core/scripts/tools/failure-replay.sh` + `failure-replay` skill turn a rule-004 ledger into a DRAFT cf-bench case — task under `tasks/_drafts/` (invisible to the matrix glob) with a failing-stub `check.sh` and the ledger context carried verbatim into `LEDGER.md`. Bench-classified vs process-only failures are separated mechanically; promotion to a runnable task stays a human gate requiring a real check and `validate-tasks.sh`. Rule 004 documents the flow.
+
 ## [1.2.0] - 2026-08-23
 
 ### Added

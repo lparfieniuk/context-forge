@@ -1,0 +1,6 @@
+[RCA]
+- Root cause: Missing export in barrel file
+- Failing file: libs/billing/src/index.ts:10
+- Error: TS2305 — Module has no exported member 'BillingFacade'
+- Fix: Add `export { BillingFacade } from './lib/billing.facade';` to index.ts
+[END RCA]

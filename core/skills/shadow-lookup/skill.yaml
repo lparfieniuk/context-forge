@@ -6,3 +6,5 @@ model: none
 ownership: owned
 trigger: "Quick symbol-to-file-path lookup"
 tags: [symbol, lookup, shadow-index, tsv, zero-cost, discovery]
+
+output_contract: core/skills/shadow-lookup/contract.sh

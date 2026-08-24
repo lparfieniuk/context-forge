@@ -6,3 +6,5 @@ model: haiku
 ownership: owned
 trigger: "Running any shell command expected to produce >5 KB output"
 tags: [execution, compression, build, test, lint, output-masking]
+
+output_contract: core/skills/safe-exec/contract.sh

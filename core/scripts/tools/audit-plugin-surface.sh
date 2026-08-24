@@ -98,6 +98,41 @@ else
   fail "hooks/hooks.json missing"
 fi
 
+# Output contracts: a skill that declares output_contract must ship an
+# executable validator whose sample passes and whose empty input fails.
+# A validator that accepts anything is a decoration, so the negative case is
+# part of the gate — not a courtesy check on the positive path alone.
+contract_failures=0
+for skill_yaml in "$PLUGIN_ROOT"/core/skills/*/skill.yaml; do
+  [[ -f "$skill_yaml" ]] || continue
+  contract="$(sed -nE 's/^output_contract:[[:space:]]*(.+)$/\1/p' "$skill_yaml" | head -1 | tr -d '\"')"
+  [[ -z "$contract" ]] && continue
+
+  skill_id="$(basename "$(dirname "$skill_yaml")")"
+  contract_path="$PLUGIN_ROOT/$contract"
+  sample_path="$PLUGIN_ROOT/core/skills/$skill_id/contract-sample.txt"
+
+  if [[ ! -f "$contract_path" ]]; then
+    fail "[$skill_id] output_contract missing: $contract"
+    contract_failures=$((contract_failures + 1))
+  elif [[ ! -x "$contract_path" ]]; then
+    fail "[$skill_id] output_contract not executable: $contract"
+    contract_failures=$((contract_failures + 1))
+  elif [[ ! -f "$sample_path" ]]; then
+    fail "[$skill_id] contract-sample.txt missing (needed to prove the validator accepts conforming output)"
+    contract_failures=$((contract_failures + 1))
+  else
+    if ! bash "$contract_path" "$sample_path" >/dev/null 2>&1; then
+      fail "[$skill_id] contract validator rejects its own conforming sample"
+      contract_failures=$((contract_failures + 1))
+    fi
+    if bash "$contract_path" /dev/null >/dev/null 2>&1; then
+      fail "[$skill_id] contract validator accepts empty input — it validates nothing"
+      contract_failures=$((contract_failures + 1))
+    fi
+  fi
+done
+
 if [[ -f "$INDEX" ]]; then
   AGENT_COUNT="$(count_section "agents")"
   DOC_EXPECTATIONS="$(mktemp "${TMPDIR:-/tmp}/agent-expectations.XXXXXX")"

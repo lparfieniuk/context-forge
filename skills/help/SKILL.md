@@ -6,7 +6,7 @@ model: none
 
 ## What This Does
 
-Renders a static capability reference listing all 22 ContextForge skills organized into 4
+Renders a static capability reference listing all 23 ContextForge skills organized into 4
 categories. No LLM processing required — this is a template response.
 
 Also checks and reports:
@@ -25,7 +25,7 @@ Return the template below, substituting live system status values.
 ## Output Format
 
 ```
-ContextForge v1.1.0 — 22 skills, 4 categories
+ContextForge v1.2.0 — 23 skills, 4 categories
 
 ## Discovery (4 skills)
 | Skill              | Tier | Ownership | Trigger |
@@ -43,13 +43,14 @@ ContextForge v1.1.0 — 22 skills, 4 categories
 | compile-wiki  | 2    | OWNED     | "/compile-wiki --domain <domain>" |
 | clear-context | 1    | OWNED     | Tool results >30K tokens; before Tier 3 spawn |
 
-## Workflow (9 skills)
+## Workflow (10 skills)
 | Skill             | Tier | Ownership | Trigger |
 |-------------------|------|-----------|---------|
 | task-init         | 1    | OWNED     | Starting new Jira task |
 | update-worklog    | 1    | OWNED     | Decision made, phase completed |
 | session-learnings | 2    | OWNED     | End of session |
 | record-failure    | 1    | OWNED     | Unrecoverable error or circuit-breaker halt |
+| failure-replay    | 1    | OWNED     | After record-failure, code/build failure worth a regression case |
 | diary             | 1    | OWNED     | Decision/outcome worth recording; /diary |
 | evolve            | 3    | OWNED     | 3-strike pattern or manual /evolve |
 | evolve-apply      | 1    | OWNED     | Human approved a pending /evolve proposal |
@@ -76,7 +77,7 @@ pre-review → superpowers:requesting-code-review → code-reviewer agent
 
 ## Constraints
 
-ALWAYS list all 22 skills from `core/_index.yaml` — NEVER omit any skill.
+ALWAYS list all 23 skills from `core/_index.yaml` — NEVER omit any skill.
 ALWAYS show ownership column (OWNED vs DELEGATES).
 NEVER require LLM processing — this is a static template with live status substitution.
 ALWAYS include Superpowers delegation link for pre-review.

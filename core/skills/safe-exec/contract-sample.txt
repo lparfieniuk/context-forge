@@ -1,0 +1,7 @@
+[SAFE-EXEC]
+- Command: npm run build
+- Exit code: 1
+- Output size: 47 KB (stored at ~/worklogs/logs/run_20260414_101530_a1b2c3d4.log)
+- Summary: Build failed with 3 TypeScript errors in libs/billing/
+- Key error: TS2305 — Module has no exported member 'BillingFacade'
+[END SAFE-EXEC]

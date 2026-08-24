@@ -56,6 +56,12 @@ When the same failure slug appears 3+ times in `<IDE_DIR>/lessons/`:
 3. Drafts rule suggestion for human approval.
 4. Human approves → `npm run convert` installs new rule.
 
+Incident-to-regression: a ledger describing a build/test/code failure can be
+scaffolded into a DRAFT bench case via `core/scripts/tools/failure-replay.sh`
+(`failure-replay` skill) — the recorded incident becomes a replayable
+regression case instead of prose. Drafts are inert until a human authors the
+fixture and check.sh; process-only failures stay out of the bench by design.
+
 ## Few-shot example
 
 **Input:** `npm run build` fails twice with "Module has no exported member 'BillingFacade'".

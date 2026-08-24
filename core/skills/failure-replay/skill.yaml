@@ -1,0 +1,8 @@
+id: failure-replay
+type: skill
+category: workflow
+tier: 1
+model: haiku
+ownership: owned
+trigger: "After record-failure, when the recorded failure involved code/build/test/tooling and could become a regression case"
+tags: [workflow, circuit-breaker, regression, cf-bench, replay, golden-set]

@@ -361,10 +361,24 @@ tools:
     tags: [audit, portability, agnostic, gate]
     routing_key: "tier1:portability"
 
+  - id: failure-replay
+    file: tools/failure-replay.sh
+    description: "Scaffold a cf-bench regression case from a rule-004 failure ledger: classifies replayability, emits a DRAFT task + fixture under tasks/_drafts/ (never picked up by the matrix until moved)."
+    params:
+      - name: --ledger
+        required: true
+        description: "Path to the failure ledger YAML (rule 004 schema)"
+      - name: --bench-root
+        required: false
+        description: "cf-bench root (default: ~/Projects/ai-tools/cf-bench when present)"
+    output: "REPLAYABLE verdict + scaffold paths, or NOT REPLAYABLE with reason. Draft case is inert until a human completes check.sh."
+    tags: [circuit-breaker, regression, replay, bench, golden-set]
+    routing_key: "tier1:replay"
+
 lib:
   - id: yaml
     file: lib/yaml.sh
-    description: "YAML field extraction functions: yaml_get, yaml_has, yaml_get_list. No yq required."
+    description: "YAML field extraction: yaml_get_value, yaml_append_entry, yaml_parse_key_value. No yq required."
     tags: [yaml, parsing, shared]
 
   - id: rg-helpers

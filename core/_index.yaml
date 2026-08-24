@@ -439,6 +439,17 @@ skills:
     model: haiku
     tags: [workflow, self-evolving, apply, human-gate]
 
+  - id: failure-replay
+    type: skill
+    category: workflow
+    source: core/skills/failure-replay/SKILL.md
+    yaml: core/skills/failure-replay/skill.yaml
+    installed_claude: skills/failure-replay/SKILL.md
+    installed_cursor: null
+    tier: 1
+    model: haiku
+    tags: [workflow, circuit-breaker, regression, cf-bench, replay]
+
 agents:
   - id: cf-scribe
     type: agent
