@@ -8,6 +8,21 @@ updates:
     groups:
       dev-dependencies:
         patterns: ['*']
+    ignore:
+      # tree-sitter-typescript has no release above 0.23.x and its peer range is
+      # tree-sitter ^0.21.0. Grouping every devDependency under '*' means a
+      # tree-sitter bump to 0.25.x lands in the same PR, and npm ci then fails
+      # with ERESOLVE because no tree-sitter-typescript satisfies it. Hold these
+      # two until a tree-sitter-typescript release moves that peer range; patch
+      # updates stay allowed.
+      - dependency-name: tree-sitter
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+      - dependency-name: tree-sitter-javascript
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
 
   - package-ecosystem: github-actions
     directory: /
