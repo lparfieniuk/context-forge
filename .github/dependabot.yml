@@ -23,6 +23,17 @@ updates:
         update-types:
           - version-update:semver-major
           - version-update:semver-minor
+      # TypeScript 7 breaks ts-node 10.9.2: ts-node reaches into `ts.sys`, which
+      # TS 7 no longer exposes, so every `ts-node scripts/*.ts` dies with
+      # "Cannot read properties of undefined (reading 'fileExists')" — measured,
+      # and it is the only reason the grouped bump goes red (js-yaml 5 and
+      # @types/node 26 pass on their own). ts-node is also the only thing
+      # type-checking these scripts; there is no `tsc --noEmit` step, so swapping
+      # it for tsx would silently drop type checking to gain the major. Hold the
+      # major until ts-node supports TS 7 or a real typecheck script exists.
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
