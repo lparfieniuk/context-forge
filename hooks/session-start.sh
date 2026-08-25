@@ -343,7 +343,10 @@ echo "📊 CAPACITY: $CAPACITY_STATUS | model: $(get_model_info)"
 
 # Integrations and MCP: report only what is MISSING or DOWN.
 INTEG_WARN=""
-[ "$(check_superpowers)" != "✓ detected" ] && INTEG_WARN="${INTEG_WARN} superpowers:$(check_superpowers)"
+# check_superpowers returns 1 when absent; under `set -e` an assignment whose
+# command substitution fails is itself a failing command. Capture once, absorb.
+_sp=$(check_superpowers) || true
+[ "$_sp" != "✓ detected" ] && INTEG_WARN="${INTEG_WARN} superpowers:${_sp}"
 for _srv in playwright chrome-devtools firecrawl-mcp glif; do
   _st=$(check_mcp_server "$_srv")
   [ "$_st" != "✓" ] && INTEG_WARN="${INTEG_WARN} ${_srv}:${_st}"

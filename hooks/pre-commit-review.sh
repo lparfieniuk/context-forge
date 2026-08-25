@@ -9,9 +9,41 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 . "$SCRIPT_DIR/lib/common.sh"
 
-# Read JSON input from stdin (Claude Code hook protocol)
+# Read JSON input from stdin (Claude Code hook protocol).
+#
+# A heredoc body can be data rather than a command: `cat > notes.md <<'EOF' ...
+# git commit ... EOF` writes documentation, it does not commit. Strip those
+# bodies before matching, or documenting git becomes impossible.
+#
+# ONLY a QUOTED delimiter (<<'EOF', <<"EOF", <<\EOF) is stripped. Bash performs
+# no expansion inside those, so the body is guaranteed inert text. An UNQUOTED
+# <<EOF still expands $(...) in its body, so `cat > n.md <<EOF` + `$(git commit)`
+# executes the commit while looking like documentation — stripping it would be a
+# gate bypass, not a false-positive fix. Unquoted bodies stay in the scan.
+#
+# ponytail: quoted strings are still matched (`bash -c "git commit"` stays
+# blocked); loosening that trades a false positive for a bypass, so it stays.
+#
+# The program is fed via a quoted heredoc and the JSON via argv, so neither bash
+# nor the shell touches the regex escaping.
 HOOK_JSON=$(cat)
-TOOL_INPUT=$(echo "$HOOK_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))" 2>/dev/null || echo "")
+# The `)` closes on its own line AFTER the heredoc terminator — a heredoc body
+# inside $( ) must sit inside the parens, not after them.
+TOOL_INPUT=$(python3 - "$HOOK_JSON" 2>/dev/null <<'PY'
+import sys, json, re
+
+cmd = json.loads(sys.argv[1]).get('tool_input', {}).get('command', '')
+# One pass per quoting style: a single alternation would need backreferences to
+# unmatched groups, which never match in Python's re.
+for pattern in (
+    r"<<-?[ \t]*'(\w+)'.*?^[ \t]*\1[ \t]*$",
+    r'<<-?[ \t]*"(\w+)".*?^[ \t]*\1[ \t]*$',
+    r"<<-?[ \t]*\\(\w+).*?^[ \t]*\1[ \t]*$",
+):
+    cmd = re.sub(pattern, ' ', cmd, flags=re.S | re.M)
+print(cmd)
+PY
+) || TOOL_INPUT=""
 
 # Check if command contains "git commit"
 if ! [[ "$TOOL_INPUT" =~ git[[:space:]]+commit ]]; then

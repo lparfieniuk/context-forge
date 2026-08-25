@@ -158,6 +158,31 @@ describe('pre-commit-review.sh marker semantics', () => {
     }
   });
 
+  const runRaw = (command: string, repo: string) =>
+    spawnSync('bash', [HOOK], {
+      input: JSON.stringify({ tool_input: { command, cwd: repo } }),
+      encoding: 'utf-8',
+    });
+
+  it('ignores the phrase inside a QUOTED heredoc body — that is a file being written', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
+    spawnSync('git', ['-C', repo, 'init', '-q']);
+    fs.rmSync(markerFor(repo), { force: true });
+    const writingDocs = `cat > notes.md <<'EOF'\nstep 3: ${COMMIT_CMD} -m x\nEOF`;
+    expect(runRaw(writingDocs, repo).status).toBe(0);
+  });
+
+  // An UNQUOTED heredoc still expands $(...) in its body, so stripping it would
+  // let `cat > n.md <<EOF` + `$(git commit)` run the commit while looking like
+  // documentation. Only quoted delimiters are inert enough to strip.
+  it('blocks command substitution hidden in an UNQUOTED heredoc body', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
+    spawnSync('git', ['-C', repo, 'init', '-q']);
+    fs.rmSync(markerFor(repo), { force: true });
+    const smuggled = `cat > notes.md <<EOF\n$(${COMMIT_CMD} -m pwned)\nEOF`;
+    expect(runRaw(smuggled, repo).status).toBe(2);
+  });
+
   it('blocks a commit from a path that is not a git repo', () => {
     const nogit = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-nogit-'));
     expect(runCommit(nogit).status).toBe(2);
@@ -191,6 +216,22 @@ describe('session-start.sh execution', () => {
   it('exits 0 when CLAUDE_PLUGIN_ROOT is a valid directory', () => {
     const result = spawnSync('bash', [HOOK], {
       env: { ...process.env, CLAUDE_PLUGIN_ROOT: PLUGIN_ROOT },
+      cwd: PLUGIN_ROOT,
+      encoding: 'utf-8',
+    });
+
+    expect(
+      result.status,
+      `Hook exited ${result.status}. stderr: ${result.stderr}`,
+    ).toBe(0);
+  });
+
+  // CI has no superpowers install and no ~/.claude.json; the developer machine
+  // has both, so the test above passes locally and failed only on the runner.
+  it('exits 0 on a bare HOME — nothing installed, no MCP config', () => {
+    const bareHome = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-home-'));
+    const result = spawnSync('bash', [HOOK], {
+      env: { ...process.env, HOME: bareHome, CLAUDE_PLUGIN_ROOT: PLUGIN_ROOT },
       cwd: PLUGIN_ROOT,
       encoding: 'utf-8',
     });

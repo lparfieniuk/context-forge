@@ -3,7 +3,7 @@
 ## Reporting
 
 Report vulnerabilities privately via
-[GitHub Security Advisories](https://github.com/reghis86/context-forge/security/advisories/new).
+[GitHub Security Advisories](https://github.com/lparfieniuk/context-forge/security/advisories/new).
 Please do not open a public issue for anything exploitable. Expect a first response within a week.
 
 ## Threat model

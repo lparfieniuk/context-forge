@@ -1,6 +1,6 @@
 # ContextForge
 
-[![Plugin Audit](https://github.com/reghis86/context-forge/actions/workflows/plugin-audit.yml/badge.svg)](https://github.com/reghis86/context-forge/actions/workflows/plugin-audit.yml)
+[![Plugin Audit](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml/badge.svg)](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml)
 [![Version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](.nvmrc)
@@ -52,7 +52,7 @@ circuit breaker, and enforced output-compression thresholds.
 ## Installation
 
 ```bash
-git clone https://github.com/reghis86/context-forge ~/.claude/plugins/context-forge
+git clone https://github.com/lparfieniuk/context-forge ~/.claude/plugins/context-forge
 cd ~/.claude/plugins/context-forge
 npm install
 npm run convert          # distribute core/ → skills/, agents/, .claude/, .cursor/
