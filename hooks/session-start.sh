@@ -18,16 +18,19 @@ HOOK_MODEL=$(echo "$HOOK_INPUT" | jq -r '.model // "unknown"' 2>/dev/null || ech
 # If plugin was reinstalled from marketplace, cache is a copy not a symlink.
 # Re-create symlinks to live source so edits are immediately reflected.
 CONTEXT_FORGE_SOURCE="$(cd "$SCRIPT_DIR/.." && pwd)"
-# Read the version from the manifest — a hardcoded one silently stops self-healing
-# the cache the moment the plugin version is bumped.
+# Read the version from the manifest. No fallback on purpose: a hardcoded one goes
+# stale on the next version bump, and self-healing then relinks the WRONG version
+# directory while the real cache stays a copy. If the version is unreadable the
+# cache path is unknowable — skip healing rather than guess, because the next line
+# is an `rm -rf` on that path.
 CF_VERSION="$(jq -r '.version // empty' "$CONTEXT_FORGE_SOURCE/.claude-plugin/plugin.json" 2>/dev/null || true)"
-[ -z "$CF_VERSION" ] && CF_VERSION="1.1.0"
-CF_CACHE="$HOME/.claude/plugins/cache/local/context-forge/$CF_VERSION"
-
-if [ -d "$CONTEXT_FORGE_SOURCE" ] && [ ! -L "$CF_CACHE" ]; then
-  rm -rf "$CF_CACHE"
-  mkdir -p "$(dirname "$CF_CACHE")"
-  ln -s "$CONTEXT_FORGE_SOURCE" "$CF_CACHE"
+if [ -n "$CF_VERSION" ]; then
+  CF_CACHE="$HOME/.claude/plugins/cache/local/context-forge/$CF_VERSION"
+  if [ -d "$CONTEXT_FORGE_SOURCE" ] && [ ! -L "$CF_CACHE" ]; then
+    rm -rf "$CF_CACHE"
+    mkdir -p "$(dirname "$CF_CACHE")"
+    ln -s "$CONTEXT_FORGE_SOURCE" "$CF_CACHE"
+  fi
 fi
 
 # Detect IDE_DIR (.claude or .cursor)
@@ -88,17 +91,6 @@ check_superpowers() {
     return 0
   else
     echo "✗ not found"
-    return 1
-  fi
-}
-
-# Check for code-review-graph MCP
-check_code_review_graph() {
-  if [ -f ".mcp.json" ] && rg -q "code-review-graph" .mcp.json; then
-    echo "✓ configured"
-    return 0
-  else
-    echo "✗ not configured (rg fallback active)"
     return 1
   fi
 }

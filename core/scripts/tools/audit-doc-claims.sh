@@ -149,13 +149,53 @@ check_plugin_count() {
 for MANIFEST_REL in ".claude-plugin/plugin.json" ".claude-plugin/marketplace.json"; do
   PLUGIN_JSON="$PLUGIN_ROOT/$MANIFEST_REL"
   [[ -f "$PLUGIN_JSON" ]] || continue
-  PLUGIN_DESC="$(rg -o '"description"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" | tr '\n' ' ')"
+  # `rg` exits 1 on no match; under `set -euo pipefail` that killed the entire
+  # audit silently (exit 1, zero output) on a manifest missing the key. Tolerate it.
+  PLUGIN_DESC="$(rg -o '"description"[[:space:]]*:[[:space:]]*"[^"]*"' "$PLUGIN_JSON" 2>/dev/null | tr '\n' ' ' || true)"
 
   check_plugin_count "rules" "$RULE_COUNT"
   check_plugin_count "skills" "$SKILL_COUNT"
   check_plugin_count "agents?" "$AGENT_COUNT"
   check_plugin_count "hooks" "$HOOK_COUNT"
 done
+
+# ---------------------------------------------------------------------------
+# Version parity: plugin.json is the source of truth. Every other file that
+# states the current version must agree. This drifted unnoticed across the 1.2.0
+# bump — README's badge and CLAUDE.md still claimed 1.1.0 — because nothing
+# compared them. Historical mentions (CHANGELOG entries, "1.1.0 was the first
+# public cut") are NOT current-version claims and are deliberately not scanned.
+# ---------------------------------------------------------------------------
+CF_MANIFEST_VERSION="$(rg -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' \
+  "$PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null \
+  | head -1 | sed -E 's/.*"([^"]*)"$/\1/' || true)"
+
+check_version_claim() {
+  local rel="$1" pattern="$2" claimed
+  [[ -f "$PLUGIN_ROOT/$rel" ]] || return 0
+  claimed="$(rg -o -N "$pattern" "$PLUGIN_ROOT/$rel" 2>/dev/null \
+    | head -1 | rg -o '[0-9]+\.[0-9]+\.[0-9]+' || true)"
+  [[ -n "$claimed" ]] || return 0
+  if [[ "$claimed" != "$CF_MANIFEST_VERSION" ]]; then
+    record_failure "$rel" 1 "version drift" \
+      "claims ${claimed}, plugin.json says ${CF_MANIFEST_VERSION}"
+  fi
+}
+
+VERSION_FIELD='"version"[[:space:]]*:[[:space:]]*"[0-9.]+"'
+if [[ -n "$CF_MANIFEST_VERSION" ]]; then
+  # Manifests live in dot-directories, which plain `rg` skips by default — that is
+  # exactly how .cursor-plugin/plugin.json sat at 1.1.0 unnoticed. Enumerate them.
+  check_version_claim "package.json" "$VERSION_FIELD"
+  check_version_claim ".claude-plugin/marketplace.json" "$VERSION_FIELD"
+  check_version_claim ".cursor-plugin/plugin.json" "$VERSION_FIELD"
+  check_version_claim "README.md" 'badge/version-[0-9.]+-'
+  check_version_claim "CLAUDE.md" '\*\*Version:\*\*[[:space:]]*[0-9.]+'
+else
+  # Silence here would be the worst outcome: the gate whose whole job is policing
+  # this file goes green precisely when this file is broken.
+  echo "  - WARN: .claude-plugin/plugin.json version unreadable — version-drift checks SKIPPED"
+fi
 
 # ---------------------------------------------------------------------------
 # Dated-claim staleness: rules must re-verify their evidence, not just carry it.
