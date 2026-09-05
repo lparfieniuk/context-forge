@@ -1,7 +1,7 @@
 # ContextForge
 
 [![Plugin Audit](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml/badge.svg)](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml)
-[![Version](https://img.shields.io/badge/version-1.2.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](.nvmrc)
 

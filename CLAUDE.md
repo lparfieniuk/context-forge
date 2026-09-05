@@ -5,7 +5,7 @@
 ## Plugin Identity
 
 **Name:** ContextForge (`context-forge`)
-**Version:** 1.2.0
+**Version:** 1.3.0
 **Primary IDE:** Claude Code (full support)
 **Secondary IDE:** Cursor (rules + `cf-scribe` agent only)
 
