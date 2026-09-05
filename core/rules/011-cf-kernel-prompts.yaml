@@ -3,8 +3,8 @@ number: 011
 name: "Kernel Prompts"
 activation:
   mode: intelligent
-  description: "KERNEL template for Task() prompts, RED FLAG banned patterns, Scribe I/O contract."
-  patterns: ["Task(", kernel, subagent, prompt template, agent spawn]
+  description: "KERNEL template for Agent() prompts, RED FLAG banned patterns, Scribe I/O contract."
+  patterns: ["Agent(", "Task(", kernel, subagent, prompt template, agent spawn]
 cursor:
   alwaysApply: false
 claude:

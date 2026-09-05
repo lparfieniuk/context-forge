@@ -1,6 +1,6 @@
 ---
 name: record-failure
-description: Writes a sharded failure ledger YAML and checks for a 3-strike cross-session pattern. Use on an unrecoverable error or a circuit-breaker halt.
+description: Writes a sharded failure ledger YAML and checks for a 3-strike cross-session pattern. Use when the user says "log this failure", "record the halt", after a CIRCUIT_BREAKER_HALT, or when the same action has failed twice. Do NOT use for a first failure that a retry fixed, or for expected test failures.
 model: haiku
 ---
 

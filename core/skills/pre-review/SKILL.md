@@ -1,6 +1,6 @@
 ---
 name: pre-review
-description: Gathers the diff, impact radius, and manifest freshness, then delegates to code review. Use before a commit or merge request.
+description: Gathers the diff, impact radius, and manifest freshness, then delegates to code review. Use when the user says "review my changes", "check this before I commit", "pre-review", or before a commit or merge request. Do NOT use to validate the plugin's own gates — that is plugin-audit; do NOT use on an empty diff.
 model: haiku
 ---
 

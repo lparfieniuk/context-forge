@@ -1,6 +1,6 @@
 ---
 name: refresh-manifest
-description: Regenerates the shadow index manifest of top-level exports for fast symbol lookup. Use when the manifest is missing or stale, or symbol lookup returns nothing.
+description: Rebuilds the shadow manifest of top-level exports. Use when the user says "refresh the manifest", "rebuild the index", "the symbol index is stale", or when shadow-lookup returns nothing for a symbol that clearly exists. Do NOT use for ordinary code search or on a repo with fewer than 30 source files — the manifest costs more than it saves.
 model: haiku
 ---
 

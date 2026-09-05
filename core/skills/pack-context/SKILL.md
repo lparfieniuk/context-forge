@@ -1,6 +1,6 @@
 ---
 name: pack-context
-description: Bundles up to 15 related source files into one XML context block. Use when a task touches 3+ interrelated files and full method bodies are actually needed.
+description: Bundles up to 15 related source files into one XML context block. Use when a task genuinely touches 3+ interrelated files and full method bodies are needed, or when the user says "pack these files", "give me the whole picture", "load the module". Do NOT use for discovery or symbol lookup — shadow-lookup and extract-signatures are 100x cheaper; do NOT use for a single file.
 model: sonnet
 ---
 

@@ -14,6 +14,20 @@ tools:
     tags: [handoff, context-rot, state, session]
     routing_key: "tier1:handoff"
 
+  - id: skill-usage
+    file: tools/skill-usage.sh
+    description: "Count real ContextForge skill invocations (skill tool / slash / agent spawn) from Claude Code transcripts"
+    params:
+      - name: --plugin-root
+        required: false
+        description: "Plugin root holding core/_index.yaml (default: resolved from script location)"
+      - name: --projects
+        required: false
+        description: "Transcript directory to scan (default: $CLAUDE_PROJECTS_DIR or ~/.claude/projects)"
+    output: "TSV `skill<TAB>skill_tool<TAB>slash<TAB>agent<TAB>total<TAB>last_used`. Rolling ~30-day window — transcripts are deleted after cleanupPeriodDays."
+    tags: [telemetry, skills, usage, tier1]
+    routing_key: "tier1:skill-usage"
+
   - id: extract-signatures
     file: tools/extract-signatures.sh
     description: "Extract TypeScript/PHP method stubs (names, parameters, return types — no bodies) from a source file"
@@ -68,7 +82,7 @@ tools:
         description: "Path to context-forge plugin root"
       - name: task_description
         required: true
-        description: "Task description (first 20 words of Task() prompt)"
+        description: "Task description (first 20 words of Agent() prompt)"
     output: "TIER:<N>\\nACTION:<command or ALLOW>\\nREASON:<one sentence>"
     tags: [routing, tier-validation, cost-hierarchy]
     routing_key: "tier0:routing"
@@ -129,46 +143,6 @@ tools:
     output: "Path to created YAML failure ledger. Emits [3-STRIKE] if pattern detected."
     tags: [workflow, failure-ledger, circuit-breaker]
     routing_key: "tier1:failure"
-
-  - id: task-init
-    file: tools/task-init.sh
-    description: "Initialize worklog for a new Jira ticket. Creates ~/worklogs/tickets/<KEY>.yaml and updates INDEX.yaml."
-    params:
-      - name: --key
-        required: true
-        description: "Jira ticket key (e.g. PROJ-3456)"
-      - name: --scope
-        required: false
-        description: "Short business goal description"
-    output: "[TASK INIT] block with ticket, worklog path, branch, task type, INDEX.yaml update status"
-    tags: [workflow, worklog, jira]
-    routing_key: "tier1:worklog"
-
-  - id: worklog
-    file: tools/worklog.sh
-    description: "Read/write worklog entries for active ticket. Validates against append rules."
-    params:
-      - name: --key
-        required: true
-        description: "Jira ticket key (e.g. PROJ-1234)"
-      - name: --read
-        required: false
-        description: "Read worklog entries (default action)"
-      - name: --append
-        required: false
-        description: "Append a new entry"
-      - name: --compress
-        required: false
-        description: "Compress to history_summary if >15 entries"
-      - name: --scope
-        required: false
-        description: "Entry scope (required for --append)"
-      - name: --ctx
-        required: false
-        description: "Entry context/why (required for --append)"
-    output: "For read: YAML entries. For append: confirmation. For compress: history_summary + last 5."
-    tags: [workflow, worklog, state-externalization]
-    routing_key: "tier1:worklog"
 
   - id: validate-index
     file: tools/validate-index.sh

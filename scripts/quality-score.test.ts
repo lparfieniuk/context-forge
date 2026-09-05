@@ -50,7 +50,7 @@ function scaffold(): string {
     '---',
     'name: good-skill',
     'description: >',
-    '  Does a thing.',
+    '  Does a thing. Do NOT use for other things.',
     '  <example>',
     '  user: "/good-skill"',
     '  assistant: "done"',
@@ -103,6 +103,18 @@ describe('quality-score.sh', () => {
     const skill = rows.find(l => /^skill\t/.test(l) && l.includes('good-skill'))!.split('\t');
     expect(skill[2]).toBe('1.00');
     expect(skill[3]).toBe(skill[4]); // passed === total
+  });
+
+  it('docks a skill that has no negative scope, and keeps the denominator at 7', () => {
+    const root = scaffold();
+    // Same skill, one property removed: the description no longer says what NOT to use it for.
+    const p = path.join(root, 'core/skills/good-skill/SKILL.md');
+    fs.writeFileSync(p, fs.readFileSync(p, 'utf-8').replace(' Do NOT use for other things.', ''));
+    const rows = run(root).stdout.trim().split('\n');
+    const skill = rows.find(l => /^skill\t/.test(l) && l.includes('good-skill'))!.split('\t');
+    expect(skill[4]).toBe('7');
+    expect(skill[3]).toBe('6');
+    expect(skill[5]).toContain('negative-scope');
   });
 
   it('prints an aggregate average line', () => {

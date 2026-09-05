@@ -293,30 +293,6 @@ skills:
     routing_key: "tier1:clear-context"
     tags: [context, tool-result, compaction, clear_tool_uses, compact_20260112]
 
-  - id: task-init
-    type: skill
-    category: workflow
-    source: core/skills/task-init/SKILL.md
-    yaml: core/skills/task-init/skill.yaml
-    installed_claude: skills/task-init/SKILL.md
-    installed_cursor: null
-    script: core/scripts/tools/task-init.sh
-    tier: 1
-    model: haiku
-    tags: [workflow, worklog, jira]
-
-  - id: update-worklog
-    type: skill
-    category: workflow
-    source: core/skills/update-worklog/SKILL.md
-    yaml: core/skills/update-worklog/skill.yaml
-    installed_claude: skills/update-worklog/SKILL.md
-    installed_cursor: null
-    script: core/scripts/tools/worklog.sh
-    tier: 1
-    model: haiku
-    tags: [workflow, worklog, state-externalization]
-
   - id: session-learnings
     type: skill
     category: workflow
@@ -362,17 +338,6 @@ skills:
     tier: 1
     model: none
     tags: [admin, audit, gate, validation]
-
-  - id: help
-    type: skill
-    category: admin
-    source: core/skills/help/SKILL.md
-    yaml: core/skills/help/skill.yaml
-    installed_claude: skills/help/SKILL.md
-    installed_cursor: null
-    tier: 0
-    model: none
-    tags: [admin, help, skill-listing]
 
   - id: pre-review
     type: skill

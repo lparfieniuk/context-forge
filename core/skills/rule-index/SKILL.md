@@ -1,6 +1,6 @@
 ---
 name: rule-index
-description: Loads the ContextForge rule governing a specific concern: prompt caching, context clearing, MCP routing, sub-agent prompts, research after a failure, cloud spend, or token pricing. Use before an API call, an MCP or sub-agent call, a failure recovery, or a spend decision.
+description: Loads the ContextForge rule that governs a specific concern before acting on it: prompt caching, context clearing, MCP routing, sub-agent prompt structure, research after a failure, worklogs, cost, cloud spend, shadow index, module index, rule authoring, thinking effort. Use when the user says "check the rule", "what does rule NNN say", or before an action one of the 12 on-demand rules covers. Do NOT use for the 6 always-on rules — they are already in context.
 model: haiku
 tier: 0
 ---
@@ -27,7 +27,7 @@ NEVER guess a rule's content from its name. Read it or do not cite it.
 | design a prompt/cache layout, choose a TTL, place static context | 006 prompt-caching | `006-cf-prompt-caching.md` |
 | write a worklog/ticket entry, or resume from one | 008 worklog | `008-cf-worklog.md` |
 | add or move a ContextForge module (rule/skill/agent) | 009 module-index | `009-cf-module-index.md` |
-| write a `Task()` prompt or evaluate a sub-agent's return | 011 kernel-prompts | `011-cf-kernel-prompts.md` |
+| write a `Agent()` prompt or evaluate a sub-agent's return | 011 kernel-prompts | `011-cf-kernel-prompts.md` |
 | author or edit a rule file | 012 rule-authoring | `012-cf-rule-authoring.md` |
 | set `thinking`/`effort` on a direct Messages API call | 013 interleaved-thinking | `013-cf-interleaved-thinking.md` |
 | clear tool results or thinking blocks; context editing API | 014 tool-result-clearing | `014-cf-tool-result-clearing.md` |

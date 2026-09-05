@@ -1,6 +1,6 @@
 ---
 name: session-learnings
-description: Captures session observations, anti-patterns, and rule suggestions into the learnings index. Use at the end of a session that produced insights worth keeping.
+description: Captures a session's observations, anti-patterns, and rule suggestions into the learnings index. Use when the user says "capture the learnings", "what did we learn", "write this up", or at the end of a session that produced insights. Do NOT use for a single decision mid-session — that is diary; do NOT use to close a session — that is end-session.
 model: sonnet
 ---
 

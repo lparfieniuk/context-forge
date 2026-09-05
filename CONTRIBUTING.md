@@ -55,7 +55,7 @@ Order matters — the index is checked before the files exist, on purpose.
 5. `npm run test:audit`.
 
 `audit-doc-claims` cross-checks counts written in prose ("20 skills", "11 hooks") against the index,
-so adding a skill without updating `README.md`, `CLAUDE.md`, `CHANGELOG.md`, and `core/skills/help/`
+so adding a skill without updating `README.md`, `CLAUDE.md`, and `CHANGELOG.md`
 fails the build. That is intended: the docs are part of the artifact.
 
 ## Writing a rule

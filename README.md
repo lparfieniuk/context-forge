@@ -8,7 +8,7 @@
 > Deterministic context engineering for AI coding agents — structure over search, tokens over brute force.
 
 A Claude Code (and, partially, Cursor) plugin that treats the context window as a **budget** rather than
-a bucket. 18 rules, 20 skills, 1 sub-agent, 11 hooks, 31 shell tools — all built around one idea: the
+a bucket. 18 rules, 20 skills, 1 sub-agent, 11 hooks, 33 shell tools — all built around one idea: the
 cheapest executor that produces a correct result should do the work, and everything else belongs on disk.
 
 ---
@@ -77,7 +77,6 @@ manifests, task type, capacity estimate, tier availability. If you see it, you'r
 /shadow-lookup BillingFacade     # symbol → file path, ~50 tokens, zero LLM cost
 /safe-exec npm run build         # >5 KB output is written to disk and summarized
 /pack-context "billing|invoice"  # bundle 3–15 related files into one XML block
-/help                            # every skill, grouped, with live system status
 ```
 
 ---
@@ -178,8 +177,6 @@ all 18 rules ≈ 10,500 tokens. `intelligent` rules load only when the task matc
 | `log-analyzer` | execution | 1 | Distill a build/test log to root cause + file + one-line fix |
 | `clear-context` | execution | 1 | Emit the correct `context_management.edits` clearing parameters |
 | `compile-wiki` | execution | 2 | Generate a persistent per-domain wiki (Karpathy pattern) |
-| `task-init` | workflow | 1 | Create a ticket worklog, detect branch and task type, update the index |
-| `update-worklog` | workflow | 1 | Append a decision/phase entry, with a skip-on-trivial gate |
 | `diary` | workflow | 1 | Append a decision/outcome entry for the self-evolving loop |
 | `session-learnings` | workflow | 2 | Capture cross-session observations and rule suggestions |
 | `record-failure` | workflow | 1 | Write a sharded failure ledger; detect the 3-strike pattern |
@@ -189,7 +186,6 @@ all 18 rules ≈ 10,500 tokens. `intelligent` rules load only when the task matc
 | `end-session` | workflow | 1 | Close-out sequence: diary + learnings, commit, merge |
 | `optimize-rules` | admin | 2 | Token audit across all rules; suggest activation-mode changes |
 | `plugin-audit` | admin | 1 | Run the full index/parity/surface audit gate |
-| `help` | admin | 0 | List every skill with live system status. Zero LLM cost |
 
 ## Agent (1)
 
@@ -207,11 +203,11 @@ Hooks are what make the rules more than advice — the blocking ones fail the to
 | PreToolUse · Bash | `enforce-rg.sh` | **yes** | Reject `grep`; print the `rg` equivalent |
 | PreToolUse · Bash | `pre-commit-review.sh` | **yes** | Reject `git commit` without a review marker |
 | PreToolUse · Agent | `enforce-tier-routing.sh` | **yes** | Reject a sub-agent spawn when a Tier 0/1 alternative exists |
+| PostToolUse · Skill | `skill-usage-log.sh` | no | Append every skill invocation to `~/worklogs/logs/skill-usage.tsv` — history past the 30-day transcript window |
 | PostToolUse · Bash | `run-log-writer.sh` | no | Log significant calls to `~/worklogs/runs/` as self-evolve signal |
-| PostToolUse · Bash | `wiki-nudge.sh` | no | Suggest `/compile-wiki` when a domain is read repeatedly |
 | PostToolUse · MCP | `mcp-context-guard.sh` | no | Flag oversized MCP payloads for clearing (rule 014) |
 | SubagentStop | `subagent-telemetry.sh` | no | Track spawns, model, duration, tier; warn at the Tier-3 ceiling |
-| PreCompact | `pre-compact-anchor.sh` | no | Re-inject top constraints before compaction (lost-in-the-middle mitigation) |
+| PostCompact | `compact-anchor.sh` | no | Re-inject top constraints into the fresh post-compaction context |
 | SessionEnd | `diary-capture.sh`, `session-end-reminder.sh` | no | Write the session diary entry; report stats and remind about learnings |
 
 ---

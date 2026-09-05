@@ -1,6 +1,6 @@
 ---
 name: plugin-audit
-description: Runs the ContextForge validation gates: index, parity, doc claims, rules, and tests. Use before a commit or after running convert.
+description: Runs every ContextForge validation gate: index, parity, doc claims, rules, portability, tests. Use when the user says "run the audit", "check the gates", "is the plugin valid", before a commit, or after npm run convert. Do NOT use for reviewing application code — that is pre-review.
 model: inherit
 ---
 

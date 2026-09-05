@@ -2,9 +2,10 @@
 
 ## SYSTEM CONSTRAINTS
 
-SCOPE: this rule governs DIRECT Messages API calls. Claude Code's Task/Agent tool does NOT expose `thinking`/`effort` (it manages subagent effort internally, default `xhigh`) — for Task() dispatch the only lever is `model`.
+SCOPE: this rule governs DIRECT Messages API calls. Claude Code's Agent tool does NOT expose `thinking`/`effort` (it manages subagent effort internally, default `xhigh`) — for Agent() dispatch the only lever is `model`.
 `effort` is NOT a field of `thinking` — ALWAYS pass it as `output_config: {effort: …}`. Nesting it inside `thinking` returns a 400.
-Adaptive thinking is OFF by default on Opus 4.7/4.8 — a request with no `thinking` field runs WITHOUT thinking. ALWAYS set `thinking: {type: "adaptive"}` explicitly to enable it.
+Adaptive thinking is OFF by default on Opus 4.7/4.8 — a request with no `thinking` field runs WITHOUT thinking. ALWAYS set `thinking: {type: "adaptive"}` explicitly there.
+On Opus 5 the default flipped: adaptive is ON, so omitting `thinking` still thinks. NEVER carry an Opus 4.8 `{type: "disabled"}` setting forward to Opus 5 — it is a 400 at effort `xhigh`/`max`, and below that the model writes tool calls into visible text instead of `tool_use` blocks (the turn succeeds, the call never runs). Lower `effort` instead of disabling.
 On Opus 4.7/4.8 and Fable 5, `budget_tokens` is REMOVED — `thinking: {type: "enabled", budget_tokens: N}` returns a 400. Use `thinking: {type: "adaptive"}` + `output_config: {effort: …}`.
 On Sonnet 5, adaptive thinking is ON by default (unlike Opus 4.7/4.8) — omit `thinking` to keep it on; pass `thinking: {type: "disabled"}` to turn it off. `budget_tokens` is NOT supported (400) — control depth via `output_config: {effort: …}`.
 On legacy Sonnet 4.6, `budget_tokens` is DEPRECATED — PREFER `thinking: {type: "adaptive"}`. Keep `budget_tokens` only as a transitional escape hatch (must be `< max_tokens`).
@@ -13,19 +14,21 @@ Haiku 4.5 does NOT support extended thinking — NEVER pass a `thinking` param t
 The `interleaved-thinking-2025-05-14` beta header is DEPRECATED — adaptive thinking enables interleaved thinking automatically. NEVER add it for current-gen models.
 NEVER assume `thinking` blocks are cacheable with `cache_control` — they are NOT.
 ALWAYS add a second message-level cache breakpoint when adaptive thinking is active in tool-heavy flows (>5 tool calls).
-`thinking.display` defaults to `"omitted"` on Fable 5 / Opus 4.8 / 4.7 (the `thinking` text is empty) — set `display: "summarized"` when reasoning is surfaced to a user/log.
+`thinking.display` defaults to `"omitted"` on Fable 5, Fable 5.1, Opus 5, Opus 4.8, 4.7 and Sonnet 5 (the `thinking` text is empty) — set `display: "summarized"` when reasoning is surfaced to a user/log.
 
-## Thinking by Model (June 2026)
+## Thinking by Model (verified 2026-09-05)
 
 | Model | Thinking param | Depth control | Notes |
 |---|---|---|---|
-| `claude-haiku-4-5-20251001` | none (unsupported) | — | NEVER pass `thinking` |
+| `claude-haiku-4-5` | none (unsupported) | — | NEVER pass `thinking` |
 | `claude-sonnet-5` | `{type: "adaptive"}` (ON by default) | `output_config.effort` | current Sonnet; `budget_tokens` 400; `xhigh` + `max` supported; `{type:"disabled"}` allowed |
 | `claude-sonnet-4-6` (legacy) | `{type: "adaptive"}` (preferred) | `output_config.effort` | `budget_tokens` deprecated (transitional only); `effort` supports up to `max` |
 | `claude-opus-4-6` | `{type: "adaptive"}` | `output_config.effort` | `budget_tokens` removed; `max` effort supported |
 | `claude-opus-4-7` | `{type: "adaptive"}` (OFF by default) | `output_config.effort` | adds `xhigh`; `budget_tokens` 400 |
-| `claude-opus-4-8` | `{type: "adaptive"}` (OFF by default) | `output_config.effort` | same surface as 4.7; current Opus |
+| `claude-opus-4-8` | `{type: "adaptive"}` (OFF by default) | `output_config.effort` | same surface as 4.7 |
+| `claude-opus-5` | `{type: "adaptive"}` (**ON by default** — omitting `thinking` still thinks, unlike 4.7/4.8) | `output_config.effort` | current Opus; `{type:"disabled"}` accepted ONLY at effort `high` or below — 400 at `xhigh`/`max`, and it makes the model write tool calls into visible text |
 | `claude-fable-5` | always-on (omit param) | `output_config.effort` | `{type:"disabled"}` → 400; raw CoT never returned |
+| `claude-fable-5-1` | always-on (omit param) | `output_config.effort` | most capable; forced `tool_choice` `any`/`tool` → 400; thinking blocks bound to producing model |
 
 `budget_tokens` (fixed thinking budget) is a deprecated/removed concept — `output_config.effort` replaces it. Do NOT introduce `budget_tokens` in new code.
 
@@ -51,14 +54,14 @@ Mitigation: add a second message-level breakpoint after the 5th tool result to r
 
 ## Few-shot example
 
-**Input:** Agent flow with 10 tool calls on Opus 4.8.
+**Input:** Agent flow with 10 tool calls on Opus 5.
 
-**Reasoning:** Opus 4.8 adaptive thinking is OFF by default → set it explicitly. Depth via `output_config.effort` (NOT inside `thinking`). >5 tool calls → add a second cache breakpoint after tool result 5.
+**Reasoning:** Opus 5 adaptive thinking is ON by default — passing it explicitly is harmless and self-documenting. Depth via `output_config.effort` (NOT inside `thinking`). >5 tool calls → add a second cache breakpoint after tool result 5.
 
-**Output (Opus 4.8 — adaptive):**
+**Output (Opus 5 — adaptive):**
 ```python
 response = client.messages.create(
-    model="claude-opus-4-8",
+    model="claude-opus-5",
     max_tokens=64000,                      # stream for large outputs
     thinking={"type": "adaptive", "display": "summarized"},
     output_config={"effort": "xhigh"},     # effort lives here, NOT in thinking
@@ -93,6 +96,7 @@ response = client.messages.create(
 
 - [ ] `effort` passed via `output_config`, NOT nested in `thinking`?
 - [ ] For Opus 4.7/4.8: `thinking: {type: "adaptive"}` set explicitly (OFF by default)?
+- [ ] For Opus 5: no `{type: "disabled"}` carried over from 4.8, and no `budget_tokens`?
 - [ ] No `budget_tokens` on Opus 4.6/4.7/4.8 or Fable 5 (returns 400)?
 - [ ] For Fable 5: `thinking` param omitted entirely (no `{type:"disabled"}`)?
 - [ ] NEVER passing a `thinking` param to Haiku 4.5 (unsupported)?

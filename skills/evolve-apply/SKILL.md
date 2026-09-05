@@ -1,6 +1,6 @@
 ---
 name: evolve-apply
-description: Applies a human-approved evolve proposal, then converts, audits, and reverts on failure. Use only after explicit approval of a specific proposal id.
+description: Applies one human-approved evolve proposal, then converts, audits, and reverts on failure. Use only after the user names a specific proposal id and approves it — "apply proposal X", "yes, apply that one". Do NOT use to generate or review proposals (that is evolve), and NEVER on an unapproved or unnamed proposal.
 model: haiku
 ---
 

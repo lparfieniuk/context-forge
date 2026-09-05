@@ -1,6 +1,6 @@
 ---
 name: failure-replay
-description: Scaffolds a cf-bench regression case from a circuit-breaker failure ledger so a recorded incident becomes a replayable test case instead of prose. Use after record-failure when the failure was build/test/code-related.
+description: Scaffolds a cf-bench regression case from a circuit-breaker failure ledger, so a recorded incident becomes a replayable test. Use when the user says "turn this failure into a test", "replay that incident", or after record-failure writes a build/test ledger. Do NOT use for process failures with no reproducible command — those stay out of the bench by design.
 model: haiku
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: shadow-lookup
-description: Finds which file defines a symbol by reading the shadow manifest (~50 tokens, no LLM call). Use to answer 'where is X defined' before opening any source file.
+description: Answers "where is X defined", "which file has this class", "find the symbol", or "locate this function" by reading the pre-built shadow manifest (~50 tokens, no LLM call, no file opened). Do NOT use for full-text search, for finding call sites, or when no manifest exists — use rg, or run refresh-manifest first.
 model: inherit
 ---
 

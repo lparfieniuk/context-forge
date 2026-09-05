@@ -60,8 +60,6 @@ DOCS="
 README.md
 CHANGELOG.md
 CLAUDE.md
-core/skills/help/SKILL.md
-skills/help/SKILL.md
 hooks/session-start.sh
 "
 

@@ -14,9 +14,9 @@ Context rot begins BEFORE hitting token limit — n² attention means recall deg
 
 | Model ID | Context | Effective (agentic) |
 |---|---|---|
-| `claude-haiku-4-5-20251001` | 200k | ~120–140k |
+| `claude-haiku-4-5` | 200k | ~120–140k |
 | `claude-sonnet-5` | 1M | ~600–700k (context rot warning — do NOT rely on full window) |
-| `claude-opus-4-8` | 1M (standard pricing across the full window — no long-context premium) | ~600–700k (context rot warning — do NOT rely on full window) |
+| `claude-opus-5` | 1M (standard pricing across the full window — no long-context premium) | ~600–700k (context rot warning — do NOT rely on full window) |
 
 Interleaved thinking adds overhead per tool call turn — each thinking block consumes additional tokens beyond the response. Account for this in capacity estimates when interleaved thinking is active.
 
@@ -38,6 +38,8 @@ Context quality degrades before the hard limit. 83.9% of tokens in agentic syste
 | 60–69% | WARNING | Emit warning in session status |
 | 70–79% | PRESSURE | Force Scribe dispatch for all tool outputs; warn before Tier 3 spawn |
 | ≥80% | CRITICAL | BLOCK new Tier 3 spawns; recommend session restart |
+
+Measured 2026-09-05: the SessionStart banner reported 100% capacity four times in a 30-day transcript window and `session-handoff` ran zero times in that window. A threshold that is reached and never acted on is a prompt, not a gate — the harness's own auto-compaction fires first and absorbs the pressure, so treat handoff as the deliberate choice before a planned `/clear`, not as an automatic response to a percentage.
 
 ## Session Status Block
 

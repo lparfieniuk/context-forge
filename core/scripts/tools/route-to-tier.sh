@@ -119,7 +119,7 @@ case "$TASK_LOWER" in
     ;;
   *worklog*read*|*worklog*append*|*ticket*context*)
     echo "TIER:1"
-    echo "ACTION:bash core/scripts/tools/worklog.sh --key <PROJ-123> --scope <what_changed>"
+    echo "ACTION:/context-forge:diary   # ticket worklogs retired 2026-09-05 with task-init/update-worklog"
     echo "REASON:Script-based file I/O"
     ;;
   *refresh*manifest*|*generate*manifest*)
@@ -129,18 +129,18 @@ case "$TASK_LOWER" in
     ;;
   *architecture*|*design*|*tradeoff*|*depend*graph*|*blast*radius*)
     echo "TIER:3"
-    echo "ACTION:Task(model: sonnet, subagent: architect)"
+    echo "ACTION:Agent(model: sonnet, subagent_type: architect)"
     echo "REASON:Architecture decision requires reasoning depth"
     ;;
   *refactor*5+files*|*bulk*codegen*|*cross*repo*)
     echo "TIER:2"
-    echo "ACTION:Task(model: haiku, subagent: executor)"
+    echo "ACTION:Agent(model: haiku, subagent_type: executor)"
     echo "REASON:Multi-file task, but not architectural"
     ;;
   *)
     # Default: Tier 2 for unknown tasks
     echo "TIER:2"
-    echo "ACTION:Decompose into smaller steps or use Task(model: haiku)"
+    echo "ACTION:Decompose into smaller steps or use Agent(model: haiku)"
     echo "REASON:Unknown task type; default to Haiku-first"
     ;;
 esac

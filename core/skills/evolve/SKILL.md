@@ -1,6 +1,6 @@
 ---
 name: evolve
-description: Reviews accumulated failure and diary signal, then writes human-gated rule proposals. Use when signal crosses threshold or on request. Never edits rules itself.
+description: Reviews accumulated failure and diary signal, then writes human-gated rule proposals; it never edits rules itself. Use when the user says "run evolve", "what should change", "review the signals", or when the signal count crosses the threshold. Do NOT use to apply a proposal — that is evolve-apply, and it requires explicit approval of a specific proposal id.
 model: sonnet
 ---
 

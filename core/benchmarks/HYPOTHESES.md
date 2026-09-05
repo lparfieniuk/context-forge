@@ -177,6 +177,41 @@ rule already exists and the direction is not in doubt.
 
 ---
 
+## H6 — Most of the plugin's surface is never used outside its own repo
+
+**Claim:** the skills and Tier 1 scripts that carry ContextForge's headline value — the shadow
+index, signature extraction, context packing — earn their always-on listing cost in real project
+work. This is the discovery half of H1, which measured the *rules*.
+
+**Measurement (Tier 0, `core/scripts/tools/skill-usage.sh`, run 2026-09-05):** count Skill-tool
+invocations, slash invocations, and sub-agent spawns per skill across every transcript in
+`~/.claude/projects`, then repeat with `context-forge` transcripts excluded.
+
+**Status: MEASURED 2026-09-05 — REFUTED.**
+
+| Scope | Result |
+|---|---|
+| Skills invoked at all (30-day window) | 7 of 23 |
+| Skills invoked outside the `context-forge` repo | 5 — `diary` 37, `session-learnings` 34, `end-session` 18, `pre-review` 11, `record-failure` 1 |
+| Discovery skills used outside the repo | 0 |
+| Tier 1 script executions outside the repo | 0 of 21 distinct scripts executed |
+| `cf-scribe` spawns, anywhere | 0 |
+
+Every surviving user is a session-workflow skill. The discovery layer — the plugin's stated first
+pillar — was exercised only while developing the plugin itself. Two candidate causes, not yet
+separated: the descriptions were summaries rather than routing predicates (rewritten 2026-09-05,
+so the next window is a genuine re-test), or the native Read/Grep/Glob tools are simply reached
+for first and no description can outbid them. **Next measurement:** re-run `skill-usage.sh` after
+2026-10-05 on a window that contains only post-rewrite sessions; if discovery use is still zero,
+the cause is not discoverability and the layer should be cut, not re-described.
+
+**Instrument caveat:** transcripts are deleted after `cleanupPeriodDays` (default 30, verified in
+the 2.1.261 binary), so every number above is a rolling month, never project history. The
+`PostToolUse`/`Skill` hook added the same day writes `~/worklogs/logs/skill-usage.tsv` so later
+windows are not bounded by that.
+
+---
+
 ## Leads logged but NOT queued (insufficient signal to design a measurement)
 
 - CodeGraph (−58% tool calls claim), Shepherd (reversible agent trace, ~95% KV reuse),

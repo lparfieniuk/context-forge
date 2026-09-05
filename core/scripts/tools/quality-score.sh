@@ -58,9 +58,17 @@ score_rule() {
 }
 
 score_skill() {
-  local f="$1" rel="$2" passed=0 total=6 missing=""
+  local f="$1" rel="$2" passed=0 total=7 missing=""
   rg -q '^name:' "$f" 2>/dev/null && passed=$((passed+1)) || missing="${missing}name,"
   rg -q '^description:' "$f" 2>/dev/null && passed=$((passed+1)) || missing="${missing}description,"
+  # The description is a routing predicate, not a summary: without explicit negative
+  # scope a broad skill fires on adjacent turns and injects thousands of stray tokens.
+  # Scan the whole frontmatter block — a folded `description: >` spans several lines.
+  if awk 'NR==1 && $0=="---" {f=1; next} f && $0=="---" {exit} f' "$f" 2>/dev/null | rg -q '[Dd]o NOT use'; then
+    passed=$((passed+1))
+  else
+    missing="${missing}negative-scope,"
+  fi
   rg -q '^## What This Does|^## Purpose' "$f" 2>/dev/null && passed=$((passed+1)) || missing="${missing}purpose,"
   rg -q '^## Constraints' "$f" 2>/dev/null && passed=$((passed+1)) || missing="${missing}constraints,"
   rg -q '<example>|^## Few-shot' "$f" 2>/dev/null && passed=$((passed+1)) || missing="${missing}example,"

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Hook 7: pre-compact-anchor.sh (PreCompact)
-# Re-inject critical rules at top of context before compaction to prevent
-# Lost-in-Middle degradation.
+# Hook 7: compact-anchor.sh (PostCompact)
+# Re-inject critical rules at the top of the FRESH context after compaction.
+# Bound to PreCompact until 2026-09-05: the anchor was emitted into the context
+# that compaction then summarised away, so it protected nothing. PostCompact runs
+# after the new context exists, which is where an anchor has to land.
 
 # Fallback: CLAUDE_PLUGIN_ROOT is injected by Claude Code hook runner
 # If running standalone, resolve from script directory
@@ -25,7 +27,7 @@ extract_constraints() {
 
 # Emit anchor block
 cat << 'EOF'
-[CONTEXTFORGE ANCHOR — Re-injected at compaction]
+[CONTEXTFORGE ANCHOR — Re-injected after compaction]
 CRITICAL CONSTRAINTS (from cf-001, cf-003, cf-010, cf-013, cf-014):
 EOF
 

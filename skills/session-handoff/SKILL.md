@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: Compresses live session state into a paste-able payload so /clear costs no context. Use at high context capacity, before /clear, or when handing work to a fresh session.
+description: Compresses live session state into a paste-able payload so /clear costs no context. Use when the user says "hand off", "I need to clear", "summarise where we are", or when session capacity passes 80%. Do NOT use at low capacity, and do NOT use to end a session — that is end-session.
 model: haiku
 tier: 1
 ---

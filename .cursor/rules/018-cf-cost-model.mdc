@@ -16,20 +16,24 @@ ALWAYS reason about routing cost in dollars, not just token counts — a Tier-3 
 NEVER treat output tokens as priced like input — output is 5x the input rate on every current model. ALWAYS prefer returning IDs / references over re-emitting prose (rule 001).
 ALWAYS use the Batch API (50% off input AND output) for non-interactive, latency-tolerant work — `/evolve` passes, audits, benchmark scoring. NEVER batch interactive or blocking work.
 NEVER assume token counts are comparable across model generations — Opus 4.7+, Sonnet 5, and Fable 5 use a newer tokenizer that emits ~30% MORE tokens for the same text than Sonnet 4.6 and earlier. ALWAYS inflate capacity/cost estimates by ~30% when moving work onto a new-tokenizer model (adjusts rule 010).
-NEVER route to a superseded model to save money without checking this table — Sonnet 5 introductory pricing ($2/$10) is CHEAPER than legacy Sonnet 4.6 ($3/$15) through 2026-08-31.
+NEVER route to a superseded model to save money without checking this table — Sonnet 5 ($2/$10) is CHEAPER than legacy Sonnet 4.6 ($3/$15).
 NEVER use fast mode on Opus 4.7 — deprecated, removed 2026-07-24. Opus 4.6 fast mode already silently runs at standard speed/price.
 
-## Model Pricing (USD per 1M tokens, verified 2026-07-21)
+## Model Pricing (USD per 1M tokens, verified 2026-09-05 against claude.com/pricing)
 
 | Model | Input | Output | 5m cache write | 1h cache write | Cache read | Batch in/out |
 |---|---|---|---|---|---|---|
 | `claude-haiku-4-5` | $1 | $5 | $1.25 | $2 | $0.10 | $0.50 / $2.50 |
-| `claude-sonnet-5` (intro→2026-08-31) | $2 | $10 | $2.50 | $4 | $0.20 | $1 / $5 |
-| `claude-sonnet-5` (from 2026-09-01) | $3 | $15 | $3.75 | $6 | $0.30 | $1.50 / $7.50 |
+| `claude-sonnet-5` | $2 | $10 | $2.50 | $4 | $0.20 | $1 / $5 |
+| `claude-opus-5` | $5 | $25 | $6.25 | $10 | $0.50 | $2.50 / $12.50 |
 | `claude-opus-4-8` | $5 | $25 | $6.25 | $10 | $0.50 | $2.50 / $12.50 |
 | `claude-fable-5` | $10 | $50 | $12.50 | $20 | $1 | $5 / $25 |
+| `claude-fable-5-1` | $10 | $50 | $12.50 | not published | $0.25 | $5 / $25 |
 
-Sonnet 4.6 (legacy) is $3/$15 — never cheaper than Sonnet 5 intro pricing, so there is no cost reason to route to it.
+Sonnet 4.6 (legacy) is $3/$15 — never cheaper than Sonnet 5, so there is no cost reason to route to it.
+
+A scheduled Sonnet 5 increase to $3/$15 "from 2026-09-01" stood in this table until 2026-09-05, when the live pricing page showed $2/$10 still in force. It was never an announced change — it was Sonnet 4.6's price written into a Sonnet 5 row. Prices here are re-verified against the pricing page, never carried forward from memory (rule 015).
+Claude Fable 5.1 reads cache at $0.25/MTok — a quarter of Claude Fable 5's $1 — so a cache-heavy workload can cost less on the newer, nominally identical-priced model.
 
 ## Cache Multipliers (relative to base input)
 

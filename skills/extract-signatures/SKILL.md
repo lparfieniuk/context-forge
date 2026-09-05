@@ -1,6 +1,6 @@
 ---
 name: extract-signatures
-description: Extracts function and class signatures (names, parameters, return types — no bodies) from TypeScript or PHP files. Use before editing an unfamiliar file, to learn its API for ~500-2k tokens instead of a full read.
+description: Extracts function and class signatures — names, parameters, return types, no bodies — from a TypeScript or PHP file. Use when the user asks "what's the API of this file", "list the methods", "show the signatures", or before editing an unfamiliar file. Do NOT use when the bodies actually matter (debugging, refactoring logic) or for languages other than .ts and .php.
 model: haiku
 ---
 

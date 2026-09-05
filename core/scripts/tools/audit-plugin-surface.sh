@@ -138,7 +138,7 @@ if [[ -f "$INDEX" ]]; then
   DOC_EXPECTATIONS="$(mktemp "${TMPDIR:-/tmp}/agent-expectations.XXXXXX")"
   trap 'rm -f "$TMPFILE" "$DOC_EXPECTATIONS"' EXIT
 
-  for rel in README.md CHANGELOG.md CLAUDE.md core/skills/help/SKILL.md skills/help/SKILL.md; do
+  for rel in README.md CHANGELOG.md CLAUDE.md; do
     file="$PLUGIN_ROOT/$rel"
     [[ -f "$file" ]] || continue
     sed -nE 's/.*\*\*([0-9]+) agents?\*\*.*/\1/p; s/.*\(([0-9]+) agents?\).*/\1/p' "$file" >> "$DOC_EXPECTATIONS"

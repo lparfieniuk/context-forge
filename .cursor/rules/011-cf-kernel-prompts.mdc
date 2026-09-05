@@ -7,16 +7,16 @@ globs: []
 
 ## SYSTEM CONSTRAINTS
 
-ALWAYS use KERNEL template structure for every Task() prompt.
-NEVER spawn a Task() with a vague prompt lacking Context, Task, Constraints, Format, and Verify sections.
+ALWAYS use KERNEL template structure for every Agent() prompt.
+NEVER spawn a Agent() with a vague prompt lacking Context, Task, Constraints, Format, and Verify sections.
 NEVER accept conversational filler back from subagents — mandate exact return format in prompt.
-NEVER paste file contents, log bodies, or search dumps INTO a Task() prompt — ALWAYS pass paths, line ranges, or a query string and let the child read what it needs. A child's empty context is the entire reason delegating is cheaper than doing the work inline; a pasted payload spends that budget before the child has read its first instruction, and it is paid twice (once in the parent, once in the child).
+NEVER paste file contents, log bodies, or search dumps INTO a Agent() prompt — ALWAYS pass paths, line ranges, or a query string and let the child read what it needs. A child's empty context is the entire reason delegating is cheaper than doing the work inline; a pasted payload spends that budget before the child has read its first instruction, and it is paid twice (once in the parent, once in the child).
 NEVER spawn >2 concurrent Tier 3 Tasks without explicit authorization.
 ALWAYS set `model: "haiku"` for Tier 2 tasks. NEVER use `model: "sonnet"` for Tier 2.
-NEVER pass thinking parameters to `claude-haiku-4-5-20251001` — it does not support thinking.
-When dispatching Tier 3 work via a direct Messages API call (SDK / your own orchestration), default to `output_config: {effort: "low"}` for Opus 4.8 unless deep reasoning is needed; `effort` lives in `output_config`, NEVER inside `thinking`. NOTE: Claude Code's Task/Agent tool does NOT expose `effort` or `thinking` — it manages subagent effort internally (default `xhigh`); for Task() the only routing lever is `model`.
+NEVER pass thinking parameters to `claude-haiku-4-5` — it does not support thinking.
+When dispatching Tier 3 work via a direct Messages API call (SDK / your own orchestration), default to `output_config: {effort: "low"}` for Opus 5 unless deep reasoning is needed; `effort` lives in `output_config`, NEVER inside `thinking`. NOTE: Claude Code's Agent tool does NOT expose `effort` or `thinking` — it manages subagent effort internally (default `xhigh`); for Agent() the only routing lever is `model`.
 
-## KERNEL Template (MANDATORY for all Task() prompts)
+## KERNEL Template (MANDATORY for all Agent() prompts)
 
 ```
 Context: <ticket key or brief goal, ≤1 sentence>
@@ -64,13 +64,13 @@ When spawning Scribe for output masking, mandate this format:
 [END SCRIBE OUTPUT]
 ```
 
-## Model-Specific Notes for Task() Prompts
+## Model-Specific Notes for Agent() Prompts
 
 | Model | Thinking support | KERNEL additions |
 |-------|-----------------|-----------------|
-| `claude-haiku-4-5-20251001` | None | No thinking params — omit entirely |
+| `claude-haiku-4-5` | None | No thinking params — omit entirely |
 | `claude-sonnet-5` | Adaptive (`type: "adaptive"`, ON by default) — `budget_tokens` → 400 | Control depth with `output_config: {effort: "medium"}`; do NOT introduce `budget_tokens` |
-| `claude-opus-4-8` | Adaptive (`type: "adaptive"`, OFF by default) | Set `thinking` explicitly; depth via `output_config: {effort: "low"}` (`"high"`/`"xhigh"` for architecture); `budget_tokens` → 400 |
+| `claude-opus-5` | Adaptive (`type: "adaptive"`, ON by default) | Omit `thinking` to keep it on; depth via `output_config: {effort: "low"}` (`"high"`/`"xhigh"` for architecture); `budget_tokens` → 400 |
 
 NEVER pass a `thinking` param to Haiku subagents — Haiku 4.5 does not support thinking.
 ALWAYS keep `output_config: {effort: "low"}` for cost-sensitive Opus subagents (`effort` is in `output_config`, never in `thinking`).
@@ -81,7 +81,7 @@ ALWAYS keep `output_config: {effort: "low"}` for cost-sensitive Opus subagents (
 **Reasoning:** >2 files, LLM judgment needed → Tier 2 (Haiku). Apply KERNEL template.
 **Output:**
 ```
-Task(
+Agent(
   subagent_type: "executor",
   model: "haiku",
   prompt: "Context: PROJ-3456 — add tenantId to AuthService. Task: Add tenantId parameter to all public methods in auth.service.ts, auth.facade.ts, auth.effects.ts, auth.actions.ts, billing.service.ts, api.ts. Constraints: NEVER change method return types; NEVER rename existing parameters. Format: Return [SUCCESS] + list of modified files. Verify: rg 'tenantId' src/auth/ shows 12 matches. Done-when: [ $(rg -c --no-filename tenantId src/auth/ | paste -sd+ | bc) -eq 12 ]"
@@ -89,7 +89,7 @@ Task(
 ```
 Parent after return: run the `Done-when` predicate. False → one rule-004 strike, re-dispatch once naming the gap, then halt.
 
-## Validation gate (MANDATORY before Task() spawn)
+## Validation gate (MANDATORY before Agent() spawn)
 
 - [ ] KERNEL template used (Context / Task / Constraints / Format / Verify / Done-when)?
 - [ ] `Done-when:` is a shell-decidable predicate (count/exists/exit code), not an adjective?
@@ -99,5 +99,5 @@ Parent after return: run the `Done-when` predicate. False → one rule-004 strik
 - [ ] Verify section includes a runnable rg/diff command?
 - [ ] Tier 3 concurrent count ≤2?
 - [ ] If target model is Haiku: thinking params omitted from KERNEL?
-- [ ] If target model is Opus 4.8: `thinking: {type: "adaptive"}` set explicitly and `effort` specified via `output_config` (default "low")?
+- [ ] If target model is Opus 5: `effort` specified via `output_config` (default "low"), no `budget_tokens`, no `{type: "disabled"}` carried over from 4.8?
 If any unchecked → fix prompt before spawning.

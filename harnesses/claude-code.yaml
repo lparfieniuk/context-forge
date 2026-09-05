@@ -14,14 +14,14 @@ instructions:
 capabilities:
   hooks: full                        # hooks.json: SessionStart, PreToolUse, PostToolUse, SubagentStop, PreCompact, SessionEnd
   subagent_tool: Task                # tool name used to spawn subagents
-  subagent_model_param: true         # Task(model: ...) is the only routing lever (rule 013 scope note)
+  subagent_model_param: true         # Agent(model: ...) is the only routing lever (rule 013 scope note)
   skills_format: skill-md            # YAML frontmatter + markdown body
   deterministic_enforcement: true    # hooks gate policy; other harnesses degrade to rule-text
 models:                              # anchored IDs per ADR-2026-04-26-003
-  tier2: claude-haiku-4-5-20251001
+  tier2: claude-haiku-4-5
   tier3: claude-sonnet-5
-  tier3plus: claude-opus-4-8
+  tier3plus: claude-opus-5
 notes: >
   Primary target. All hooks, skills, and deterministic enforcement are
-  available. Rules may reference Task(), CLAUDE.md, and hook event names
+  available. Rules may reference Agent(), CLAUDE.md, and hook event names
   directly because this profile resolves them.

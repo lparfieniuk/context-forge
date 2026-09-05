@@ -1,6 +1,6 @@
 ---
 name: optimize-rules
-description: Audits ContextForge rules for token cost, cross-rule duplication, and wrong activation mode. Use when the always-on rule budget grows.
+description: Audits ContextForge rules for token cost, cross-rule duplication, and wrong activation mode. Use when the user says "audit the rules", "the rule budget is too big", "which rules should be on-demand", or after adding an always-on rule. Do NOT use for editing rule content or for auditing skills — that is the plugin-audit and skill surface gates.
 model: sonnet
 ---
 

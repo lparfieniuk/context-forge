@@ -59,6 +59,21 @@ describe.skipIf(!HAS_MARKETPLACE)('hook parity: source vs .local-marketplace', (
 
     expect(diffs).toEqual([]);
   });
+
+  // `convert.ts` writes but never prunes. A deleted or renamed hook keeps running
+  // from the installed copy — wiki-nudge.sh and pre-compact-anchor.sh both survived
+  // their own deletion this way on 2026-09-05, and every other gate passed.
+  it('marketplace holds no hook file that source has dropped', () => {
+    const sourceFiles = new Set(
+      fs.readdirSync(SOURCE_HOOKS).filter(f => fs.statSync(path.join(SOURCE_HOOKS, f)).isFile()),
+    );
+    const orphans = fs
+      .readdirSync(MARKETPLACE_HOOKS)
+      .filter(f => fs.statSync(path.join(MARKETPLACE_HOOKS, f)).isFile())
+      .filter(f => !sourceFiles.has(f));
+
+    expect(orphans).toEqual([]);
+  });
 });
 
 // ---------------------------------------------------------------------------

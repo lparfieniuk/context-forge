@@ -1,6 +1,6 @@
 ---
 name: clear-context
-description: Emits the context_management parameters that clear accumulated tool results or thinking blocks. Use when tool results approach 30K tokens.
+description: Emits the context_management parameters that clear accumulated tool results or thinking blocks. Use when the user says "clear the tool results", "context is full", "free up context", or when tool results approach 30K tokens. Do NOT use as a substitute for /clear or /compact — this clears tool results only, and keeps the conversation.
 model: inherit
 ---
 

@@ -27,7 +27,7 @@ notes: >
   Fill models.tier2/tier3 above if your provider differs — until then the
   emitted file marks them UNSET instead of guessing an id. tier3plus stays
   null on purpose: no Opus-class escalation without an explicit decision.
-  Rule examples reference Claude Code vocabulary (Task(), CLAUDE.md, hook
-  events) — map them: Task() → task tool, .claude/rules/ → this file, hooks →
+  Rule examples reference Claude Code vocabulary (Agent(), CLAUDE.md, hook
+  events) — map them: Agent() → task tool, .claude/rules/ → this file, hooks →
   discipline only. Scripts under core/scripts/tools/ are plain bash and work
   unchanged; the plugin-root placeholder resolves to the absolute path here.

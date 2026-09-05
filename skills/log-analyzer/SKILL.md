@@ -1,6 +1,6 @@
 ---
 name: log-analyzer
-description: Distills a build, test, or lint log into a root cause, failing file and line, and a one-line fix. Use after a failure instead of reading the raw log.
+description: Distills a build, test, or lint log into root cause, failing file and line, and a one-line fix. Use when the user says "why did the build fail", "analyse this log", "what broke", or pastes a long stack trace. Do NOT use for logs under 100 lines — read them directly; do NOT use for runtime application logs.
 model: haiku
 ---
 

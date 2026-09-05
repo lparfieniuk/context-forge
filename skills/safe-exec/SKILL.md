@@ -1,6 +1,6 @@
 ---
 name: safe-exec
-description: Runs a shell command and compresses output over 5 KB into a log file plus a short summary. Use for builds, tests, and installs that would otherwise flood context.
+description: Runs a shell command and compresses output over 5 KB to a log file plus a short summary. Use for builds, tests, installs, and migrations that would otherwise flood context — "run the build", "run the test suite", "npm install" on a noisy project. Do NOT use for quick commands whose output is small — plain Bash is cheaper and clearer.
 model: haiku
 ---
 

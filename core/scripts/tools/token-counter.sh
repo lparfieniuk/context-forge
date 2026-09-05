@@ -20,7 +20,7 @@ Simple formula: 1 token ≈ 4 characters
 
 Options:
   --file <path>    — Count single file
-  --dir <path>     — Count all files in directory
+  --dir <path>     — Count TypeScript/JavaScript sources (.ts/.tsx/.js/.jsx) under a directory
   --rules          — Count all rule tokens in .claude/rules/
 
 Output:

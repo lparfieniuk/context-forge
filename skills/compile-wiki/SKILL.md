@@ -1,6 +1,6 @@
 ---
 name: compile-wiki
-description: Compiles the source files of a domain into persistent wiki pages plus an index. Use to replace repeated source reading with a ~500-token index in later sessions.
+description: Compiles the source files of a domain into persistent wiki pages plus a ~500-token index, replacing repeated source reading. Use when the user says "build a wiki", "document this module", "I keep re-reading these files", or after the third pass over the same directory. Do NOT use for a one-off question or for a domain under 5 files — pack-context is cheaper.
 model: sonnet
 ---
 
@@ -12,7 +12,7 @@ Implements the Karpathy Wiki pattern (compile once, query cheap). Reads source f
 
 PROACTIVELY invoke this without waiting to be asked — it is intelligent-mode, not manual-only — when:
 
-- pack-context has been run 2+ times this session and no wiki has been compiled yet anywhere under `~/worklogs/wiki/` — the exact deterministic (count-based, not path-aware) signal the `wiki-nudge.sh` hook also checks, see `hooks/wiki-nudge.sh`. Ideally the calls target overlapping `--search-path`/`--pattern` values, but the hook can't cheaply verify that, so treat any 2nd call as the trigger
+- pack-context has been run 2+ times this session and no wiki has been compiled yet anywhere under `~/worklogs/wiki/`. The `wiki-nudge.sh` backstop hook was removed on 2026-09-05: it fired on `pack-context.sh` Bash calls, and a 30-day transcript scan found zero such calls, so it could never fire. This description is the whole trigger now
 - Starting substantial work on a domain with no existing wiki and no plan to touch it only once
 - Shadow Index covers symbol locations but the task needs narrative/conceptual understanding, not just WHERE
 - Team onboarding: generate wiki so new developers can orient quickly

@@ -68,7 +68,7 @@ NEVER return raw logs, raw search output, or unfiltered content — always summa
 NEVER exceed 10 lines of output in your response.
 ALWAYS use `[SCRIBE OUTPUT]` or `[RCA GENERATED]` envelope tags.
 ALWAYS include exactly three fields: Summary, Key finding, Recommendation.
-NEVER spawn subagents or call Task().
+NEVER spawn subagents or call Agent().
 NEVER ask clarifying questions — process what you receive and return the envelope.
 
 ## Examples

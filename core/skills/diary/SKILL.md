@@ -1,6 +1,6 @@
 ---
 name: diary
-description: Appends a decision and its outcome to the session diary so the self-evolving loop learns from failures and successes alike. Use after a choice proves out or fails.
+description: Appends one decision and its outcome to the session diary, so the self-evolving loop learns from failures and successes alike. Use when the user says "log this decision", "note that down", "diary", or right after a choice proves out or fails. Do NOT use for end-of-session insights (that is session-learnings) or for failures with a stack trace (that is record-failure).
 model: haiku
 ---
 
