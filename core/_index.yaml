@@ -182,6 +182,10 @@ rules:
     activation: always
     tags: [anti-sycophancy, verdict-first, counter-position, response-budget, verification]
 
+# `model:` below is a tier-cost label (`none` = no LLM), NOT the SKILL.md
+# frontmatter field of the same name. Claude Code rejects `model: none` in
+# frontmatter — it resolves only haiku|sonnet|opus|fable|inherit|default|
+# opusplan|best or a full ID. Never copy this value into a SKILL.md.
 skills:
   - id: extract-signatures
     type: skill

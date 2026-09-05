@@ -1,7 +1,7 @@
 ---
 name: shadow-lookup
 description: Finds which file defines a symbol by reading the shadow manifest (~50 tokens, no LLM call). Use to answer 'where is X defined' before opening any source file.
-model: none
+model: inherit
 ---
 
 ## What This Does

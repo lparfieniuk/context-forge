@@ -1,7 +1,7 @@
 ---
 name: plugin-audit
 description: Runs the ContextForge validation gates: index, parity, doc claims, rules, and tests. Use before a commit or after running convert.
-model: none
+model: inherit
 ---
 
 ## What This Does

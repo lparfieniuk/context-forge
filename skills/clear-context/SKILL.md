@@ -1,7 +1,7 @@
 ---
 name: clear-context
 description: Emits the context_management parameters that clear accumulated tool results or thinking blocks. Use when tool results approach 30K tokens.
-model: none
+model: inherit
 ---
 
 ## What This Does

@@ -1,7 +1,7 @@
 ---
 name: end-session
 description: Closes out a session: diary, learnings, commit, and merge of the working branch. Use when the user signals the work is finished.
-model: none
+model: inherit
 ---
 
 ## What This Does

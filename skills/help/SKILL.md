@@ -1,7 +1,7 @@
 ---
 name: help
 description: Lists ContextForge skills by category with their triggers, and reports manifest, worklog, and context-capacity status. Use to see what the plugin offers.
-model: none
+model: inherit
 ---
 
 ## What This Does

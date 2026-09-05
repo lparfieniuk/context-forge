@@ -389,3 +389,69 @@ describe('audit-plugin-surface.sh', () => {
     expect(r.stdout).toContain('test:audit');
   });
 });
+
+describe('skill/agent frontmatter model values', () => {
+  // `model: none` was invalid: Claude Code 2.1.x accepts only
+  // haiku|sonnet|opus|fable|inherit|default|opusplan|best (optionally `[1m]`)
+  // or a full model ID. Five skills carried `none` and every /end-session,
+  // /help, /plugin-audit, /shadow-lookup and /clear-context invocation died
+  // with "There's an issue with the selected model (none[1m])".
+  const ALIASES = new Set(['haiku', 'sonnet', 'opus', 'fable', 'inherit', 'default', 'opusplan', 'best']);
+  const mdFiles = [
+    ...fs
+      .readdirSync(path.join(PLUGIN_ROOT, 'core/skills'))
+      .map((s) => path.join('core/skills', s, 'SKILL.md')),
+    ...fs
+      .readdirSync(path.join(PLUGIN_ROOT, 'skills'))
+      .map((s) => path.join('skills', s, 'SKILL.md')),
+    ...fs
+      .readdirSync(path.join(PLUGIN_ROOT, 'core/agents'))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => path.join('core/agents', f)),
+  ].filter((rel) => fs.existsSync(path.join(PLUGIN_ROOT, rel)));
+
+  it('finds frontmatter to check (guards against the scan matching nothing)', () => {
+    expect(mdFiles.length).toBeGreaterThan(20);
+  });
+
+  it.each(mdFiles)('%s declares a model Claude Code can resolve', (rel) => {
+    const fm = fs.readFileSync(path.join(PLUGIN_ROOT, rel), 'utf-8').split(/^---$/m)[1] ?? '';
+    const declared = /^model:\s*(\S+)/m.exec(fm)?.[1];
+    if (declared === undefined) return; // omitting the field is legal
+    // YAML permits `model: "sonnet"`; strip the quotes before comparing, or the
+    // gate false-fails a legal value.
+    const bare = declared.replace(/^['"]|['"]$/g, '').replace(/\[1m\]$/, '');
+    expect(ALIASES.has(bare) || bare.startsWith('claude-')).toBe(true);
+  });
+});
+
+describe('core/scripts/_index.yaml params vs script parsers', () => {
+  // The index is what rule 009 tells an agent to trust instead of guessing a
+  // CLI. Ten of thirty entries documented flags their script rejects — e.g.
+  // token-counter listed `--path`/`--threshold` against a parser that only
+  // takes `--file`/`--dir`/`--rules`, and bootstrap-agent was described as an
+  // agent scaffolder when it is a TTL cache. Nothing compared the two.
+  const idx = fs.readFileSync(path.join(PLUGIN_ROOT, 'core/scripts/_index.yaml'), 'utf-8');
+  const toolsDir = path.join(PLUGIN_ROOT, 'core/scripts/tools');
+
+  const entries = idx
+    .split(/\n {2}- id: /)
+    .slice(1)
+    .map((block) => ({ id: block.split('\n')[0].trim(), block }))
+    .filter(({ block }) => /\n\s+file: tools\//.test(block));
+
+  it('finds index entries to check (guards against the scan matching nothing)', () => {
+    expect(entries.length).toBeGreaterThan(20);
+  });
+
+  it.each(entries)('$id documents only flags its script accepts', ({ id, block }) => {
+    const scriptPath = path.join(toolsDir, `${id}.sh`);
+    expect(fs.existsSync(scriptPath)).toBe(true);
+    const src = fs.readFileSync(scriptPath, 'utf-8');
+    const accepted = new Set(
+      [...src.matchAll(/^\s*(--[a-z][a-z-|]*)\)/gm)].flatMap((m) => m[1].split('|')),
+    );
+    const declared = [...block.matchAll(/^\s+- name: (--[a-z-]+)/gm)].map((m) => m[1]);
+    expect(declared.filter((f) => !accepted.has(f))).toEqual([]);
+  });
+});
