@@ -12,6 +12,8 @@ NEVER assume installed path equals source path — they differ after conversion.
 NEVER edit `core/_index.yaml` manually without running `validate-index.sh` after.
 NEVER create source files before registering entry in `core/_index.yaml`.
 ALWAYS run `npm run convert` after adding a module — installed files do NOT update automatically.
+NEVER ship a flag, hook, or gate without a negative test that FAILS when the mechanism is removed — an untested control is documentation, not enforcement (`activation: intelligent` was honoured by nothing for months; `enforce-tier-routing.sh` intercepted zero calls in a 30-day window).
+NEVER assume `npm run convert` prunes — it writes installed copies and NEVER deletes them, so a removed or demoted module keeps running and keeps billing from its installed path. ALWAYS re-check the installed directory after deleting or demoting a module.
 
 ## Quick Lookup Protocol
 
