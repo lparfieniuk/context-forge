@@ -113,6 +113,70 @@ small tasks. That is precisely what rule 007 (context-loading) exists to prevent
 
 ---
 
+### Re-measured 2026-09-06 — the payload was under-tested 3.1x, and the run split across a CLI update
+
+Run: cf-bench `js-express-errors-010`, Sonnet, N=10 per arm, $4.93 across
+`results/bench-20260905-213559.tsv` (A/B/C, CLI **2.1.261**) +
+`results/bench-20260906-de.tsv` (D/E, CLI **2.1.263**). The first file hit the circuit breaker on
+two consecutive `api_error` rows before D and E ran; the missing arms were run separately rather
+than re-buying A/B/C — and Claude Code auto-updated in between.
+
+**That version drift is the headline caveat, not a footnote.** This file's own rule is: do not pool
+across CLI versions unless the point is measuring harness variance. So every CROSS-FILE comparison
+below is suggestive only, and the two within-file comparisons are the only clean measurements.
+
+New arm **E (`configs/cf-full`, ~1945 tokens)** is the payload a consumer repo actually loads —
+the global `CLAUDE.md` minus the personal-infrastructure section. Variant D (`cf-core`, ~619
+tokens) is what the 2026-07-22 run tested, i.e. **3.1x less than the real thing**. Both figures are
+characters/4 on the config file, the same estimator used for every other arm.
+
+#### Clean (single CLI version, single file)
+
+| pair | CLI | metric | delta | p (Mann-Whitney) |
+|---|---|---|---|---|
+| **C vs A** (placebo vs bare) | 2.1.261 | **cost / turns** | **+9.6% / +10.0%** | **0.001 / 0.010** |
+| E vs D (1945 tok vs 619 tok) | 2.1.263 | cost | +1.9% | 0.186 (ns) |
+
+#### Cross-version — suggestive, NOT measured
+
+| pair | metric | delta | p |
+|---|---|---|---|
+| E vs A | cost | +18.6% | 0.000 |
+| E vs C | cost | +8.2% | 0.001 |
+| D vs A | cost | +16.4% | 0.005 |
+| D vs C | cost | +6.2% | 0.045 |
+| E vs C / D vs C | turns | −9.1% / −9.1% | 0.249 / 0.055 (ns) |
+
+Success: A, B and E each 10/10; D **8/10**; C 7/7 of the runs that executed (two more never ran and
+are excluded, per this repo's convention that an empty `success` is a non-run, not a failure).
+
+What the clean rows support:
+
+1. **Payload SIZE is not the cost driver.** E vs D is +1.9%, ns, on one CLI version, even though E's
+   config is ~1326 tokens larger and drives `cache_creation` up by 2640 tokens (median 16007 vs
+   13367) — twice the config delta, and still no significant cost effect. The July worry that
+   correcting the 3.1x under-test would reveal a far worse number is **refuted**.
+2. **Having any CLAUDE.md at all costs ~10%.** C vs A is +9.6% cost and +10.0% turns on one version,
+   replicating July's +8.2%/+14.3%. Whatever CF costs, most of it is not CF-specific.
+
+What the clean rows do NOT support, and what the July run claimed: that the rules buy a turn saving.
+Every CF-vs-baseline comparison here crosses the CLI boundary, so **H1 is neither confirmed nor
+re-refuted by this run** — the July REFUTED verdict stands on the July data, not on this one.
+
+Flag carried forward: **D scored 8/10** where A, B and E scored 10/10 — runs #4 and #7 finished
+(`terminal_reason=completed`) in 8 and 9 turns and failed the hidden assertion. Fisher exact vs A
+gives **p = 0.474**. Needs a re-test at higher N before it means anything.
+
+**Next measurement, and it is now required rather than optional:** re-run all five arms in ONE
+invocation on ONE CLI version. Cost ~$6 per task class. Until then the only defensible claims from
+2026-09-06 are the two clean rows above.
+
+What stays unmeasured is unchanged and is the larger open question — skills, hooks and the
+shadow-index layer live in user scope, which `--setting-sources project` excludes by design, so no
+cf-bench variant reaches them.
+
+---
+
 ## H2 — Advisor routing beats solo-model on cost-adjusted score
 
 **Claim (vyzual.ai OCR, unverified):** a cheap executor + expensive *advisor* (advisor only on
