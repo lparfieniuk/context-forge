@@ -203,6 +203,131 @@ describe('pre-commit-review.sh marker semantics', () => {
     expect(runCommit(nogit).status).toBe(2);
   });
 
+  // Negative tests for the two bugs found on 2026-09-06. Each one FAILS if its
+  // mechanism is deleted from the hook — a check with no failing test is
+  // documentation, not enforcement.
+
+  // Bug 1: the marker was keyed to tool_input.cwd (the SESSION's directory), so a
+  // commit into another repo was gated by the session repo's marker. Observed live:
+  // a fresh ai-tools marker let a context-forge commit through.
+  it('gates the repo named by `cd <repo> &&`, not the session cwd', () => {
+    const session = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-session-'));
+    const target = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-target-'));
+    spawnSync('git', ['-C', session, 'init', '-q']);
+    spawnSync('git', ['-C', target, 'init', '-q']);
+    // Session repo reviewed, target repo NOT reviewed → the commit must still block.
+    fs.writeFileSync(markerFor(session), '');
+    fs.rmSync(markerFor(target), { force: true });
+    try {
+      expect(runRaw(`cd ${target} && ${COMMIT_CMD} -m x`, session).status).toBe(2);
+    } finally {
+      fs.rmSync(markerFor(session), { force: true });
+    }
+  });
+
+  it('gates the repo named by `git -C <repo>`, not the session cwd', () => {
+    const session = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-session-'));
+    const target = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-target-'));
+    spawnSync('git', ['-C', session, 'init', '-q']);
+    spawnSync('git', ['-C', target, 'init', '-q']);
+    fs.writeFileSync(markerFor(session), '');
+    fs.rmSync(markerFor(target), { force: true });
+    try {
+      expect(runRaw(`git -C ${target} commit -m x`, session).status).toBe(2);
+    } finally {
+      fs.rmSync(markerFor(session), { force: true });
+    }
+  });
+
+  it("lets the target repo's own marker unblock a cross-repo commit", () => {
+    const session = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-session-'));
+    const target = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-target-'));
+    spawnSync('git', ['-C', session, 'init', '-q']);
+    spawnSync('git', ['-C', target, 'init', '-q']);
+    fs.rmSync(markerFor(session), { force: true });
+    fs.writeFileSync(markerFor(target), '');
+    try {
+      expect(runRaw(`cd ${target} && ${COMMIT_CMD} -m x`, session).status).toBe(0);
+    } finally {
+      fs.rmSync(markerFor(target), { force: true });
+    }
+  });
+
+  // Raised in review 2026-09-07: taking the FIRST `cd` is a bypass. In
+  // `cd reviewed && cd unreviewed && git commit` the commit runs from the second
+  // repo, so gating on the first hands it a marker it never earned.
+  it('takes the LAST cd in a chain, not the first', () => {
+    const session = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-session-'));
+    const reviewed = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-reviewed-'));
+    const unreviewed = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-unreviewed-'));
+    for (const r of [session, reviewed, unreviewed]) spawnSync('git', ['-C', r, 'init', '-q']);
+    fs.writeFileSync(markerFor(reviewed), '');
+    fs.rmSync(markerFor(unreviewed), { force: true });
+    try {
+      expect(
+        runRaw(`cd ${reviewed} && cd ${unreviewed} && ${COMMIT_CMD} -m x`, session).status,
+      ).toBe(2);
+    } finally {
+      fs.rmSync(markerFor(reviewed), { force: true });
+    }
+  });
+
+  // Same shape for `git -C`: the -C that counts is the one attached to the commit,
+  // not an earlier read-only invocation in the same chain.
+  it('binds `git -C` to the invocation that actually commits', () => {
+    const session = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-session-'));
+    const reviewed = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-reviewed-'));
+    const unreviewed = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-unreviewed-'));
+    for (const r of [session, reviewed, unreviewed]) spawnSync('git', ['-C', r, 'init', '-q']);
+    fs.writeFileSync(markerFor(reviewed), '');
+    fs.rmSync(markerFor(unreviewed), { force: true });
+    try {
+      expect(
+        runRaw(`git -C ${reviewed} status && git -C ${unreviewed} commit -m x`, session).status,
+      ).toBe(2);
+    } finally {
+      fs.rmSync(markerFor(reviewed), { force: true });
+    }
+  });
+
+  // Bug 1b, found live 2026-09-07: `git -C ~/repo commit` slipped through, because
+  // `~` is expanded by the shell that runs the command, never by the hook's regex.
+  // An unexpanded `~/...` is not absolute, so it was pasted onto the session cwd,
+  // resolved to nothing, and fell back to the session repo — reintroducing bug 1.
+  it('expands a leading ~ in the target path', () => {
+    const session = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-session-'));
+    const target = fs.mkdtempSync(path.join(os.homedir(), '.cf-target-'));
+    spawnSync('git', ['-C', session, 'init', '-q']);
+    spawnSync('git', ['-C', target, 'init', '-q']);
+    fs.writeFileSync(markerFor(session), '');
+    fs.rmSync(markerFor(target), { force: true });
+    const tilde = `~/${path.relative(os.homedir(), target)}`;
+    try {
+      expect(runRaw(`git -C ${tilde} commit -m x`, session).status).toBe(2);
+    } finally {
+      fs.rmSync(markerFor(session), { force: true });
+      fs.rmSync(target, { recursive: true, force: true });
+    }
+  });
+
+  // Bug 2: the hook advertised `SKIP_REVIEW=1 git commit` and then read
+  // ${SKIP_REVIEW} from its OWN environment. A PreToolUse hook is a separate
+  // process spawned before the command, so the prefix never arrived — the
+  // documented bypass did nothing at all.
+  it('honours the documented SKIP_REVIEW=1 command prefix', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
+    spawnSync('git', ['-C', repo, 'init', '-q']);
+    fs.rmSync(markerFor(repo), { force: true });
+    expect(runRaw(`SKIP_REVIEW=1 ${COMMIT_CMD} -m x`, repo).status).toBe(0);
+  });
+
+  it('does not treat a bare mention of SKIP_REVIEW as a bypass', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
+    spawnSync('git', ['-C', repo, 'init', '-q']);
+    fs.rmSync(markerFor(repo), { force: true });
+    expect(runRaw(`${COMMIT_CMD} -m 'note about SKIP_REVIEW=1 usage'`, repo).status).toBe(2);
+  });
+
   it('rejects a marker older than the TTL', () => {
     const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
     spawnSync('git', ['-C', repo, 'init', '-q']);

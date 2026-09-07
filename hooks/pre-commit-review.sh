@@ -45,14 +45,23 @@ print(cmd)
 PY
 ) || TOOL_INPUT=""
 
-# Check if command contains "git commit"
-if ! [[ "$TOOL_INPUT" =~ git[[:space:]]+commit ]]; then
+# Is this a commit? `git` and `commit` are NOT always adjacent: git takes global
+# options before the subcommand, and `git -C <dir> commit` / `git -c k=v commit`
+# slipped through a bare `git[[:space:]]+commit` match — the gate did not fire at
+# all. Allow a run of option tokens (each optionally followed by its value) in
+# between. Deliberately biased toward blocking: `git log --grep commit` matches too,
+# and a false block costs one extra word on the command line, a false pass costs the
+# whole gate.
+if ! [[ "$TOOL_INPUT" =~ git([[:space:]]+-[^[:space:]]*([[:space:]]+[^-[:space:]][^[:space:]]*)?)*[[:space:]]+commit ]]; then
   # Not a commit command, allow
   exit 0
 fi
 
-# Check for SKIP_REVIEW environment variable
-if [ "${SKIP_REVIEW:-0}" == "1" ]; then
+# The documented bypass is a COMMAND PREFIX (`SKIP_REVIEW=1 git commit ...`), and a
+# PreToolUse hook is a separate process spawned BEFORE that command runs — the prefix
+# never reaches this environment. Match it in the command itself, which is the only
+# place it exists. `${SKIP_REVIEW:-0}` stays for an operator who exports it for real.
+if [ "${SKIP_REVIEW:-0}" == "1" ] || [[ "$TOOL_INPUT" =~ SKIP_REVIEW=1[[:space:]]+git[[:space:]] ]]; then
   exit 0
 fi
 
@@ -61,6 +70,51 @@ fi
 # Bash command itself runs in tool_input.cwd. Use the command cwd when present
 # so the review marker matches the workspace being committed.
 HOOK_CWD=$(echo "$HOOK_JSON" | python3 -c "import os,sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('cwd') or d.get('cwd') or os.environ.get('PWD',''))" 2>/dev/null || echo "$PWD")
+
+# ...but tool_input.cwd is the SESSION's directory, not necessarily the repo being
+# committed. `cd /other/repo && git commit` and `git -C /other/repo commit` both commit
+# somewhere else while the session stays put, so the marker would be keyed to the wrong
+# repo — observed: a fresh marker for repo A gating a commit in repo B. The command names
+# the real target; prefer it. `git -C` wins over `cd` because it points at the repo
+# directly, and a relative path resolves against the session cwd, exactly as bash would.
+#
+# Both patterns are written to pick the RIGHT occurrence, not merely the first one:
+#   - `git -C` is tied to the `commit` that follows it, so `git -C /a status &&
+#     git -C /b commit` resolves /b. A bare first-match would have taken /a.
+#   - the `cd` pattern is deliberately greedy (`.*` prefix, no `^` anchor) so the LAST
+#     cd wins: in `cd /reviewed && cd /unreviewed && git commit` the commit runs from
+#     /unreviewed, and matching /reviewed would hand it that repo's marker. A leading
+#     space is prepended so the first token can still match the word boundary.
+# Regexes live in variables: inside [[ ... =~ ... ]] bash tokenises the pattern
+# itself, so a bare `;` or `|` in a bracket expression is a syntax error.
+RE_GIT_C='git[[:space:]]+-C[[:space:]]+([^[:space:]]+)([[:space:]]+-[^[:space:]]*([[:space:]]+[^-[:space:]][^[:space:]]*)?)*[[:space:]]+commit'
+RE_CD='.*[[:space:];&|]cd[[:space:]]+([^[:space:]]+)[[:space:]]*&&'
+TARGET_DIR=""
+if [[ "$TOOL_INPUT" =~ $RE_GIT_C ]]; then
+  TARGET_DIR="${BASH_REMATCH[1]}"
+elif [[ " $TOOL_INPUT" =~ $RE_CD ]]; then
+  TARGET_DIR="${BASH_REMATCH[1]}"
+fi
+
+# Written as plain `if`s on purpose: under `set -e` a bare `[[ ... ]] && assign`
+# whose test is false makes the whole script exit 1, which would skip the marker
+# check entirely — the gate would fail open.
+if [ -n "$TARGET_DIR" ]; then
+  # `~` is expanded by the shell that RUNS the command, never by this regex. Left
+  # unexpanded it is not absolute, so it used to be pasted onto the session cwd,
+  # resolve to nothing, and silently fall back to the session repo — the exact bug
+  # this block exists to fix, reintroduced by one character. Caught live 2026-09-07.
+  case "$TARGET_DIR" in
+    "~") TARGET_DIR="$HOME" ;;
+    "~/"*) TARGET_DIR="$HOME/${TARGET_DIR#\~/}" ;;
+  esac
+  if [[ "$TARGET_DIR" != /* ]]; then
+    TARGET_DIR="$HOOK_CWD/$TARGET_DIR"
+  fi
+  if [ -d "$TARGET_DIR" ]; then
+    HOOK_CWD="$TARGET_DIR"
+  fi
+fi
 
 # Normalize to the repo root: `cd subdir` inside the session must not invalidate a
 # review done at the root (the hook runs BEFORE the command, so an inline `cd` in

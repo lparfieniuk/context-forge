@@ -34,7 +34,12 @@ important open question about the whole plugin.
   001/003/005 do what they claim. A null D−C would be the most useful negative result CF could get.
 - respects cf-bench law: metrics-first, `--setting-sources project` isolation, N≥5, human-gated spend.
 
-**Status: MEASURED 2026-07-22 — REFUTED on this task class.** Run: cf-bench
+**Status: MEASURED 2026-07-22, RE-MEASURED CLEANLY 2026-09-06 — REFUTED on this task class, twice.**
+(The definitive run is the second 2026-09-06 block below: all five arms, one invocation, one CLI
+version. E vs A = **+15.9%**, p = 0.00018, at equal success. Read that block first; everything
+above it is the history that produced it.)
+
+**Original 2026-07-22 verdict:** Run: cf-bench
 `js-express-errors-010` (cost-only), A/B/C/D × N=10, Sonnet, CLI 2.1.217, $5.84/41 runs,
 `results/bench-20260722-104241.tsv`. All 40 valid runs succeeded (100%), so cost is the pure signal.
 
@@ -174,6 +179,77 @@ invocation on ONE CLI version. Cost ~$6 per task class. Until then the only defe
 What stays unmeasured is unchanged and is the larger open question — skills, hooks and the
 shadow-index layer live in user scope, which `--setting-sources project` excludes by design, so no
 cf-bench variant reaches them.
+
+---
+
+### Re-measured 2026-09-06 (second run) — clean, one CLI version, all five arms
+
+Run: cf-bench `js-express-errors-010`, Sonnet, **N=10 per arm, all 50 runs in ONE
+`run-bench.sh` invocation**, CLI **2.1.263** in every row (column 16 has exactly one distinct
+value), `DISABLE_AUTOUPDATER=1` exported for the whole run, $5.22, 0 invalid rows.
+File: `results/bench-20260906-081546.tsv`. This is the run the previous block called required.
+
+| variant | config | tokens | succ | med cost | Δ vs A | p (Mann-Whitney) |
+|---|---|---|---|---|---|---|
+| A | none | 0 | 10/10 | 0.0979 | — | — |
+| B | task knowledge | — | 10/10 | 0.0939 | **−4.1%** | **0.017** |
+| C | generic placebo | ~46 | 10/10 | 0.1066 | **+8.9%** | **0.0013** |
+| D | `cf-core` | ~619 | **6/10** | 0.1068 | +9.1% | 0.0046 |
+| E | `cf-full` | ~1945 | 10/10 | 0.1134 | **+15.9%** | **0.00018** |
+
+E vs C: **+6.4%, p = 0.0028**. E vs D: +6.2%, p = 0.038 (but see the artefact note below).
+
+**1. H1 is REFUTED again, now on the real payload and with no version drift.** The payload a
+consumer repo actually loads costs **+15.9%** against no config at all, at identical success
+(10/10 vs 10/10) and identical turns (10 vs 10). The July verdict was reached on a 3.1x
+under-tested config; correcting that made the penalty larger, not smaller.
+
+**2. The penalty splits cleanly into two parts.** C vs A is +8.9% — the price of *any* `CLAUDE.md`
+existing, replicated a third time now (July +8.2%, 2026-09-05 +9.6%, today +8.9%). E vs C is
++6.4% — the price of ContextForge's *content* on top of that. Roughly 56% of CF's cost is not
+CF-specific; the remaining 44% is.
+
+**3. Encoded task knowledge is the only arm that is cheaper than bare.** B −4.1%, p = 0.017 — a
+third replication (July −3.6%). The generalisation this supports is not "configs are expensive"
+but: *a config that carries a task fact pays for itself; a config that carries process advice does
+not.* That is cf-bench's own thesis turned on its author.
+
+**4. Payload size is still not the cost driver — the apparent E vs D delta is an artefact.**
+Pooling D and E across both 2.1.263 files (N=20 each, permitted: same version, same task, same
+config) gives E vs D +3.5%, p = 0.015 — which looks like a size effect until D's failures are
+separated out. D's 6 failing runs are *cheap* (median $0.1025, 8 turns) and drag its median down;
+D's 14 successful runs cost $0.1130 against E's $0.1134, a delta of **+0.4%, p = 0.278**. A 1326-token
+config difference buys no measurable cost difference. The July worry stays refuted.
+
+**5. The `D 8/10` flag reproduced and got worse: 6/10.** Pooled across both 2.1.263 runs D is
+**14/20** where A is 10/10 on the same version; Fisher exact p = 0.074 — directional, still not
+significant at N=20. All six failures ended `terminal_reason=completed` in 8–10 turns: the agent
+believed it was finished and failed the hidden assertion. Cheap, fast, confidently wrong — the same
+shape `js-config-lies-008` produces with a *lying* config, here produced by a config that states
+nothing about the task at all.
+
+**The asymmetry that matters: D fails, E does not.** `cf-core` is not a subset of `cf-full` — it is
+a hand-written paraphrase carrying rules 001/002/003/004/010, while `cf-full` carries
+019/001/003/011/004/005/010/015 plus worklogs. Two differences are candidates:
+`cf-core` ships **002 ("do not read whole files for discovery; use a few lines around a match")**
+without **005** (the progressive-disclosure chain that supplies the substitute) and without **015 /
+019** (verify against local source; never assent before verification). This is the exact defect the
+July run already named — *"a rule that bans an action without supplying the cheaper substitute is
+strictly a cost"* — except the price is now visible as **failed runs, not just tokens**. Consistent
+with it: D's median `cache_read` is 196,747 against 135k–148k in every other arm, i.e. D re-reads
+far more while reading fewer whole files.
+
+**This is a hypothesis, not a measurement.** It is testable for ~$1.1: a variant F = `cf-core`
+plus the 005 progressive-disclosure chain and the 015 verification line, N=10, same invocation.
+If F returns to 10/10 the mechanism is confirmed and the always-on set has a concrete defect to fix.
+Until F runs, the honest statement is: *the 619-token core paraphrase lost 6 of 20 runs that bare
+baseline won, and we do not know which line did it.*
+
+**What this does NOT say.** It does not say delete the rules. It says: on a single-file bugfix in a
+9-file repo, the always-on bundle is a pure 16% tax, and the cheaper half of it is not even
+ContextForge's fault. Nothing here generalises to multi-file work — `js-express-errors-xl-014`
+(142 files) is where 002/003/005 could pay off, and it has not been run with variant E.
+
 
 ---
 
