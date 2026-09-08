@@ -1,0 +1,8 @@
+id: research-scan
+type: skill
+category: workflow
+tier: 2
+model: sonnet
+ownership: owned
+trigger: "/research-scan command, or a scheduled headless run"
+tags: [research, scan, knowledge-base, dedup, citations, delta-report, scheduled]

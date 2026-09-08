@@ -250,6 +250,62 @@ baseline won, and we do not know which line did it.*
 ContextForge's fault. Nothing here generalises to multi-file work — `js-express-errors-xl-014`
 (142 files) is where 002/003/005 could pay off, and it has not been run with variant E.
 
+---
+
+### Variant F, 2026-09-08 — the July fix, measured. It does not pay.
+
+The block above proposed a $1.1 test: variant **F = `configs/cf-core-plus`** — `cf-core`
+byte-for-byte plus the two things it lacked, rule 005's progressive-disclosure chain (the
+substitute that rule 002's ban assumes exists) and the 015/019 verify-before-concluding mandate.
+~908 tokens, sitting between D (~619) and E (~1945). Run: `results/bench-20260908-144052.tsv`,
+N=10, CLI **2.1.263** — the same version as every arm below, so all of these pool legitimately.
+$1.24. This is exactly the "pair 002 with 005" action item the July analysis wrote down.
+
+| arm | config | tokens | n | succ | med cost | med turns | med `cache_read` |
+|---|---|---|---|---|---|---|---|
+| A | none | 0 | 10 | 10/10 | 0.0979 | 10 | 135,587 |
+| B | task knowledge | — | 10 | 10/10 | 0.0939 | 10 | 136,273 |
+| C | placebo | ~46 | 10 | 10/10 | 0.1066 | 11 | 137,423 |
+| D | `cf-core` | ~619 | 20 | 14/20 | 0.1096 | 10 | 196,747 |
+| E | `cf-full` | ~1945 | 20 | 20/20 | 0.1134 | 10 | 148,167 |
+| **F** | **`cf-core-plus`** | **~908** | **10** | **9/10** | **0.1202** | **11** | **216,559** |
+
+**1. The mechanism hypothesis is neither confirmed nor refuted — the test was underpowered and
+that was foreseeable.** F 9/10 against D 14/20 is Fisher p = 0.37. Against A's 10/10, p = 1.0.
+`tools/power-analysis.py` puts the power of a 70%-vs-100% effect at N=10 at **0.15**; settling this
+needs roughly N=50 per arm, about $11. The direction is right (90% vs 70%) and that is all it is.
+
+**2. What the run DOES settle is that the fix costs rather than saves.** F is the most expensive
+arm measured: **+22.8% against bare** (p < 0.001), +9.6% against D (p = 0.048), and statistically
+indistinguishable from E (+6.0%, p = 0.692). Excluding F's single failure changes nothing — its nine
+successful runs have a median of $0.1181, still the highest. So **F is dominated by E**: no better
+on success, not cheaper, and E is the config that actually ships.
+
+**3. The mechanism is visible and it is the opposite of the intent.** F's median `cache_read` is
+**216,559** — the highest of any arm, 60% above bare A's 135,587 — and its median turn count rises
+to 11 while every arm except the placebo sits at 10. The rules added to make reading cheaper made
+the agent read *more*: the progressive-disclosure chain replaces one whole-file read with a count,
+a file list and several targeted reads, and the verification mandate sends it back to check. On a
+9-file repo that is strictly more work. The July prescription — *"do not delete 002, promote 005
+alongside it"* — is now measured, and on this task class it makes the bundle worse on cost while
+leaving the success question open.
+
+**4. Payload size is not the cost driver, third replication.** F carries ~908 tokens and E ~1945,
+and their costs are indistinguishable (p = 0.692). Together with D-successes vs E (+0.4%, p = 0.278)
+this is now measured three ways on one CLI version.
+
+**Standing recommendation, unchanged in direction and firmer in evidence:** the always-on bundle is
+a net cost on a single-file bugfix in a small repo, and no arrangement of it tested so far turns that
+around. The open question is not *which rules* but *whether an always-on bundle is the right shape
+at all* for this task class. What would change the verdict: an arm that wins on a task where the
+discovery machinery has something to discover — `js-express-errors-xl-014` (142 files) with variants
+C/E/F, which has never been run.
+
+**Deliberately not done:** cutting rules on the strength of this. D is a hand-written paraphrase, not
+the shipped artefact; E is the shipped artefact and it scores 20/20. Deleting a rule because a
+paraphrase of it lost runs would be acting on the wrong object.
+
+
 
 ---
 

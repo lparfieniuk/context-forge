@@ -281,6 +281,17 @@ skills:
     model: sonnet
     tags: [execution, wiki, karpathy-pattern]
 
+  - id: research-scan
+    type: skill
+    category: workflow
+    source: core/skills/research-scan/SKILL.md
+    yaml: core/skills/research-scan/skill.yaml
+    installed_claude: skills/research-scan/SKILL.md
+    installed_cursor: null
+    tier: 2
+    model: sonnet
+    tags: [workflow, research, knowledge-base, dedup, scheduled]
+
   - id: clear-context
     type: skill
     category: execution

@@ -61,6 +61,7 @@
 | workflow | pre-review | 1 | haiku | Pre-commit review delegating to superpowers:requesting-code-review |
 | workflow | end-session | 1 | haiku | Session close-out: diary + learnings, commit, merge working branch |
 | workflow | session-handoff | 1 | haiku | Compress live state into a paste-able payload so `/clear` costs no context |
+| workflow | research-scan | 2 | sonnet | One bounded research pass per project program; dedups against ai-knowledge before writing |
 | discovery | rule-index | 0 | haiku | Load an on-demand rule before the action it governs |
 | admin | optimize-rules | 2 | sonnet | Audit and optimize rules for token efficiency |
 | admin | plugin-audit | 1 | inherit | Validate plugin/index/parity gates via audit tooling |

@@ -8,7 +8,7 @@
 > Deterministic context engineering for AI coding agents — structure over search, tokens over brute force.
 
 A Claude Code (and, partially, Cursor) plugin that treats the context window as a **budget** rather than
-a bucket. 18 rules, 20 skills, 1 sub-agent, 11 hooks, 33 shell tools — all built around one idea: the
+a bucket. 18 rules, 21 skills, 1 sub-agent, 11 hooks, 33 shell tools — all built around one idea: the
 cheapest executor that produces a correct result should do the work, and everything else belongs on disk.
 
 ---
