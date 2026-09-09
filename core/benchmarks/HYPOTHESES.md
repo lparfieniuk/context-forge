@@ -305,6 +305,71 @@ C/E/F, which has never been run.
 the shipped artefact; E is the shipped artefact and it scores 20/20. Deleting a rule because a
 paraphrase of it lost runs would be acting on the wrong object.
 
+---
+
+### 2026-09-09 — the sign flips at scale. H1's verdict is task-class-dependent, not general.
+
+Run: `js-express-errors-xl-014` — the SAME trap as the small twin, at 142 files with 120 noise
+files and the error middleware mounted indirectly. Six arms, one CLI version (**2.1.263** in every
+row), $9.67 total across `results/bench-20260908-211523.tsv` (A/B/C complete, D partial) and
+`results/bench-20260909-125059.tsv` (D/E/F). The two files pool: same task, same fixture, same
+configs, same version — the second run was **pinned** to the 2.1.263 binary on disk because Claude
+Code auto-updated to 2.1.266 between them. Without that pin this would have been the third matrix
+voided by version drift.
+
+| arm | config | 9 files — succ / Δcost vs A | 142 files — succ / Δcost vs A |
+|---|---|---|---|
+| A | none | 10/10 / — | 10/10 / — |
+| B | task knowledge | 10/10 / **−4.1%** (p=0.017) | 10/10 / **−27.6%** (p=0.0005) |
+| C | generic placebo | 10/10 / **+8.9%** (p=0.0013) | 10/10 / +4.9% (p=0.50, **ns**) |
+| D | `cf-core` | 14/20 / **+9.1%** (p=0.0046) | 12/15 / **−28.7%** (p=0.0001) |
+| E | `cf-full` | 20/20 / **+15.9%** (p=0.00018) | 9/10 / −14.5% (p=0.29, **ns**) |
+| F | `cf-core-plus` | 9/10 / **+22.8%** (p<0.001) | 9/10 / **−17.3%** (p=0.028) |
+
+**1. Every ContextForge arm reverses sign between the two scales.** D goes from +9.1% to −28.7%,
+F from the most expensive arm ever measured here (+22.8%) to −17.3%, E from +15.9% to −14.5%.
+These are the same config files, the same trap, the same model, the same CLI version. The variable
+is repository size.
+
+**2. The July and 2026-09 conclusions were right about their task class and wrong as generalisations
+— including the one written in the block directly above this.** That block says "no arrangement of
+it tested so far turns that around" and scopes it to a single-file bugfix in a small repo. The scope
+was stated; the reader who skips it gets the wrong idea, so it is restated here: **on a 9-file repo
+the always-on bundle is a tax, on a 142-file repo it is not.** The mechanism was never a mystery —
+discovery discipline has nothing to save when there are 9 files to read.
+
+**3. What is NOT established: that CF's shipped payload SAVES money at scale.** E is −14.5% with
+**p = 0.29**. The honest statement is that E's penalty disappears at scale, not that a saving
+appears. Only D (−28.7%, p = 0.0001) and F (−17.3%, p = 0.028) reach significance, and D is a
+paraphrase, not the artefact. Settling E needs a larger N.
+
+**4. The placebo penalty is also scale-dependent.** C costs +8.9% (p=0.0013) at 9 files and +4.9%
+(p=0.50, ns) at 142. So "having any CLAUDE.md costs ~10%", replicated three times on the small
+task, is itself a small-repo statement.
+
+**5. Reliability moves the other way, and this is the one finding stable across both scales.**
+D loses runs at both: 14/20 small, 12/15 XL. It is also the cheapest arm at scale. The pattern
+across every measurement in this file is the same shape `js-config-lies-008` produces with a lying
+config — cheap, fast, confidently wrong — except here it comes from a config that says nothing about
+the task. Fisher vs A is p = 0.25 at XL, still not significant; E and F are 9/10 (p = 1.0).
+
+**Standing recommendation, reversed in scope:** the always-on bundle should not be defended or cut
+on the small-task numbers alone. What the two matrices together support is a *conditional* — the
+bundle costs where there is nothing to discover and pays where there is. That is an argument for
+loading it by repository size, which is what `hooks/session-start.sh` already does for the manifest
+line (≥30 source files), and not an argument for cutting rules.
+
+**What would change this verdict:** E at N≥30 on the XL task, to establish whether the shipped
+payload actually saves rather than merely stops costing. About $4.50 at the XL per-run rate.
+
+**Instrument note.** The 2026-09-08 halt on this task was diagnosed as a rate-limit hypothesis and
+never confirmed, because `run-task.sh` printed a tail of stderr while `claude --output-format json`
+reports API errors inside the result JSON on stdout — the evidence went with the mktemp directory.
+Fixed: invalid runs now persist both streams under `results/diagnostics/`. The first version of that
+fix matched the field NAME `api_error_status`, which every healthy result carries, so it wrote
+diagnostics for all 26 good runs before being caught. Both the fix and the mirror case (a healthy
+run must write nothing) now have mutation-checked assertions in `test/smoke.sh`.
+
 
 
 ---
