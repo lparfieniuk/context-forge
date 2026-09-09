@@ -13,6 +13,7 @@ NEVER edit `core/_index.yaml` manually without running `validate-index.sh` after
 NEVER create source files before registering entry in `core/_index.yaml`.
 ALWAYS run `npm run convert` after adding a module — installed files do NOT update automatically.
 NEVER ship a flag, hook, or gate without a negative test that FAILS when the mechanism is removed — an untested control is documentation, not enforcement (`activation: intelligent` was honoured by nothing for months; `enforce-tier-routing.sh` intercepted zero calls in a 30-day window).
+NEVER let that negative test pin only the PRESENCE of the mechanism — ALWAYS pin the CONDITION inside it. A mutation that makes the condition always-true MUST fail something. Measured 2026-09-09: deleting a diagnostic block failed its test, while widening its condition to always-true did not — the fixture the assertion ran against omitted the fields a real response carries, so the assertion was decorative. ALWAYS build the mock from a real captured response, never from the fields the assertion happens to read.
 NEVER assume `npm run convert` prunes — it writes installed copies and NEVER deletes them, so a removed or demoted module keeps running and keeps billing from its installed path. ALWAYS re-check the installed directory after deleting or demoting a module.
 
 ## Quick Lookup Protocol
