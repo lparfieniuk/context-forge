@@ -101,10 +101,26 @@ deleted after `cleanupPeriodDays` (default 30, verified in the 2.1.261 binary) �
 scan is a rolling month, never project history.
 
 In that window 7 of 23 skills ran at all, and only 5 ran outside this repo: `diary`,
-`session-learnings`, `end-session`, `pre-review`, `record-failure`. Zero Tier 1 script executions
-and zero `cf-scribe` spawns happened outside this repo. The discovery layer — pillar 1 — was
-exercised only while developing the plugin. Recorded as H6 in `core/benchmarks/HYPOTHESES.md`
-with the re-test date.
+`session-learnings`, `end-session`, `pre-review`, `record-failure`. Zero `cf-scribe` spawns
+happened outside this repo. The discovery layer — pillar 1 — was exercised only while developing
+the plugin. Recorded as H6 in `core/benchmarks/HYPOTHESES.md` with the re-test date.
+
+**Instrument corrected 2026-09-09, before the H6 verdict, not after.** `skill-usage.sh` counted
+three call shapes — the `Skill` tool, a slash command, a sub-agent spawn — and none of them is the
+path the rules actually prescribe. Rules 002 and 003 route discovery to the *script*: the cheapest
+correct tier for `shadow-lookup` is `bash core/scripts/tools/shadow-lookup.sh`, which emits none of
+the three. So the layer whose defining property is "call the script, not the skill" was measured by
+an instrument blind to script calls, and reported zero. A fourth `script` column now counts them.
+
+It does not overturn H6, and the earlier sentence "zero Tier 1 script executions outside this repo"
+was too strong and is retracted: the corrected count finds 3 `plugin-audit` runs in
+`~/Downloads/cv-2026`. Every other script call in the window — 10 `refresh-manifest`, 9
+`extract-signatures`, 3 `shadow-lookup`, and the rest — is inside this repo, so "the discovery
+layer was exercised only while developing the plugin" still holds, now on evidence that could have
+falsified it. Counter-position on record: the `script` column matches the path inside a `"command"`
+field, so a Bash call that merely greps for the filename counts as a use. It over-counts, which is
+the safe direction for a claim of ZERO and the wrong direction for a claim of healthy use — never
+cite the column as proof the layer is earning its keep.
 
 Removed rather than left to rot: `task-init`, `update-worklog` and their scripts (the Jira track,
 no active ticket project), `help` (the harness injects the skill listing every session), and

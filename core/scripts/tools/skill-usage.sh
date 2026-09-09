@@ -7,13 +7,24 @@ set -euo pipefail
 #   skill_tool  — the model invoked the skill itself   ("skill":"context-forge:<id>")
 #   slash       — the user typed it                    (<command-name>/context-forge:<id>)
 #   agent       — a sub-agent was spawned              ("subagent_type":"context-forge:<id>")
+#   script      — the Tier 0/1 script was run via Bash  ("command":"... core/scripts/tools/<id>.sh")
+#
+# The `script` column exists because the first three miss the path the RULES prescribe.
+# Rule 002 and rule 003 route discovery work to a script, not to a skill: the cheapest
+# correct tier for `shadow-lookup` is `bash core/scripts/tools/shadow-lookup.sh`, which
+# emits no Skill tool call, no slash command and no sub-agent. Counting only those three
+# and concluding "the discovery layer is unused" measures the instrument, not the layer
+# (H6, core/benchmarks/HYPOTHESES.md). 10 of 22 ids have a same-named script, and they are
+# exactly the discovery ones. KNOWN LIMIT: this matches the script path inside a
+# `"command"` field, so a Bash call that merely greps for the filename counts as a use;
+# it over-counts rather than under-counts, which is the safe direction for a claim of ZERO.
 #
 # RETENTION CEILING: Claude Code deletes transcripts after `cleanupPeriodDays`
 # (default 30, verified in the 2.1.261 binary). This scan therefore reports a
 # rolling ~30-day window, never full project history. For history past that
 # window an append-only hook log is the only source.
 #
-# Output: TSV `skill<TAB>skill_tool<TAB>slash<TAB>agent<TAB>total<TAB>last_used`
+# Output: TSV `skill<TAB>skill_tool<TAB>slash<TAB>agent<TAB>script<TAB>total<TAB>last_used`
 # Usage: skill-usage.sh [--plugin-root <path>] [--projects <dir>]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -39,18 +50,20 @@ matches="$(rg -o --with-filename --no-line-number \
   -e '"skill":"(context-forge:)?[a-z0-9-]+"' \
   -e '<command-name>/(context-forge:)?[a-z0-9-]+</command-name>' \
   -e '"subagent_type":"(context-forge:)?[a-z0-9-]+"' \
+  -e '"command":"[^"]*core/scripts/tools/[a-z0-9-]+\.sh' \
   "$PROJECTS" -g '*.jsonl' 2>/dev/null || true)"
 
-printf 'skill\tskill_tool\tslash\tagent\ttotal\tlast_used\n'
+printf 'skill\tskill_tool\tslash\tagent\tscript\ttotal\tlast_used\n'
 
 printf '%s\n' "$ids" | while IFS= read -r id; do
   [[ -n "$id" ]] || continue
   hits="$(printf '%s\n' "$matches" | rg -F "$id" || true)"
-  st=0; sl=0; ag=0; last='-'
+  st=0; sl=0; ag=0; sc=0; last='-'
   if [[ -n "$hits" ]]; then
     st=$(printf '%s\n' "$hits" | rg -c "\"skill\":\"(context-forge:)?${id}\"" || true)
     sl=$(printf '%s\n' "$hits" | rg -c "<command-name>/(context-forge:)?${id}</command-name>" || true)
     ag=$(printf '%s\n' "$hits" | rg -c "\"subagent_type\":\"(context-forge:)?${id}\"" || true)
+    sc=$(printf '%s\n' "$hits" | rg -c "core/scripts/tools/${id}\.sh" || true)
     # newest transcript that mentions this id, as YYYY-MM-DD
     newest=$(printf '%s\n' "$hits" | sed 's/\.jsonl:.*/.jsonl/' | sort -u \
       | while IFS= read -r f; do
@@ -61,5 +74,5 @@ printf '%s\n' "$ids" | while IFS= read -r id; do
         done | sort -rn | head -1 | cut -d' ' -f1)
     [[ -n "${newest:-}" ]] && last=$(date -r "$newest" '+%Y-%m-%d')
   fi
-  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$id" "${st:-0}" "${sl:-0}" "${ag:-0}" "$(( ${st:-0} + ${sl:-0} + ${ag:-0} ))" "$last"
-done | sort -t"$(printf '\t')" -k5,5nr
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$id" "${st:-0}" "${sl:-0}" "${ag:-0}" "${sc:-0}" "$(( ${st:-0} + ${sl:-0} + ${ag:-0} + ${sc:-0} ))" "$last"
+done | sort -t"$(printf '\t')" -k6,6nr
