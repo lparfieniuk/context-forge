@@ -481,3 +481,69 @@ windows are not bounded by that.
   (clonable-repo plugin distribution). All are *tools to evaluate*, not claims to measure — they
   belong in a build/evaluate backlog, not this queue. Star counts in the OCR source are mutually
   inconsistent (rule 016: lead, not truth) — verify via API before acting on any.
+
+### 2026-09-10 — M1: the sign flip REPLICATES on a second XL fixture, but not as ContextForge's win
+
+Run: `js-brown-errors-xl-006` — a different trap (a 50/50 convention split named only in config),
+a different fixture, 130 files. Arms A/C/E, N=10, CLI **2.1.263** in every row, binary pinned.
+Pools `results/bench-20260909-195953.tsv` (A) with `results/bench-20260910-115734.tsv` (C/E):
+same task, fixture, configs, and CLI version. $8.19 including a halted attempt and a voided one.
+
+**Instrument disclosure, because "verified unchanged" would have been too strong.** `run-task.sh`
+was edited during arm A's collection: the `subtype == "error_max_turns"` guard was mutated and
+restored while mutation-testing it, and commit `68d37d9` landed between A5 and A6. The pooled
+numbers are unaffected, and the DATA proves it rather than the timestamps: the guard can only
+change rows whose `subtype` is `error_max_turns`, and arm A has exactly one — A7, which recorded
+`success=1`. A blanked success is the only outcome possible with the guard absent, so the guard was
+in place when the one row that depends on it was written. Every other row terminated `completed`,
+where the guard is not consulted at all.
+
+| arm | config | n | succ | med cost | Δ vs A | p_cost |
+|---|---|---|---|---|---|---|
+| A | none | 10 | 70% | $0.2759 | — | — |
+| C | placebo `generic` (~52 tok) | 10 | 100% | $0.2492 | −9.7% | 0.0257 |
+| E | `cf-full` (~1978 tok) | 10 | 80% | $0.1793 | **−35.0%** | **0.0073** |
+
+**What M1 settles.** The reversal is a property of scale, not of `js-express-errors-xl-014`. On a
+second independent XL fixture the shipped payload goes from a cost penalty on 9 files (+15.9%,
+p=0.00018) to a saving against bare (−35.0%, p=0.0073) — and here it reaches significance, which
+it did not on xl-014 (−14.5%, p=0.307, re-derived 2026-09-10 from the same rows with the current
+`summarize.sh`; the earlier block records p=0.29). That gap is NOT noise and NOT a different row
+set: the row counts and Δcost%% are identical, `mannwhitney_p` has not changed since 2026-07-30,
+and every one of the five arm comparisons in that table moved the same direction — C 0.50→0.521,
+F 0.028→0.0312, D 0.0001→0.000116 — which is the signature of a continuity correction the older
+figures were computed without. No conclusion moves in either direction, but treat the pre-09-10
+p-values in that table as produced by something other than this script, and re-derive before
+quoting one. Two fixtures, two traps, same direction.
+
+**What M1 refuses to settle, and this is the load-bearing part.** Arm-to-arm:
+
+| comparison | Δcost | p | reading |
+|---|---|---|---|
+| E vs A | −35.0% | 0.0073 | the reversal replicates |
+| C vs A | −9.7% | 0.0257 | the PLACEBO saves too, significantly |
+| **E vs C** | **−28.0%** | **0.212** | the ContextForge-specific effect is NOT established |
+
+A 28% median gap that fails significance at N=10 means the variance is large, not that the effect
+is absent — but an unestablished effect may not be cited as one. **Never quote −35.0% as what
+ContextForge buys.** It is what ContextForge plus "having any CLAUDE.md at all" buys, and the
+second term is worth −9.7% on its own with a better p-value than some of our headline numbers.
+
+Third finding, incidental but it closes an old one: "merely having a `CLAUDE.md` costs about 10%",
+replicated three times on small repos, is now definitively a SMALL-REPO statement. At 130 files the
+placebo does not cost 10% — it saves 10%.
+
+Fourth, and it cuts AGAINST the headline rather than for it: success confounds cost here, and the
+plan predicted it. Failed runs are the CHEAPER ones — in arm A the failure median is $0.2500 against
+a success median of $0.2813, and in arm E $0.1569 against $0.1934. So E's 80% pass rate drags its
+cost median down through early termination, and a completion-matched comparison would show a
+SMALLER saving than −35.0%, not a larger one. The number is not conservative. A 70%, C 100%, E 80%; Fisher is not
+significant on any pair (ΔC−A p=0.211, ΔE−A p=1.0), but arms with different pass rates did not do
+the same work, so the cost medians are not a clean like-for-like. This fixture is a discriminator;
+read its success column and its cost column together or not at all.
+
+**Next measurement this implies — and it is NOT the M2/M3 in the session plan.** M2 was specified as
+E at N=30 on xl-014 versus A, and M3 as splitting variant F. Both assume the artefact-versus-bare
+question is the live one. M1 shows it is not: the live question is **E vs C at higher N**, on both
+XL fixtures. Until that lands, ContextForge's measured value at scale is "no worse than a placebo,
+plausibly much better, not demonstrated".
