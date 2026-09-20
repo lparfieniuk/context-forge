@@ -482,12 +482,13 @@ windows are not bounded by that.
   belong in a build/evaluate backlog, not this queue. Star counts in the OCR source are mutually
   inconsistent (rule 016: lead, not truth) — verify via API before acting on any.
 
-### 2026-09-10 — M1: the sign flip REPLICATES on a second XL fixture, but not as ContextForge's win
+### 2026-09-10 — M1: lower cost on a second XL fixture; attribution remains unresolved
 
 Run: `js-brown-errors-xl-006` — a different trap (a 50/50 convention split named only in config),
 a different fixture, 130 files. Arms A/C/E, N=10, CLI **2.1.263** in every row, binary pinned.
 Pools `results/bench-20260909-195953.tsv` (A) with `results/bench-20260910-115734.tsv` (C/E):
-same task, fixture, configs, and CLI version. $8.19 including a halted attempt and a voided one.
+same task, fixture, configs, and CLI version. Recorded cost including the halted and voided
+attempts is $8.521462 (recounted 2026-09-19); the earlier $8.19 omitted a row in the VOID file.
 
 **Instrument disclosure, because "verified unchanged" would have been too strong.** `run-task.sh`
 was edited during arm A's collection: the `subtype == "error_max_turns"` guard was mutated and
@@ -504,46 +505,75 @@ where the guard is not consulted at all.
 | C | placebo `generic` (~52 tok) | 10 | 100% | $0.2492 | −9.7% | 0.0257 |
 | E | `cf-full` (~1978 tok) | 10 | 80% | $0.1793 | **−35.0%** | **0.0073** |
 
-**What M1 settles.** The reversal is a property of scale, not of `js-express-errors-xl-014`. On a
-second independent XL fixture the shipped payload goes from a cost penalty on 9 files (+15.9%,
-p=0.00018) to a saving against bare (−35.0%, p=0.0073) — and here it reaches significance, which
-it did not on xl-014 (−14.5%, p=0.307, re-derived 2026-09-10 from the same rows with the current
+**What M1 supports.** E's observed cost median is lower than bare on a second XL fixture
+(−35.0%, p=0.0073). The 9-file result (+15.9%) belongs to the Express task, not a small twin of
+this brown-errors task. M1 therefore adds a second task with the same direction at large size;
+it does not isolate repository size as the cause or establish generalisation to arbitrary repos.
+On xl-014 the observed reduction was −14.5%, p=0.307 (re-derived 2026-09-10 from the same rows with the current
 `summarize.sh`; the earlier block records p=0.29). That gap is NOT noise and NOT a different row
-set: the row counts and Δcost%% are identical, `mannwhitney_p` has not changed since 2026-07-30,
+set: the row counts and Δcost% are identical, `mannwhitney_p` has not changed since 2026-07-30,
 and every one of the five arm comparisons in that table moved the same direction — C 0.50→0.521,
-F 0.028→0.0312, D 0.0001→0.000116 — which is the signature of a continuity correction the older
-figures were computed without. No conclusion moves in either direction, but treat the pre-09-10
-p-values in that table as produced by something other than this script, and re-derive before
-quoting one. Two fixtures, two traps, same direction.
+F 0.028→0.0312, D 0.0001→0.000116. A continuity-correction difference is a plausible explanation,
+but the old calculation's provenance is not established by that pattern alone. Re-derive those
+p-values from the named script before quoting them. These values are nominal, without a
+multiple-comparison adjustment.
 
 **What M1 refuses to settle, and this is the load-bearing part.** Arm-to-arm:
 
 | comparison | Δcost | p | reading |
 |---|---|---|---|
-| E vs A | −35.0% | 0.0073 | the reversal replicates |
+| E vs A | −35.0% | 0.0073 | lower observed cost on this second XL task |
 | C vs A | −9.7% | 0.0257 | the PLACEBO saves too, significantly |
 | **E vs C** | **−28.0%** | **0.212** | the ContextForge-specific effect is NOT established |
 
-A 28% median gap that fails significance at N=10 means the variance is large, not that the effect
-is absent — but an unestablished effect may not be cited as one. **Never quote −35.0% as what
-ContextForge buys.** It is what ContextForge plus "having any CLAUDE.md at all" buys, and the
-second term is worth −9.7% on its own with a better p-value than some of our headline numbers.
+A 28% sample-median gap with p=0.212 does not establish a population effect, equivalence, or
+non-inferiority. Mann–Whitney tests rank distributions, not a percentage saving in medians;
+the p-value alone also does not identify high variance as the explanation. E vs A compares the
+whole payload with bare, while E vs C compares two concrete payloads. The `generic` text is an
+active control, so C vs A does not isolate the effect of merely having a file. Percentage changes
+with different denominators are not additive: C/A × E/C = E/A, rather than a causal allocation
+of 9.7 percentage points of the 35% reduction to a "placebo share".
 
-Third finding, incidental but it closes an old one: "merely having a `CLAUDE.md` costs about 10%",
-replicated three times on small repos, is now definitively a SMALL-REPO statement. At 130 files the
-placebo does not cost 10% — it saves 10%.
+The observed `generic` penalty on the earlier small tasks does not hold on this XL task. That
+limits the earlier claim's scope; it does not prove that all small repos incur a penalty or all
+large repos save tokens or money.
 
 Fourth, and it cuts AGAINST the headline rather than for it: success confounds cost here, and the
 plan predicted it. Failed runs are the CHEAPER ones — in arm A the failure median is $0.2500 against
 a success median of $0.2813, and in arm E $0.1569 against $0.1934. So E's 80% pass rate drags its
-cost median down through early termination, and a completion-matched comparison would show a
-SMALLER saving than −35.0%, not a larger one. The number is not conservative. A 70%, C 100%, E 80%; Fisher is not
+cost median down. Restricting to successful runs gives A $0.2813 and E $0.1934 (about −31.3%),
+but this is a success-conditioned descriptive comparison, not matched work or a causal correction;
+cheap failures alone do not establish early termination as their cause. A 70%, C 100%, E 80%; Fisher is not
 significant on any pair (ΔC−A p=0.211, ΔE−A p=1.0), but arms with different pass rates did not do
 the same work, so the cost medians are not a clean like-for-like. This fixture is a discriminator;
 read its success column and its cost column together or not at all.
 
 **Next measurement this implies — and it is NOT the M2/M3 in the session plan.** M2 was specified as
 E at N=30 on xl-014 versus A, and M3 as splitting variant F. Both assume the artefact-versus-bare
-question is the live one. M1 shows it is not: the live question is **E vs C at higher N**, on both
-XL fixtures. Until that lands, ContextForge's measured value at scale is "no worse than a placebo,
-plausibly much better, not demonstrated".
+question is the live one. The user instead selected **E vs C at N=30 on one XL fixture**.
+The additional Claude collection stopped at C n=17 and E n=10; it did not reach the target.
+The later user decision moves this comparison to local Qwen as a new experiment. Claude's
+result remains inconclusive against C; "no worse than placebo" would require a non-inferiority
+analysis that was not performed.
+
+### 2026-09-19/20 — local Qwen C/E at N=30: E lowers success on this fixture
+
+The user replaced further paid collection with a separate local experiment on
+`js-brown-errors-xl-006`. Fixed N=30 per arm, C (`generic`) versus E (`cf-full`), OpenCode 1.18.21,
+Ollama 0.33.2 and Qwen3.6 35B-A3B at a 32768 context. The runner and fixture were frozen from
+ai-tools commit `3acf971`; all 60 rows are valid. This matrix must not be pooled with Claude or the
+September 10 pilot, which used different operator isolation and was not recovered.
+
+| arm | success | Wilson 95% CI | median turns | median output | median duration |
+|---|---:|---:|---:|---:|---:|
+| C | 12/30 (40%) | 25–58% | 8 | 1,458 | 156.4s |
+| E | 4/30 (13%) | 5–30% | 8 | 2,284.5 | 181.7s |
+
+The preselected success comparison is **−26.7 percentage points for E**, two-sided Fisher exact
+**p=0.0391**. On this model, fixture and harness, the full payload performs worse than the active
+generic control; it does not resolve Claude's E-vs-C comparison. Median turns are equal, while E
+uses more output and wall time descriptively. The runner executed every C repeat before every E
+repeat, so configuration and temporal/order effects are confounded. Local `cost_usd=0` is not a
+claim of zero electricity or ownership cost. Raw data:
+`ai-tools/cf-bench/results/bench-20260919-202218.tsv` (SHA-256
+`2718d64d142f8193b7e844f9e4c4e13c38dd7694855e097b2544c08e6b5b72c2`).
