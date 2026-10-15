@@ -28,6 +28,37 @@ tools:
     tags: [telemetry, skills, usage, tier1]
     routing_key: "tier1:skill-usage"
 
+  - id: yt-transcript
+    file: tools/yt-transcript.sh
+    description: "Print a YouTube video's auto-caption transcript bucketed per minute, via yt-dlp, writing no files"
+    params:
+      - name: URL
+        required: true
+        description: "YouTube video URL (youtube.com/watch?v= or youtu.be/)"
+      - name: --lang
+        required: false
+        description: "Caption language (default: en; tries <lang>-orig first)"
+    output: "Header (title | channel | date | duration | chars) then `[Nm] text` lines to stdout. Exit 3 on HTTP 429 from YouTube."
+    tags: [research, youtube, transcript, tier1]
+    routing_key: "tier1:yt-transcript"
+
+  - id: knowledge-catalog
+    file: tools/knowledge-catalog.sh
+    description: "Build a deduplicated TSV catalog of tools/libraries/MCP servers from the ai-knowledge base entries (no MCP needed)"
+    params:
+      - name: --entries
+        required: false
+        description: "Entries directory (default: $AI_KNOWLEDGE_ENTRIES or ~/Projects/ai_knowledge/entries)"
+      - name: --out
+        required: false
+        description: "Output TSV (default: ~/worklogs/wiki/ai-knowledge/catalog.tsv)"
+      - name: --if-stale
+        required: false
+        description: "Rebuild only when an entry is newer than the catalog"
+    output: "TSV `title<TAB>tags<TAB>source_url<TAB>id<TAB>summary`; prints row count."
+    tags: [knowledge-base, tools, catalog, tier1]
+    routing_key: "tier1:knowledge-catalog"
+
   - id: extract-signatures
     file: tools/extract-signatures.sh
     description: "Extract TypeScript/PHP method stubs (names, parameters, return types — no bodies) from a source file"

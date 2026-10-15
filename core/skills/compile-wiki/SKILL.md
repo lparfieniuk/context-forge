@@ -2,6 +2,7 @@
 name: compile-wiki
 description: Compiles the source files of a domain into persistent wiki pages plus a ~500-token index, replacing repeated source reading. Use when the user says "build a wiki", "document this module", "I keep re-reading these files", or after the third pass over the same directory. Do NOT use for a one-off question or for a domain under 5 files — pack-context is cheaper.
 model: sonnet
+disable-model-invocation: true
 ---
 
 ## What This Does

@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Skills as the default path, not the exception.** Measured 2026-10-15 over 45 days of transcripts: 5 Skill calls against 416 Bash calls, `coverage` 21% of sessions, and 36 of 36 web calls made outside any skill. Root cause verified in the Claude Code docs: the skill listing budget is 1% of context, and on overflow descriptions are dropped starting with the *least-invoked* skills — rarely used, so no description, so never matched. Fixes:
+  - `hooks/skill-router.sh` (`UserPromptSubmit`, Tier 0): PL/EN regex routes in `hooks/lib/skill-routes.tsv` inject one `additionalContext` line naming the skill to invoke; every hit is logged to `~/worklogs/logs/skill-router.tsv` so a route's hit→invocation rate is measurable. ~28 ms per prompt.
+  - `skill-usage.sh --summary`: whole-workflow `coverage` and `raw-research` ratios (targets ≥50% / ≤30%).
+  - `evals/routing/`: 11 PL/EN `claude plugin eval` cases graded by `tool_used: Skill` only (no judge cost). First run 2026-10-15: 11/11 fired (the 12th case routed to `superpowers:systematic-debugging`, which eval runs cannot load — they load only the plugin under test — and was dropped). $1.28, `--ablation none`, 1 run each: a smoke signal, not a rate.
+  - `disable-model-invocation: true` on manual-only skills (`evolve-apply`, `failure-replay`, `optimize-rules`, `clear-context`, `compile-wiki`) so their descriptions stop spending listing budget.
+- **`hooks/deny-dangerous.sh`** (`PreToolUse`/`Bash`): blocks the irreversible — home/disk wipes, force push, `curl | sh`, remote repo deletion, history pruning, secret export — with patterns in `hooks/lib/dangerous-patterns.txt`. Catches wrapper and path forms (`env rm`, `\\rm`, `/bin/rm`) and home subfolders. One `grep -f` on the allow path (29.9 ms vs 63.6 ms for a per-pattern loop). 95 cases in `scripts/deny-dangerous.test.ts`. Adapted from github.com/davidondrej/skills (MIT).
+- **Six skills:** `web-research` (DeepAPI-style source router on context7/gh/firecrawl/WebSearch), `youtube-transcript` + `yt-transcript.sh`, `tool-scout` + `knowledge-catalog.sh` (ai-knowledge as a 412-row TSV catalog read from disk, refreshed at SessionStart only when an entry changed), `before-building`, `decisions`, `adr-verbatim` (last three adapted from davidondrej/skills, MIT).
+
+### Fixed
+
+- `quality-score.sh` and `statusline.sh` printed `1,00` / `$0,12` under a Polish locale — `LC_NUMERIC=C` pinned; three tests failed on this machine.
+- Rules 015/016 named `firecrawl_research_search_github`, which the firecrawl MCP no longer exposes — now `firecrawl_developer_search`.
+
 ## [1.3.0] - 2026-09-05
 
 ### Added

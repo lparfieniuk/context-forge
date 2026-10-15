@@ -1,0 +1,34 @@
+# Dangerous-command denylist for hooks/deny-dangerous.sh — POSIX ERE, one per line.
+# Every pattern is anchored to a command position: line start, or after ; & | ( ` $( or a quote
+# (the quote catches `bash -c "..."` bodies). Use [[:space:]], never \s.
+# Block only the irreversible: disk/home wipes, history destruction, remote deletion, secret export.
+# Adapted from github.com/davidondrej/skills (MIT) global-agent-guardrails.
+
+# rm -r on /, home, /Users, or a user's home root
+(^|[;&|(`"']|\$\()[[:space:]]*((sudo|env|command|nohup|exec|nice|time|xargs)[[:space:]]+)*(\\|/[^[:space:]]*/)?rm[[:space:]]+(-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)([[:space:]]+-[^[:space:]]+)*[[:space:]]+"?(/|/\*|~|~/|~/\*|\$HOME|\$HOME/|\$HOME/\*|\$\{HOME\}|/Users|/Users/[^/[:space:]"]+/?)"?([[:space:]]|[;&|)`]|$)
+# rm -r on the directories this machine's work lives in
+(^|[;&|(`"']|\$\()[[:space:]]*((sudo|env|command|nohup|exec|nice|time|xargs)[[:space:]]+)*(\\|/[^[:space:]]*/)?rm[[:space:]]+(-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)([[:space:]]+-[^[:space:]]+)*[[:space:]]+"?(~|\$HOME)/(Projects|worklogs|Documents|Desktop|Downloads|Library|\.claude|\.ssh)/?"?([[:space:]]|[;&|)`]|$)
+# any sudo rm
+(^|[;&|(`"']|\$\()[[:space:]]*sudo[[:space:]]+(\\|/[^[:space:]]*/)?rm[[:space:]]
+# raw disk writes and formatting
+(^|[;&|(`"']|\$\()[[:space:]]*(sudo[[:space:]]+)?dd[[:space:]].*of=/dev/(r?disk|sd|nvme|hd)
+(^|[;&|(`"']|\$\()[[:space:]]*(sudo[[:space:]]+)?mkfs(\.[a-z0-9]+)?[[:space:]]
+(^|[;&|(`"']|\$\()[[:space:]]*(sudo[[:space:]]+)?diskutil[[:space:]]+(eraseDisk|eraseVolume|partitionDisk|zeroDisk|randomDisk|secureErase|reformat)
+(^|[;&|(`"']|\$\()[[:space:]]*(sudo[[:space:]]+)?chmod[[:space:]]+(-R[[:space:]]+)?0?777[[:space:]]+/([[:space:]]|$)
+# fork bomb
+:\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&
+# pipe a download straight into a shell
+(^|[;&|(`"']|\$\()[[:space:]]*(curl|wget)[[:space:]][^|]*\|[[:space:]]*(sudo[[:space:]]+)?(ba|z|da)?sh([[:space:]]|$)
+# force push (not --force-with-lease), and remote deletion/overwrite of main/master
+(^|[;&|(`"']|\$\()[[:space:]]*git[[:space:]]+push([[:space:]]+[^;&|]*)?[[:space:]](-f|--force)([[:space:]]|$)
+(^|[;&|(`"']|\$\()[[:space:]]*git[[:space:]]+push[[:space:]][^;&|]*[[:space:]](:|\+)(main|master)([[:space:]]|$)
+# destroy local git history
+(^|[;&|(`"']|\$\()[[:space:]]*git[[:space:]]+reflog[[:space:]]+expire[[:space:]].*--expire(-unreachable)?=(now|all)
+(^|[;&|(`"']|\$\()[[:space:]]*git[[:space:]]+gc[[:space:]].*--prune=(now|all)
+# GitHub remote deletion / visibility flips
+(^|[;&|(`"']|\$\()[[:space:]]*gh[[:space:]]+(repo|release|secret|ssh-key|gpg-key)[[:space:]]+delete
+(^|[;&|(`"']|\$\()[[:space:]]*gh[[:space:]]+api[[:space:]].*(-X[[:space:]]*|--method[[:space:]=]+)(DELETE|delete)
+(^|[;&|(`"']|\$\()[[:space:]]*gh[[:space:]]+repo[[:space:]]+edit[[:space:]].*--visibility
+# secret export
+(^|[;&|(`"']|\$\()[[:space:]]*security[[:space:]]+(-[a-z]+[[:space:]]+)*dump-keychain
+(^|[;&|(`"']|\$\()[[:space:]]*gpg[[:space:]].*--export-secret-(keys?|subkeys)

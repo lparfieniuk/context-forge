@@ -1,0 +1,11 @@
+# skill-router routes — label<TAB>skill<TAB>python regex (case-insensitive, prompt whitespace-collapsed).
+# First match wins, so order = specificity. Prune a route whose hit→invocation rate stays <50%
+# (hits: ~/worklogs/logs/skill-router.tsv, invocations: ~/worklogs/logs/skill-usage.tsv).
+youtube	context-forge:youtube-transcript	(youtube\.com/(watch|shorts|live)|youtu\.be/)
+tool lookup	context-forge:tool-scout	(\b(jakie?|jakiego|jakich|czy (jest|mamy|istnieje)|poleć|polecisz|znasz)\b.{0,40}\b(narzędzi|narzędzie|bibliotek|lib|mcp|framework|pakiet|plugin)|\b(is there|any good|which|what) (a |an )?(tool|library|lib|mcp|framework|package(?![.\w]))s?\b(?! (does|do|is|are) (this|the|our))|co mamy w bazie|ai[-_ ]?knowledge)
+web research	context-forge:web-research	(\b(zbadaj|poszukaj|wyszukaj|sprawdź w (internecie|sieci)|poresearchuj|zrób research|research|look up|find out|what'?s new)\b|\bco nowego (w|u) (?!tym|tej|tych|tego)|\b(porównaj|compare)\b.{0,80}\b(vs\.?|versus|czy)\b)
+debugging	superpowers:systematic-debugging	(\bnie działa|\bbłąd|\bbłędy|\bwywala|\b(crash|crashes|failing|fails|exception|stack ?trace)\b|\b(a|this|the) bug\b(?! report)|\bbug (in|w)\b|\b(is|it's|got) broken\b)
+adr	context-forge:adr-verbatim	(\badr\b|zapisz (tę |to jako |tą )?decyzj|record (this|the) decision)
+end session	context-forge:end-session	(\bkończymy\b|zamknij sesję|na dziś (tyle|koniec)|\bwrap up\b|we'?re done)
+review	context-forge:pre-review	(zrób review|sprawdź (moje )?zmiany|przed commitem|review (my|the) (changes|diff)|\bcode review\b)
+build	context-forge:before-building	^(zbuduj|dodaj|zrób|zaimplementuj|stwórz|napisz|build|add|implement|create)\b

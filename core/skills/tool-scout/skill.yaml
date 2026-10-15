@@ -1,0 +1,8 @@
+id: tool-scout
+type: skill
+category: discovery
+tier: 1
+model: inherit
+ownership: owned
+trigger: "Question about which tool/library/MCP exists, or before adding a dependency"
+tags: [discovery]

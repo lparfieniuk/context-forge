@@ -299,6 +299,74 @@ skills:
     model: sonnet
     tags: [workflow, research, knowledge-base, dedup, scheduled]
 
+  - id: web-research
+    type: skill
+    category: execution
+    source: core/skills/web-research/SKILL.md
+    yaml: core/skills/web-research/skill.yaml
+    installed_claude: skills/web-research/SKILL.md
+    installed_cursor: null
+    tier: 2
+    model: inherit
+    tags: [execution, research, web, firecrawl, citations]
+
+  - id: youtube-transcript
+    type: skill
+    category: execution
+    source: core/skills/youtube-transcript/SKILL.md
+    yaml: core/skills/youtube-transcript/skill.yaml
+    installed_claude: skills/youtube-transcript/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/yt-transcript.sh
+    tier: 1
+    model: inherit
+    tags: [execution, research, youtube, transcript]
+
+  - id: tool-scout
+    type: skill
+    category: discovery
+    source: core/skills/tool-scout/SKILL.md
+    yaml: core/skills/tool-scout/skill.yaml
+    installed_claude: skills/tool-scout/SKILL.md
+    installed_cursor: null
+    script: core/scripts/tools/knowledge-catalog.sh
+    tier: 1
+    model: inherit
+    tags: [discovery, knowledge-base, tools, libraries, mcp]
+
+  - id: before-building
+    type: skill
+    category: workflow
+    source: core/skills/before-building/SKILL.md
+    yaml: core/skills/before-building/skill.yaml
+    installed_claude: skills/before-building/SKILL.md
+    installed_cursor: null
+    tier: 0
+    model: inherit
+    tags: [workflow, planning, decisions]
+
+  - id: decisions
+    type: skill
+    category: workflow
+    source: core/skills/decisions/SKILL.md
+    yaml: core/skills/decisions/skill.yaml
+    installed_claude: skills/decisions/SKILL.md
+    installed_cursor: null
+    tier: 0
+    model: inherit
+    tags: [workflow, decisions, confidence, review]
+
+  - id: adr-verbatim
+    type: skill
+    category: workflow
+    source: core/skills/adr-verbatim/SKILL.md
+    yaml: core/skills/adr-verbatim/skill.yaml
+    installed_claude: skills/adr-verbatim/SKILL.md
+    installed_cursor: null
+    tier: 0
+    model: inherit
+    tags: [workflow, adr, decisions, docs]
+
   - id: clear-context
     type: skill
     category: execution

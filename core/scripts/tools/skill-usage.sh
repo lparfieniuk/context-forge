@@ -25,16 +25,23 @@ set -euo pipefail
 # window an append-only hook log is the only source.
 #
 # Output: TSV `skill<TAB>skill_tool<TAB>slash<TAB>agent<TAB>script<TAB>total<TAB>last_used`
-# Usage: skill-usage.sh [--plugin-root <path>] [--projects <dir>]
+# Usage: skill-usage.sh [--plugin-root <path>] [--projects <dir>] [--summary]
+#
+# --summary prints two whole-workflow ratios instead of the per-skill table (targets set 2026-10-15):
+#   coverage      sessions with >=1 Skill call / sessions with any tool call   (target >= 50%)
+#   raw-research  WebSearch/WebFetch/firecrawl_search calls in sessions with no web-research
+#                 skill call / all such calls                                    (target <= 30%)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 PROJECTS="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
+SUMMARY=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --plugin-root) PLUGIN_ROOT="$2"; shift 2 ;;
     --projects) PROJECTS="$2"; shift 2 ;;
-    --help) echo "Usage: skill-usage.sh [--plugin-root <path>] [--projects <dir>]"; exit 0 ;;
+    --summary) SUMMARY=1; shift ;;
+    --help) echo "Usage: skill-usage.sh [--plugin-root <path>] [--projects <dir>] [--summary]"; exit 0 ;;
     *) echo "Unknown arg: $1" >&2; exit 1 ;;
   esac
 done
@@ -42,6 +49,43 @@ done
 INDEX="$PLUGIN_ROOT/core/_index.yaml"
 [[ -f "$INDEX" ]] || { echo "Missing index: $INDEX" >&2; exit 1; }
 [[ -d "$PROJECTS" ]] || { echo "Missing transcripts dir: $PROJECTS" >&2; exit 1; }
+
+if [[ "$SUMMARY" == 1 ]]; then
+  python3 - "$PROJECTS" <<'EOF'
+import glob, json, os, sys
+WEB = {"WebSearch", "WebFetch", "mcp__firecrawl-mcp__firecrawl_search"}
+sessions = with_skill = web_total = web_raw = 0
+for f in glob.glob(os.path.join(sys.argv[1], "*", "*.jsonl")):
+    tools = skills = 0; web = 0; researched = False
+    for line in open(f, errors="ignore"):
+        try:
+            content = (json.loads(line).get("message") or {}).get("content")
+        except (ValueError, AttributeError):
+            continue
+        if not isinstance(content, list):
+            continue
+        for b in content:
+            if not isinstance(b, dict) or b.get("type") != "tool_use":
+                continue
+            tools += 1
+            name = b.get("name", "")
+            if name == "Skill":
+                skills += 1
+                if str((b.get("input") or {}).get("skill", "")).endswith("web-research"):
+                    researched = True
+            elif name in WEB:
+                web += 1
+    if not tools:
+        continue
+    sessions += 1; with_skill += skills > 0
+    web_total += web; web_raw += 0 if researched else web
+pct = lambda a, b: f"{100 * a // b}%" if b else "n/a"
+print("metric\tvalue\tdetail")
+print(f"coverage\t{pct(with_skill, sessions)}\t{with_skill}/{sessions} sessions with a Skill call")
+print(f"raw-research\t{pct(web_raw, web_total)}\t{web_raw}/{web_total} web calls in sessions with no web-research call")
+EOF
+  exit 0
+fi
 
 # Every id whose entry declares `type: skill` or `type: agent`.
 ids="$(awk '/^[[:space:]]*- id:/ {id=$3} /^[[:space:]]*type:[[:space:]]*(skill|agent)/ && id {print id; id=""}' "$INDEX")"

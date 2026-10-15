@@ -1,0 +1,8 @@
+id: decisions
+type: skill
+category: workflow
+tier: 0
+model: inherit
+ownership: owned
+trigger: "/decisions command"
+tags: [workflow]

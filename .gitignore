@@ -26,3 +26,7 @@ core/rules/8*.yaml
 dist/
 
 .DS_Store
+
+# claude plugin eval run output
+evals/**/results/
+evals/results/

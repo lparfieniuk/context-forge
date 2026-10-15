@@ -1,0 +1,8 @@
+id: youtube-transcript
+type: skill
+category: execution
+tier: 1
+model: inherit
+ownership: owned
+trigger: "YouTube URL in the prompt"
+tags: [execution]

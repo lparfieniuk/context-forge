@@ -1,0 +1,8 @@
+id: before-building
+type: skill
+category: workflow
+tier: 0
+model: inherit
+ownership: owned
+trigger: "User proposes a build or change"
+tags: [workflow]

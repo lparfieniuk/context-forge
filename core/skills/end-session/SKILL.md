@@ -1,6 +1,6 @@
 ---
 name: end-session
-description: Closes out a session: diary, learnings, commit, and merge of the working branch. Use when the user says "we're done", "wrap up", "close the session", "finish for today". Do NOT use mid-session, and do NOT use just to record one insight — diary and session-learnings do that without committing or merging.
+description: Closes out a session: diary, learnings, commit, and merge of the working branch. Use when the user says "kończymy", "zamknij sesję", "na dziś tyle", "we're done", "wrap up", "close the session", "finish for today". Do NOT use mid-session, and do NOT use just to record one insight — diary and session-learnings do that without committing or merging.
 model: inherit
 ---
 

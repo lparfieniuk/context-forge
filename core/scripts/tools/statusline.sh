@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export LC_NUMERIC=C   # awk printf %.2f prints '1,00' under pl_PL and breaks every consumer of the number
 # statusline.sh — one-line Claude Code status line (rule 010 + rule 006).
 #
 # Wire it up in settings.json:

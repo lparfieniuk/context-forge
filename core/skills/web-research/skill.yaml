@@ -1,0 +1,8 @@
+id: web-research
+type: skill
+category: execution
+tier: 2
+model: inherit
+ownership: owned
+trigger: "Research request, web lookup, compare options, what's new"
+tags: [execution]

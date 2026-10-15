@@ -1,6 +1,6 @@
 ---
 name: research-scan
-description: Runs one bounded research pass against a project's scan program, deduplicates every finding against the ai-knowledge base before writing anything, and leaves a delta report plus an alert line when a finding is existential. Use when the user says "run the research scan", "/research-scan", "what changed in the landscape", "weekly scan", or when a scheduled headless run invokes it. Do NOT use for answering a single research question (that is WebSearch plus rule 016), for capturing what THIS session learned (that is session-learnings), or without a scan program file — the program is the input, and a scan without one is an unbounded web crawl.
+description: Runs one bounded research pass against a project's scan program, deduplicates every finding against the ai-knowledge base before writing anything, and leaves a delta report plus an alert line when a finding is existential. Use when the user says "run the research scan", "/research-scan", "what changed in the landscape", "weekly scan", or when a scheduled headless run invokes it. Do NOT use for answering a single research question (that is web-research), for capturing what THIS session learned (that is session-learnings), or without a scan program file — the program is the input, and a scan without one is an unbounded web crawl.
 model: sonnet
 ---
 

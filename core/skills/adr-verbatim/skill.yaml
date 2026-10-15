@@ -1,0 +1,8 @@
+id: adr-verbatim
+type: skill
+category: workflow
+tier: 0
+model: inherit
+ownership: owned
+trigger: "Record a decision as an ADR"
+tags: [workflow]

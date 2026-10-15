@@ -359,5 +359,8 @@ if [ "$EVOLVE_STATE" = "READY" ]; then
   echo "🔁 SELF-EVOLVE: ${EVOLVE_COUNT} new signals — run /evolve"
 fi
 
+# ai-knowledge catalog for tool-scout: rebuilt only when an entry is newer (no-op ~7 ms). Silent.
+bash "${PLUGIN_ROOT}/core/scripts/tools/knowledge-catalog.sh" --if-stale >/dev/null 2>&1 || true
+
 echo ""
 echo "════════════════════════════════════════════════════════════════"

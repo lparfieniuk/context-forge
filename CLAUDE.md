@@ -62,6 +62,12 @@
 | workflow | end-session | 1 | haiku | Session close-out: diary + learnings, commit, merge working branch |
 | workflow | session-handoff | 1 | haiku | Compress live state into a paste-able payload so `/clear` costs no context |
 | workflow | research-scan | 2 | sonnet | One bounded research pass per project program; dedups against ai-knowledge before writing |
+| execution | web-research | 2 | inherit | One research question → cheapest dedicated source (context7/gh/YouTube/papers/web), cited |
+| execution | youtube-transcript | 1 | inherit | yt-dlp transcript, per-minute buckets, no files |
+| discovery | tool-scout | 1 | inherit | Look up tools/libs/MCP in the ai-knowledge catalog before the web |
+| workflow | before-building | 0 | inherit | 1-3 consequential choices before any build, no tools |
+| workflow | decisions | 0 | inherit | Manual: list low-confidence choices made this session |
+| workflow | adr-verbatim | 0 | inherit | Record a decision as `docs/adr/NNNN-*.md`, never rewrite old ADRs |
 | discovery | rule-index | 0 | haiku | Load an on-demand rule before the action it governs |
 | admin | optimize-rules | 2 | sonnet | Audit and optimize rules for token efficiency |
 | admin | plugin-audit | 1 | inherit | Validate plugin/index/parity gates via audit tooling |
