@@ -59,6 +59,31 @@ tools:
     tags: [knowledge-base, tools, catalog, tier1]
     routing_key: "tier1:knowledge-catalog"
 
+  - id: bump-version
+    file: tools/bump-version.sh
+    description: "Release helper: write one version into every file that states it and cut the CHANGELOG [Unreleased] section; audit-doc-claims.sh is the drift check"
+    params:
+      - name: "<X.Y.Z>"
+        required: true
+        description: "New version"
+      - name: --date
+        required: false
+        description: "Release date for the CHANGELOG heading (default: today)"
+    output: "One line per file written; exit 1 if [Unreleased] is empty or the version is not newer."
+    tags: [release, version, changelog, tier1]
+    routing_key: "tier1:bump-version"
+
+  - id: review-marker
+    file: tools/review-marker.sh
+    description: "Bind the pre-commit review marker to the current working-tree fingerprint; any later edit invalidates it"
+    params:
+      - name: "[dir]"
+        required: false
+        description: "Any path inside the repo (default: $PWD)"
+    output: "One line: marker path and tree hash; exit 2 outside a git repo."
+    tags: [review, commit-gate, tier1]
+    routing_key: "tier1:review-marker"
+
   - id: extract-signatures
     file: tools/extract-signatures.sh
     description: "Extract TypeScript/PHP method stubs (names, parameters, return types — no bodies) from a source file"

@@ -127,8 +127,21 @@ fi
 SESSION_HASH=$(repo_root_hash "$HOOK_CWD")
 REVIEW_MARKER="/tmp/.claude-review-done-${SESSION_HASH}"
 
-# Check for review marker. Bounded by age: without this, one review at the start of a
-# session silently unlocks every later commit in that repo forever.
+# A marker written by review-marker.sh holds the working-tree fingerprint of what was
+# reviewed. It stays valid as long as the tree is unchanged — however long that takes —
+# and dies on the first edit after the review. Time was the wrong proxy both ways: a
+# 60-min window let unreviewed edits through, and forced a re-review of untouched work.
+if [ -s "$REVIEW_MARKER" ]; then
+  if [ "$(cat "$REVIEW_MARKER")" = "$(worktree_fingerprint "$HOOK_CWD")" ]; then
+    exit 0
+  fi
+  rm -f "$REVIEW_MARKER"
+  echo "[BLOCKED] files changed after the review — review the new diff, then run core/scripts/tools/review-marker.sh again (in its own call: this hook runs before the command)." >&2
+  exit 2
+fi
+
+# Legacy empty marker (`touch`): bounded by age, since it records no content. Without
+# the bound, one review at session start silently unlocks every later commit.
 REVIEW_TTL_MIN="${CF_REVIEW_TTL_MIN:-60}"
 if [ -f "$REVIEW_MARKER" ]; then
   if [ -z "$(find "$REVIEW_MARKER" -mmin +"$REVIEW_TTL_MIN" 2>/dev/null)" ]; then

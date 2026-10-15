@@ -19,10 +19,9 @@ high-quality code review. This skill owns the **gather** phase; Superpowers owns
 2. `git diff HEAD` — full diff (compressed via safe-exec if >5 KB)
 3. Manifest freshness check: `ls -la <IDE_DIR>/shadow/**/_manifest.lightweight.yaml`
 4. Impact radius analysis (see below)
-5. Set review marker. It MUST hash the **repo root**, not `$PWD` — `pre-commit-review.sh`
-   normalizes via `git rev-parse --show-toplevel`, so a marker keyed to a subdirectory will
-   not match (and `md5sum` alone does not exist on stock macOS; `echo` would add a newline):
-   `touch /tmp/.claude-review-done-$(printf "%s" "$(git rev-parse --show-toplevel):$(whoami)" | (md5 -q 2>/dev/null || md5sum | awk '{print $1}') | cut -c1-8)`
+5. Review marker — set LATER, not here: after the review returns and its findings are fixed, run
+   `bash <CF_PLUGIN_ROOT>/core/scripts/tools/review-marker.sh` in its own Bash call. It binds the marker
+   to the working-tree fingerprint, so any edit after it blocks the commit until re-reviewed.
 
 ### Impact radius analysis:
 - **If code-review-graph MCP is available:** call `detect_changes_tool` with changed file list,
@@ -43,11 +42,9 @@ automatically when the pre-commit-review hook fires.
 2. Run `git diff HEAD` — if output >5 KB, route through `safe-exec`.
 3. Check manifest freshness; flag if stale.
 4. Run impact radius analysis (MCP or rg-heuristic).
-5. Set review marker. It MUST hash the **repo root**, not `$PWD` — `pre-commit-review.sh`
-   normalizes via `git rev-parse --show-toplevel`, so a marker keyed to a subdirectory will
-   not match (and `md5sum` alone does not exist on stock macOS; `echo` would add a newline):
-   `touch /tmp/.claude-review-done-$(printf "%s" "$(git rev-parse --show-toplevel):$(whoami)" | (md5 -q 2>/dev/null || md5sum | awk '{print $1}') | cut -c1-8)`
-6. Package all context and invoke `superpowers:requesting-code-review`.
+5. Package all context and invoke `superpowers:requesting-code-review`.
+6. Fix the findings, then run `bash <CF_PLUGIN_ROOT>/core/scripts/tools/review-marker.sh` in its own
+   Bash call (the commit hook checks before the commit command runs).
 
 ## Output Format
 
@@ -57,7 +54,7 @@ automatically when the pre-commit-review hook fires.
 - Diff size: 2.3 KB (inline) | 47 KB (stored at ~/.claude/plugins/data/context-forge/logs/...)
 - Manifest: FRESH | STALE (recommend /refresh-manifest before review)
 - Impact radius: 23 importers (via code-review-graph MCP | rg heuristic)
-- Review marker: /tmp/.claude-review-done-a1b2c3d4 ✓
+- Review marker: set after findings are fixed (review-marker.sh)
 
 Delegating to superpowers:requesting-code-review...
 [END PRE-REVIEW]
@@ -66,7 +63,7 @@ Delegating to superpowers:requesting-code-review...
 ## Constraints
 
 NEVER perform the code review inline — ALWAYS delegate to `superpowers:requesting-code-review`.
-ALWAYS set the review marker at `/tmp/.claude-review-done-<hash>` before delegating.
+ALWAYS set the review marker with `review-marker.sh` AFTER findings are fixed — NEVER with a bare `touch`, which records no content.
 ALWAYS prefer code-review-graph MCP for impact radius over rg heuristic when available.
 NEVER skip pre-review because the change seems small — size does not exempt.
 ALWAYS compress diffs >5 KB through `safe-exec` before packaging context.

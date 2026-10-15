@@ -27,3 +27,26 @@ repo_root_hash() {
   root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || root="$dir"
   printf "%s" "${root}:$(whoami)" | pwd_hash | cut -c1-8
 }
+
+# Tree hash of the whole working tree — tracked edits, staged files AND untracked
+# non-ignored files — computed in a throwaway index so the real one is never touched.
+# Identical before and after `git add`, so a review marker can be bound to the exact
+# content reviewed: any edit after the review changes it.
+#
+# Usage: worktree_fingerprint [dir]   (prints nothing and returns 1 outside a repo)
+worktree_fingerprint() {
+  local dir="${1:-$PWD}" root gitdir tmp tree
+  root=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || return 1
+  gitdir=$(git -C "$root" rev-parse --absolute-git-dir) || return 1
+  # assume-unchanged / skip-worktree entries would hide edits from `git add -A`, so a
+  # changed tree could match the reviewed one — refuse to fingerprint (fail closed).
+  [ -n "$(git -C "$root" ls-files -v | awk '/^([a-z]|S) /{print; exit}')" ] && return 1
+  tmp=$(mktemp) || return 1
+  # Seeding from the real index lets `git add -A` reuse its stat cache instead of
+  # rehashing every file.
+  if [ -f "$gitdir/index" ]; then cp "$gitdir/index" "$tmp"; else rm -f "$tmp"; fi
+  tree=$(GIT_INDEX_FILE="$tmp" git -C "$root" add -A >/dev/null 2>&1 \
+    && GIT_INDEX_FILE="$tmp" git -C "$root" write-tree 2>/dev/null)
+  rm -f "$tmp"
+  [ -n "$tree" ] && printf "%s\n" "$tree"
+}

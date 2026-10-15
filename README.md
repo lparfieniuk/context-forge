@@ -1,14 +1,14 @@
 # ContextForge
 
 [![Plugin Audit](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml/badge.svg)](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml)
-[![Version](https://img.shields.io/badge/version-1.3.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](.nvmrc)
 
 > Deterministic context engineering for AI coding agents — structure over search, tokens over brute force.
 
 A Claude Code (and, partially, Cursor) plugin that treats the context window as a **budget** rather than
-a bucket. 18 rules, 27 skills, 1 sub-agent, 13 hooks, 35 shell tools — all built around one idea: the
+a bucket. 18 rules, 27 skills, 1 sub-agent, 14 hooks, 37 shell tools — all built around one idea: the
 cheapest executor that produces a correct result should do the work, and everything else belongs on disk.
 
 [Standards authoring workbook](docs/standards-authoring.md): a reusable requirement card,

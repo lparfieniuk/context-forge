@@ -328,6 +328,39 @@ describe('pre-commit-review.sh marker semantics', () => {
     expect(runRaw(`${COMMIT_CMD} -m 'note about SKIP_REVIEW=1 usage'`, repo).status).toBe(2);
   });
 
+  const MARKER_TOOL = path.resolve(__dirname, '..', 'core', 'scripts', 'tools', 'review-marker.sh');
+
+  it('a fingerprint marker outlives the TTL while the tree is unchanged', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
+    spawnSync('git', ['-C', repo, 'init', '-q']);
+    fs.writeFileSync(path.join(repo, 'a.txt'), 'reviewed\n');
+    expect(spawnSync('bash', [MARKER_TOOL, repo]).status).toBe(0);
+    const m = markerFor(repo);
+    const old = new Date(Date.now() - 1000 * 60 * 60 * 24);
+    fs.utimesSync(m, old, old);
+    try {
+      spawnSync('git', ['-C', repo, 'add', 'a.txt']); // staging must not change the fingerprint
+      expect(runCommit(repo).status).toBe(0);
+    } finally {
+      fs.rmSync(m, { force: true });
+    }
+  });
+
+  it('blocks a commit when files changed after the review', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
+    spawnSync('git', ['-C', repo, 'init', '-q']);
+    fs.writeFileSync(path.join(repo, 'a.txt'), 'reviewed\n');
+    expect(spawnSync('bash', [MARKER_TOOL, repo]).status).toBe(0);
+    fs.writeFileSync(path.join(repo, 'b.txt'), 'slipped in after review\n');
+    try {
+      const r = runCommit(repo);
+      expect(r.status).toBe(2);
+      expect(r.stderr).toContain('changed after the review');
+    } finally {
+      fs.rmSync(markerFor(repo), { force: true });
+    }
+  });
+
   it('rejects a marker older than the TTL', () => {
     const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cf-repo-'));
     spawnSync('git', ['-C', repo, 'init', '-q']);

@@ -24,7 +24,7 @@ The output is a short cited answer, plus a saved report when the research was no
 | A YouTube video | `youtube-transcript` skill | Never scrape the watch page |
 | Papers (arXiv, biomed) | `firecrawl_research_search_papers` / `read_paper` | |
 | One known page | `WebFetch`, else `firecrawl_scrape` | |
-| Open web | 3+ **differently worded** queries: `WebSearch` (mode standard) or `firecrawl_search` | One query = one blind spot |
+| Open web | 3+ **differently worded** queries: `WebSearch` (mode standard); `firecrawl_search` only when it comes back thin | One query = one blind spot |
 | Many sources / dataset / "deep" | `firecrawl_agent` → `firecrawl_agent_status` | Deep mode only, see budget |
 
 Modes: **quick** (default — ≤2 queries, ≤3 fetches, rule 016 budget) · **varied** (user asks to
@@ -32,6 +32,10 @@ compare coverage: 3 web + 3 GitHub + 1 developer-search) · **deep** (user says 
 
 ## Step 2 — Budget and failures
 
+- Firecrawl is metered (free plan 1000 credits/month: scrape 1/page, search 2 per 10 results, +4 per
+  page for json/query formats). Free tools first — `WebFetch` before `firecrawl_scrape`, `WebSearch`
+  before `firecrawl_search`, `gh` before `firecrawl_developer_search`; Firecrawl for a 403/JS page or
+  an index the free tools lack. Search `limit` ≤5, never `scrapeOptions`.
 - Deep mode: run `firecrawl_credit_usage` first; state expected spend (rule 017).
 - Firecrawl errors (`Unauthorized`, quota) → fall back to WebSearch/WebFetch and SAY the gap.
 - Reddit/forum/X = lead, not truth: confirm against official docs or source before stating it.
