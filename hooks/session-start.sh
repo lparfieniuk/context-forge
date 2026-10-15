@@ -314,7 +314,7 @@ if [ -n "$CF_REPO_ROOT" ]; then
   else
     # Only nudge where an index would actually pay for itself. A repo with a
     # handful of source files is faster to read than to index.
-    CF_SRC=$(rg --files -g '*.{ts,tsx,js,jsx,mjs,py,php}' "$CF_REPO_ROOT" 2>/dev/null | rg -c . || echo 0)
+    CF_SRC=$(rg --files -g '*.{ts,tsx,js,jsx,mjs,cjs,py,php}' "$CF_REPO_ROOT" 2>/dev/null | rg -c . || echo 0)
     if [ "$CF_SRC" -ge 30 ]; then
       echo ""
       echo "🔎 SYMBOLS: none indexed (${CF_SRC} source files) — run \`refresh-manifest.sh\` once to enable Tier 0 lookup"

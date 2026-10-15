@@ -1,0 +1,4 @@
+id: small-project
+name: Small project instructions
+description: Explicit, compact alternative to the full instruction export for task-local work.
+content_file: small-project.md

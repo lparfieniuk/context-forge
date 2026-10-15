@@ -11,6 +11,12 @@ A Claude Code (and, partially, Cursor) plugin that treats the context window as 
 a bucket. 18 rules, 21 skills, 1 sub-agent, 11 hooks, 33 shell tools — all built around one idea: the
 cheapest executor that produces a correct result should do the work, and everything else belongs on disk.
 
+[Standards authoring workbook](docs/standards-authoring.md): a reusable requirement card,
+source-linked examples, verification limits, and exercises (Polish).
+
+[Small-project profile](docs/small-projects.md): an experimental compact
+instruction export, primary-source research and its benchmark acceptance criteria.
+
 ---
 
 ## The problem

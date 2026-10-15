@@ -1,5 +1,12 @@
 version: "1.0"
-description: "ContextForge module map — single source of truth for all rules, skills, and agents"
+description: "ContextForge module map — single source of truth for rules, skills, agents, and instruction profiles"
+
+profiles:
+  - id: small-project
+    type: profile
+    source: core/profiles/small-project.md
+    yaml: core/profiles/small-project.yaml
+    max_bytes: 2400
 
 rules:
   - id: cf-token-efficiency

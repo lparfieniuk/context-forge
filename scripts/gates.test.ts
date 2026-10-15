@@ -239,6 +239,21 @@ describe('refresh-manifest.sh + shadow-lookup.sh round trip', () => {
     expect(found.stdout.trim().split('\t')).toEqual(['alpha', 'function', 'src/a.ts', path.basename(dir)]);
   });
 
+  it('indexes named async exports, including a named default export', () => {
+    const dir = makeRepo({
+      'src/a.ts': 'export async function fetchUser() { return 1; }\n',
+      'src/b.js': 'export default async function saveUser() { return 2; }\n',
+    });
+    const refreshed = spawnSync('bash', [REFRESH], { cwd: dir, encoding: 'utf-8' });
+    expect(refreshed.status, refreshed.stderr).toBe(0);
+    for (const [symbol, file] of [['fetchUser', 'src/a.ts'], ['saveUser', 'src/b.js']]) {
+      const found = spawnSync('bash', [LOOKUP, '--symbol', symbol, '--kind', 'function'], { cwd: dir, encoding: 'utf-8' });
+      expect(found.status, found.stdout + found.stderr).toBe(0);
+      expect(found.stdout.trim().split('\t')).toEqual([symbol, 'function', file, path.basename(dir)]);
+    }
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
   it('survives a path containing the :CF field marker', () => {
     // The awk parser split on the FIRST ":CF"; a directory legally named with
     // that sequence truncated the path and glued its tail onto the kind.

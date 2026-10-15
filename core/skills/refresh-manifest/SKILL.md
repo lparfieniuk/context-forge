@@ -1,6 +1,6 @@
 ---
 name: refresh-manifest
-description: Rebuilds the shadow manifest of top-level exports. Use when the user says "refresh the manifest", "rebuild the index", "the symbol index is stale", or when shadow-lookup returns nothing for a symbol that clearly exists. Do NOT use for ordinary code search or on a repo with fewer than 30 source files — the manifest costs more than it saves.
+description: Rebuilds the shadow manifest of top-level exports. Use when the user says "refresh the manifest", "rebuild the index", "the symbol index is stale", or when an existing index is demonstrably stale. Do NOT use for ordinary code search or to create an index on a repo with fewer than 30 source files unless explicitly requested.
 model: haiku
 ---
 
@@ -10,7 +10,7 @@ Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/refresh-manifest.sh` to regenerat
 
 ## When to Use
 
-- Manifest file missing: `<IDE_DIR>/shadow/<repo>/_manifest.lightweight.yaml` not found
+- Manifest file missing in a repository with 30 or more source files, or the user explicitly requested indexing
 - Symbol lookups return stale or incorrect results
 - Large refactor completed (new files/classes added to top-level exports)
 - `validate-manifest.sh` reports STALE or MISSING verdict
@@ -73,7 +73,7 @@ symbols:
 
 ## Constraints
 
-- NEVER skip this step when manifest is missing — ALWAYS run before shadow-lookup
+- ALWAYS run before indexed lookup when its manifest is missing; NEVER require it for the small-repository `shadow-lookup --text` path
 - ALWAYS dual-write to both .claude/shadow/ and .cursor/shadow/ when both directories exist
 - NEVER run during an active refactor that has unsaved files — results will be stale
 - config/manifest-repos.json MUST exist and contain valid JSON with `repos` array

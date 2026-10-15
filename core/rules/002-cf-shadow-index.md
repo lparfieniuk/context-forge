@@ -2,11 +2,12 @@
 
 ## SYSTEM CONSTRAINTS
 
-NEVER read raw source files for type/API discovery — use manifest first.
-NEVER skip Step 1 (manifest) and jump to Step 2 or 3.
-NEVER read more than 5 raw source files without escalating to pack-context skill.
+ALWAYS use an existing manifest first for symbol discovery.
+NEVER generate a missing manifest for a repository with fewer than 30 source files unless the user explicitly requests indexing. Use focused `rg`; use `shadow-lookup.sh --symbol X --text` when bounded TSV output is needed. Inspect returned files: `text-match` rows are occurrences, NOT declarations.
+ALWAYS follow the indexed protocol below for repositories with 30 or more source files. The text lookup enforces the boundary using non-ignored `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`, `.py` and `.php` files.
+NEVER escalate to pack-context solely because a file-count threshold was crossed; use it when related method bodies are actually needed together.
 ALWAYS resolve `<IDE_DIR>` (`.claude` or `.cursor`) before manifest lookup.
-ALWAYS generate manifest immediately when absent — NEVER ask user, NEVER skip.
+ALWAYS generate a missing manifest before indexed lookup; NEVER require an index for the small-repository text path.
 NEVER hardcode `.cursor/shadow/` — ALWAYS use IDE-resolved `<IDE_DIR>`.
 EXEMPTION — ONE self-contained artifact under ~30k tokens, read once to answer one question (a downloaded transcript, a single log, one PDF): read it directly. NEVER build a manifest, bundle, or sub-agent pipeline around it — the scaffolding costs more than the artifact. The manifest protocol governs REPEATED discovery across a codebase, not a single read.
 
@@ -37,7 +38,8 @@ Manifest path: `<IDE_DIR>/shadow/<repo>/_manifest.lightweight.yaml`
 
 Step 1 — Detect IDE: check `.claude/` then `.cursor/` at project root.
 Step 2 — Check manifest: `ls <IDE_DIR>/shadow/<repo>/_manifest.lightweight.yaml`
-  - If MISSING → run `/refresh-manifest` skill immediately. Do NOT ask user.
+  - If MISSING and fewer than 30 source files → use focused `rg` or the bounded `shadow-lookup.sh --symbol X --text` interface, then inspect matches. A failed search is not proof that a declaration is absent; check its diagnostic before deciding the next step.
+  - If MISSING and 30 or more source files → run `/refresh-manifest` for its supported TypeScript, JavaScript, Python or PHP declarations. Use focused source search for unsupported syntax or languages; the regex-based index is not exhaustive.
   - If present → read manifest. Find target symbol path.
 Step 3 — extract-signatures: run against the file found in Step 2.
   - Sufficient for interface understanding and writing new code.
@@ -47,11 +49,12 @@ Step 4 — pack-context: only when task touches 3+ interrelated files with full 
 
 - Applying a diff (editing actual file).
 - Verifying runtime behavior not visible in signatures.
+- Following text matches in a small repository without a manifest.
 
 ## Few-shot example
 
 **Input:** "Add cancelSubscription() to BillingFacade."
-**Reasoning:** Step 1 first — find file via manifest. Then Step 2 — get signatures. 3+ files → Step 3.
+**Reasoning:** An existing manifest resolves the declaration; signatures establish the API. Bundle related bodies only when the change needs them together. In a small repository without a manifest, `--text` instead supplies candidate files to inspect.
 **Output:**
 ```bash
 # Step 1: IDE = .claude (detected)
@@ -64,6 +67,7 @@ Step 4 — pack-context: only when task touches 3+ interrelated files with full 
 
 - [ ] `<IDE_DIR>` resolved via auto-detect table (not hardcoded)?
 - [ ] Manifest checked before reading any raw source file?
-- [ ] If manifest missing: `/refresh-manifest` run immediately (not skipped, not asked user)?
-- [ ] Not reading >5 raw files without escalating to pack-context?
+- [ ] If manifest missing: used the small-repository text path or generated the supported larger repository's index?
+- [ ] Treated text matches as candidate files rather than verified declarations?
+- [ ] Escalated only for the context actually needed?
 If any unchecked → fix before performing symbol lookup.

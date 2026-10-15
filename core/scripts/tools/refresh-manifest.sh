@@ -114,9 +114,9 @@ generate_manifest_for_repo() {
     BODY=$(
       {
         rg --no-heading --no-line-number -o \
-          -g '!*.test.*' -g '!*.spec.*' -g '*.{ts,tsx,js,jsx,mjs}' \
+          -g '!*.test.*' -g '!*.spec.*' -g '*.{ts,tsx,js,jsx,mjs,cjs}' \
           -r 'CF$1|CF$2' \
-          '^export\s+(?:default\s+)?(class|interface|function|const|type|enum)\s+(\w+)' \
+          '^export\s+(?:default\s+)?(?:async\s+)?(class|interface|function|const|type|enum)\s+(\w+)' \
           "${SCAN_ARGS[@]}" 2>/dev/null || true
         rg --no-heading --no-line-number -o \
           -g '!test_*' -g '!*_test.py' -g '*.py' \

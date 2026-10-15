@@ -1,12 +1,12 @@
 ---
 name: shadow-lookup
-description: Answers "where is X defined", "which file has this class", "find the symbol", or "locate this function" by reading the pre-built shadow manifest (~50 tokens, no LLM call, no file opened). Do NOT use for full-text search, for finding call sites, or when no manifest exists — use rg, or run refresh-manifest first.
+description: Use for "where is X defined", "find the symbol", or "locate this function" with an existing manifest; use explicit --text for literal occurrences in a repository with fewer than 30 source files and no index. Do NOT use text matches as proof of a declaration, or for broad search in larger repositories — use focused rg.
 model: inherit
 ---
 
 ## What This Does
 
-Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/shadow-lookup.sh --symbol <name>` against the pre-built lightweight shadow manifest. Returns a TSV-formatted result with symbol name, kind (class/interface/function/type), file path, and repository. Auto-detects IDE for manifest location. Cost: ~50 tokens per lookup (vs ~30k for reading the full manifest).
+Runs `bash <CF_PLUGIN_ROOT>/core/scripts/tools/shadow-lookup.sh --symbol <name>` against the pre-built lightweight shadow manifest. Returns TSV with symbol, kind, file and repository. Without a manifest in a small repository, explicit `--text` searches literal occurrences without creating an index; these rows use kind `text-match`, not a declaration kind.
 
 ## When to Use
 
@@ -24,8 +24,9 @@ bash <CF_PLUGIN_ROOT>/core/scripts/tools/shadow-lookup.sh --symbol <SymbolName>
 Optional flags:
 - `--repo <repo>` — scope lookup to a specific repository
 - `--kind class|interface|function|type` — filter by symbol kind
+- `--text` — literal source matches in the current repository, only below 30 non-ignored source files; cannot combine with `--kind` or a different `--repo`
 
-If the manifest is missing, run refresh-manifest first, then retry.
+If the manifest is missing, use `--text` for a small repository. For larger repositories, run refresh-manifest for its supported TypeScript, JavaScript, Python or PHP declarations. The regex index is not exhaustive: use focused source search for unsupported syntax. Text lookup covers `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`, `.py` and `.php`; respects ignore rules; limits output to 3000 bytes; and fails visibly on search errors, no matches or names that cannot fit TSV.
 
 ## Output Format
 
@@ -35,10 +36,12 @@ BillingService	class	libs/billing/src/lib/billing.service.ts	my-workspace
 ```
 
 Tab-separated columns: `symbol<TAB>kind<TAB>file<TAB>repo`. Multiple rows if multiple matches.
+In `--text` mode a row such as `alpha<TAB>text-match<TAB>src/a.ts<TAB>my-workspace` can refer to a declaration, use, comment or string. Inspect the file before asserting where a symbol is defined. Mode diagnostics go to stderr, keeping stdout machine-readable.
 
 ## Constraints
 
 - NEVER read the full manifest file for a single symbol lookup — use this script
-- ALWAYS run refresh-manifest if this returns no results before escalating
-- NEVER use LLM inference to guess file paths — always verify via shadow-lookup first
+- NEVER create an index solely to search fewer than 30 source files unless explicitly requested
+- NEVER treat `text-match` as a declaration or infer that no matches proves a symbol does not exist
+- NEVER use LLM inference to guess file paths — verify the returned files
 - ALWAYS use TSV output as-is — NEVER reformat to JSON
