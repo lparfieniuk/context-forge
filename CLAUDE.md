@@ -5,7 +5,7 @@
 ## Plugin Identity
 
 **Name:** ContextForge (`context-forge`)
-**Version:** 1.4.0
+**Version:** 1.4.1
 **Primary IDE:** Claude Code (full support)
 **Secondary IDE:** Cursor (rules + `cf-scribe` agent only)
 
@@ -60,6 +60,7 @@
 | workflow | evolve-apply | 1 | haiku | Apply a human-approved /evolve proposal; patch + convert + audit, revert on failure |
 | workflow | pre-review | 1 | haiku | Pre-commit review delegating to superpowers:requesting-code-review |
 | workflow | end-session | 1 | haiku | Session close-out: diary + learnings, commit, merge working branch |
+| workflow | failure-replay | 1 | haiku | Manual: scaffold a cf-bench regression case from a failure ledger |
 | workflow | session-handoff | 1 | haiku | Compress live state into a paste-able payload so `/clear` costs no context |
 | workflow | research-scan | 2 | sonnet | One bounded research pass per project program; dedups against ai-knowledge before writing |
 | execution | web-research | 2 | inherit | One research question → cheapest dedicated source (context7/gh/YouTube/papers/web), cited |

@@ -10,7 +10,7 @@
     {
       "name": "context-forge",
       "source": ".",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "description": "18 rules, 27 skills, 1 agent, 14 hooks for token-efficient agent workflows.",
       "author": {
         "name": "Lukasz Parfieniuk",

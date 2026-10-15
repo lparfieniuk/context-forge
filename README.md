@@ -1,7 +1,7 @@
 # ContextForge
 
 [![Plugin Audit](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml/badge.svg)](https://github.com/lparfieniuk/context-forge/actions/workflows/plugin-audit.yml)
-[![Version](https://img.shields.io/badge/version-1.4.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.4.1-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](.nvmrc)
 
@@ -12,7 +12,7 @@ a bucket. 18 rules, 27 skills, 1 sub-agent, 14 hooks, 37 shell tools — all bui
 cheapest executor that produces a correct result should do the work, and everything else belongs on disk.
 
 [Standards authoring workbook](docs/standards-authoring.md): a reusable requirement card,
-source-linked examples, verification limits, and exercises (Polish).
+source-linked examples, verification limits, and exercises.
 
 [Small-project profile](docs/small-projects.md): an experimental compact
 instruction export, primary-source research and its benchmark acceptance criteria.
@@ -96,7 +96,7 @@ manifests, task type, capacity estimate, tier availability. If you see it, you'r
         ┌─────────────┬───────────┼───────────┬──────────────┐
         ▼             ▼           ▼           ▼              ▼
    core/rules/   core/skills/ core/agents/ core/scripts/  hooks/
-   18 × YAML+MD  20 × SKILL   1 × agent    31 × .sh       11 scripts
+   18 × YAML+MD  27 × SKILL   1 × agent    37 × .sh       14 scripts
         │             │           │
         └─────────────┴───────────┘
                       │  npm run convert
@@ -108,7 +108,7 @@ manifests, task type, capacity estimate, tier availability. If you see it, you'r
 
   harnesses/<id>.yaml ──npm run emit:agents──▶ AGENTS.md family
                                     (opencode, Codex CLI, Copilot,
-                                     Gemini CLI, Aider, Cline/Roo)                .cursor/agents/
+                                     Gemini CLI, Aider, Cline/Roo)
 
   ── state lives outside the window ──────────────────────────
   <IDE_DIR>/shadow/<repo>/_manifest.lightweight.yaml   symbols
@@ -154,7 +154,7 @@ so they cannot collide with Superpowers or your own rules.
 | 002 | cf-shadow-index | intelligent | Manifest before raw reads; 3-step lookup escalation; IDE auto-detect |
 | 003 | cf-tier-routing | always | Cheapest-tier routing; Haiku-first; concurrency ceilings; Scribe dispatch |
 | 004 | cf-circuit-breaker | always | Two-strike halt; failure-ledger YAML; DEGRADED read-only state |
-| 005 | cf-code-search | intelligent | `rg` only (`grep` banned); progressive disclosure: count → files → lines |
+| 005 | cf-code-search | always | `rg` only (`grep` banned); progressive disclosure: count → files → lines |
 | 006 | cf-prompt-caching | intelligent | KV prefix stability; static-first placement; TTL and breakpoint budget |
 | 008 | cf-worklog | intelligent | State externalization; append gates; `supersedes` backlinks for reversals |
 | 009 | cf-module-index | intelligent | `_index.yaml` first; source path ≠ installed path |
@@ -163,15 +163,20 @@ so they cannot collide with Superpowers or your own rules.
 | 012 | cf-rule-authoring | intelligent | Dual YAML+MD format; nine golden rules; mandatory validation gate |
 | 013 | cf-interleaved-thinking | intelligent | Adaptive thinking + `output_config.effort` per model; no `budget_tokens` |
 | 014 | cf-tool-result-clearing | intelligent | Clear re-fetchable tool results at 30k; typed `keep` params |
-| 015 | cf-mcp-tools | intelligent | MCP routing; snapshots over screenshots; no uncapped crawls |
+| 015 | cf-mcp-tools | intelligent | MCP routing; free tools before Firecrawl credits; no uncapped crawls |
 | 016 | cf-research-escalation | intelligent | Local-first, then bounded web research; forums are leads, docs are truth |
 | 017 | cf-cloud-execution | intelligent | TTL + cancel path on metered jobs; verify digests and control-plane writes |
 | 018 | cf-cost-model | intelligent | Routing priced in dollars; Batch API for non-interactive work; tokenizer drift |
+| 019 | cf-critical-response | always | No praise openers; verify before agreeing; every recommendation carries its downside |
 
-**Measured cost** (`bash core/scripts/tools/benchmark-tokens.sh`): always-on rules ≈ **2,500 tokens**;
-all 18 rules ≈ 10,500 tokens. `intelligent` rules load only when the task matches.
+**Measured cost** (`bash core/scripts/tools/benchmark-tokens.sh`, 2026-10-15): the 6 always-on rules ≈
+**4,750 tokens**; all 18 rules ≈ 17,500 tokens. `intelligent` rules load only when the task matches,
+via the `rule-index` skill.
 
-## Skills (20)
+## Skills (27)
+
+Every description is a routing predicate: literal trigger phrases plus a `Do NOT use for` clause. The `skill-router` hook adds a one-line hint when a prompt matches a known task shape, so
+specific work runs through a skill instead of the bare agent.
 
 | Skill | Category | Tier | What it does |
 |---|---|---|---|
@@ -179,6 +184,10 @@ all 18 rules ≈ 10,500 tokens. `intelligent` rules load only when the task matc
 | `extract-signatures` | discovery | 1 | TypeScript/PHP method stubs without bodies (~500–2k tokens) |
 | `refresh-manifest` | discovery | 1 | Regenerate Shadow Index manifests; dual-writes `.claude` + `.cursor` |
 | `pack-context` | discovery | 2 | Keyword-filtered XML bundle of 3–15 interrelated files |
+| `rule-index` | discovery | 0 | Load an on-demand rule before the action it governs |
+| `tool-scout` | discovery | 1 | Look up a tool/library/MCP in the local ai-knowledge catalog before the web |
+| `web-research` | execution | 2 | One research question → cheapest dedicated source (docs, GitHub, YouTube, papers, web), cited |
+| `youtube-transcript` | execution | 1 | `yt-dlp` transcript in per-minute buckets, no files written |
 | `safe-exec` | execution | 1 | Run a command; spill >5 KB output to a log file and return a summary |
 | `log-analyzer` | execution | 1 | Distill a build/test log to root cause + file + one-line fix |
 | `clear-context` | execution | 1 | Emit the correct `context_management.edits` clearing parameters |
@@ -190,6 +199,12 @@ all 18 rules ≈ 10,500 tokens. `intelligent` rules load only when the task matc
 | `evolve-apply` | workflow | 1 | Apply an approved proposal; convert + audit; auto-revert on failure |
 | `pre-review` | workflow | 1 | Gather diff context, then delegate to Superpowers' code review |
 | `end-session` | workflow | 1 | Close-out sequence: diary + learnings, commit, merge |
+| `session-handoff` | workflow | 1 | Compress live state into a paste-able payload so `/clear` loses nothing |
+| `failure-replay` | workflow | 1 | Scaffold a regression case from a recorded failure ledger |
+| `research-scan` | workflow | 2 | One bounded research pass per project; dedups against the knowledge base |
+| `before-building` | workflow | 0 | Surface 1–3 consequential choices before a build, no tools |
+| `decisions` | workflow | 0 | Manual: list the low-confidence choices made this session |
+| `adr-verbatim` | workflow | 0 | Record a decision as `docs/adr/NNNN-*.md`; supersede, never rewrite |
 | `optimize-rules` | admin | 2 | Token audit across all rules; suggest activation-mode changes |
 | `plugin-audit` | admin | 1 | Run the full index/parity/surface audit gate |
 
@@ -199,16 +214,19 @@ all 18 rules ≈ 10,500 tokens. `intelligent` rules load only when the task matc
 |---|---|---|
 | `cf-scribe` | Haiku | Observation masking — compresses large tool output into a bounded `[SCRIBE OUTPUT]` block before the primary context ever sees it. Read-only; never mutates files |
 
-## Hooks (11)
+## Hooks (14)
 
 Hooks are what make the rules more than advice — the blocking ones fail the tool call outright.
 
 | Event | Script | Blocking | Purpose |
 |---|---|---|---|
 | SessionStart | `session-start.sh` | no | IDE detection, manifest freshness, task type, capacity estimate, evolve signal count |
+| UserPromptSubmit | `skill-router.sh` | no | Match the prompt against `hooks/lib/skill-routes.tsv`; hint the skill to invoke first |
+| PreToolUse · Bash | `deny-dangerous.sh` | **yes** | Reject catastrophic commands (`rm -rf ~`, force-push to main, …), including inside `bash -c` |
 | PreToolUse · Bash | `enforce-rg.sh` | **yes** | Reject `grep`; print the `rg` equivalent |
-| PreToolUse · Bash | `pre-commit-review.sh` | **yes** | Reject `git commit` without a review marker |
+| PreToolUse · Bash | `pre-commit-review.sh` | **yes** | Reject `git commit` unless the review marker matches the current working-tree fingerprint |
 | PreToolUse · Agent | `enforce-tier-routing.sh` | **yes** | Reject a sub-agent spawn when a Tier 0/1 alternative exists |
+| PreToolUse · Firecrawl MCP | `firecrawl-budget.sh` | asks | Force a permission prompt before credit-scaling calls (crawl, agent, large search, paid formats) |
 | PostToolUse · Skill | `skill-usage-log.sh` | no | Append every skill invocation to `~/worklogs/logs/skill-usage.tsv` — history past the 30-day transcript window |
 | PostToolUse · Bash | `run-log-writer.sh` | no | Log significant calls to `~/worklogs/runs/` as self-evolve signal |
 | PostToolUse · MCP | `mcp-context-guard.sh` | no | Flag oversized MCP payloads for clearing (rule 014) |
@@ -265,7 +283,7 @@ slug across sessions is what triggers it in the first place (rule 004's 3-strike
 | `core/rules/<NNN>-cf-<id>.{md,yaml}` | Rule source: content + metadata | **yes** |
 | `core/skills/<id>/SKILL.md` | Skill source | **yes** |
 | `core/agents/<id>.{md,yaml}` | Agent source | **yes** |
-| `core/scripts/tools/*.sh` | Tier 0/1 shell tooling (32 scripts) | **yes** |
+| `core/scripts/tools/*.sh` | Tier 0/1 shell tooling (37 scripts) | **yes** |
 | `hooks/*.sh`, `hooks/hooks.json` | Enforcement hooks | **yes** |
 | `scripts/*.ts` | Convert pipeline, AGENTS.md emitter, manifest generator, test suite | **yes** |
 | `harnesses/<id>.yaml` | Harness capability profiles | **yes** |
@@ -277,7 +295,7 @@ slug across sessions is what triggers it in the first place (rule 004's 3-strike
 
 ```bash
 npm run convert          # core/ → all installed IDE paths (run after every core/ edit)
-npm test                 # vitest — 58 tests over hooks, scripts, and the convert pipeline
+npm test                 # vitest over hooks, scripts, and the convert pipeline
 npm run validate-index   # _index.yaml consistency; fix every ERROR before committing
 npm run test:audit       # full plugin audit gate (index + parity + surface + doc claims)
 
@@ -289,6 +307,10 @@ CI runs the audit gate on every push (`.github/workflows/plugin-audit.yml`).
 
 Adding a module: register it in `core/_index.yaml` **first**, create the source files, run
 `validate-index`, then `convert`. The audit fails on an unregistered artifact by design.
+
+Releasing: `bash core/scripts/tools/bump-version.sh X.Y.Z` writes the version into every file that
+states it and cuts the CHANGELOG `[Unreleased]` section (all-or-nothing); then commit, tag `vX.Y.Z`,
+push, `gh release create`.
 
 ---
 

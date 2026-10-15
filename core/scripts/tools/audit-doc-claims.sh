@@ -52,6 +52,8 @@ count_section() {
 RULE_COUNT="$(count_section "rules")"
 SKILL_COUNT="$(count_section "skills")"
 AGENT_COUNT="$(count_section "agents")"
+HOOK_COUNT="$(find "$PLUGIN_ROOT/hooks" -maxdepth 1 -name '*.sh' -type f 2>/dev/null | wc -l | tr -d ' ')"
+TOOL_COUNT="$(find "$PLUGIN_ROOT/core/scripts/tools" -maxdepth 1 -name '*.sh' -type f 2>/dev/null | wc -l | tr -d ' ')"
 STALE_TMPFILE="$(mktemp "${TMPDIR:-/tmp}/doc-claims-stale.XXXXXX")"
 TMPFILE="$(mktemp "${TMPDIR:-/tmp}/doc-claims.XXXXXX")"
 trap 'rm -f "$TMPFILE" "$STALE_TMPFILE"' EXIT
@@ -114,13 +116,19 @@ while IFS= read -r rel; do
       record_failure "$rel" "$line_no" "stale token" "$line"
     fi
 
-    rules_claim="$(printf '%s\n' "$line" | sed -nE 's/.*\*\*([0-9]+) rules\*\*.*/\1/p; s/.*\(([0-9]+) rules\).*/\1/p')"
-    skills_claim="$(printf '%s\n' "$line" | sed -nE 's/.*all ([0-9]+) ContextForge skills.*/\1/p; s/.*ContextForge v[0-9.]+[^0-9]+([0-9]+) skills.*/\1/p; s/.*\*\*([0-9]+) skills\*\* across.*/\1/p; s/.*│.*\(([0-9]+) skills.*/\1/p')"
-    agents_claim="$(printf '%s\n' "$line" | sed -nE 's/.*\*\*([0-9]+) agents?\*\*.*/\1/p; s/.*\(([0-9]+) agents?\).*/\1/p')"
+    # `## Rules (18)` headings and the README intro's "18 rules, 27 skills, … 14 hooks,
+    # 37 shell tools" went stale for three releases because no pattern below matched them.
+    rules_claim="$(printf '%s\n' "$line" | sed -nE 's/.*\*\*([0-9]+) rules\*\*.*/\1/p; s/.*\(([0-9]+) rules\).*/\1/p; s/^## Rules \(([0-9]+)\).*/\1/p; s/.*[^0-9]([0-9]+) rules, [0-9]+ skills.*/\1/p' | head -1)"
+    skills_claim="$(printf '%s\n' "$line" | sed -nE 's/.*all ([0-9]+) ContextForge skills.*/\1/p; s/.*ContextForge v[0-9.]+[^0-9]+([0-9]+) skills.*/\1/p; s/.*\*\*([0-9]+) skills\*\* across.*/\1/p; s/.*│.*\(([0-9]+) skills.*/\1/p; s/^## Skills \(([0-9]+)\).*/\1/p; s/.* rules, ([0-9]+) skills.*/\1/p' | head -1)"
+    agents_claim="$(printf '%s\n' "$line" | sed -nE 's/.*\*\*([0-9]+) agents?\*\*.*/\1/p; s/.*\(([0-9]+) agents?\).*/\1/p; s/^## Agents? \(([0-9]+)\).*/\1/p; s/.* skills, ([0-9]+) sub-agents?.*/\1/p' | head -1)"
+    hooks_claim="$(printf '%s\n' "$line" | sed -nE 's/^## Hooks \(([0-9]+)\).*/\1/p; s/.* ([0-9]+) hooks, [0-9]+ shell tools.*/\1/p' | head -1)"
+    tools_claim="$(printf '%s\n' "$line" | sed -nE 's/.* hooks, ([0-9]+) shell tools.*/\1/p; s/.*Tier 0\/1 shell tooling \(([0-9]+) scripts\).*/\1/p' | head -1)"
 
     check_count_claim "$rel" "$line_no" "$line" "rules" "$RULE_COUNT" "$rules_claim"
     check_count_claim "$rel" "$line_no" "$line" "skills" "$SKILL_COUNT" "$skills_claim"
     check_count_claim "$rel" "$line_no" "$line" "agents" "$AGENT_COUNT" "$agents_claim"
+    check_count_claim "$rel" "$line_no" "$line" "hooks" "$HOOK_COUNT" "$hooks_claim"
+    check_count_claim "$rel" "$line_no" "$line" "tools" "$TOOL_COUNT" "$tools_claim"
   done < "$file"
 done <<EOF
 $DOCS
@@ -129,8 +137,6 @@ EOF
 # Validate the plugin manifest description counts against the index/source of truth.
 # Catches stale component claims (e.g. "4 agents" when there is 1) that the
 # markdown count parser above does not cover.
-HOOK_COUNT="$(find "$PLUGIN_ROOT/hooks" -maxdepth 1 -name '*.sh' -type f 2>/dev/null | wc -l | tr -d ' ')"
-
 check_plugin_count() {
   local label="$1" actual="$2" claimed display
   display="${label/\?/}"

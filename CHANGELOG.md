@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-15
+
+### Fixed
+
+- **README caught up with three releases.** Skill table listed 17 of 27 skills under a "(20)" heading, hooks table 11 of 14 (no `skill-router`, `deny-dangerous`, `firecrawl-budget`), rule 019 was missing, rule 005 was labelled `intelligent` (it is `always`), the architecture diagram claimed 31 scripts / 11 hooks, the layout table 32 scripts, and the measured rule cost was 2,500 always-on tokens against 4,750 today (`benchmark-tokens.sh`, 6 always-on rules). Added the release procedure.
+- **`audit-doc-claims.sh` now checks the claims that rotted.** Its count patterns never matched `## Skills (N)` / `## Rules (N)` / `## Hooks (N)` headings, the README intro sentence, or the script count, so the gate passed while the README was three releases stale. It now counts hooks (`hooks/*.sh`) and shell tools (`core/scripts/tools/*.sh`) too.
+- CHANGELOG 1.4.0 said `firecrawl-budget.sh` "fails open"; it fails closed (asks), as its tests assert.
+
 ## [1.4.0] - 2026-10-15
 
 ### Added
@@ -12,7 +20,7 @@
   - `evals/routing/`: 11 PL/EN `claude plugin eval` cases graded by `tool_used: Skill` only (no judge cost). First run 2026-10-15: 11/11 fired (the 12th case routed to `superpowers:systematic-debugging`, which eval runs cannot load — they load only the plugin under test — and was dropped). $1.28, `--ablation none`, 1 run each: a smoke signal, not a rate.
   - `disable-model-invocation: true` on manual-only skills (`evolve-apply`, `failure-replay`, `optimize-rules`, `clear-context`, `compile-wiki`) so their descriptions stop spending listing budget.
 - **`hooks/deny-dangerous.sh`** (`PreToolUse`/`Bash`): blocks the irreversible — home/disk wipes, force push, `curl | sh`, remote repo deletion, history pruning, secret export — with patterns in `hooks/lib/dangerous-patterns.txt`. Catches wrapper and path forms (`env rm`, `\\rm`, `/bin/rm`) and home subfolders. One `grep -f` on the allow path (29.9 ms vs 63.6 ms for a per-pattern loop). 95 cases in `scripts/deny-dangerous.test.ts`. Adapted from github.com/davidondrej/skills (MIT).
-- **`hooks/firecrawl-budget.sh`** (`PreToolUse`/`mcp__firecrawl.*`): the free plan is 1000 credits/month with no pay-as-you-go, so credit-scaling calls — crawl, agent, interact, monitors, search with `limit` >5 or `scrapeOptions`, scrape with json/query/summary formats or `lockdown` — return `ask`, which forces a prompt even in auto mode. Cheap calls pass silently. ~30 ms, fails open. Prices from docs.firecrawl.dev/billing (2026-10-15). Rule 015 and `web-research` now spend free tools first (`WebFetch`, `WebSearch`, `gh`) and stopped recommending `json` format by default (5 credits per page instead of 1).
+- **`hooks/firecrawl-budget.sh`** (`PreToolUse`/`mcp__firecrawl.*`): the free plan is 1000 credits/month with no pay-as-you-go, so credit-scaling calls — crawl, agent, interact, monitors, search with `limit` >5 or `scrapeOptions`, scrape with json/query/summary formats or `lockdown` — return `ask`, which forces a prompt even in auto mode. Cheap calls pass silently. ~30 ms; unparseable input or a missing `python3` asks rather than passing. Prices from docs.firecrawl.dev/billing (2026-10-15). Rule 015 and `web-research` now spend free tools first (`WebFetch`, `WebSearch`, `gh`) and stopped recommending `json` format by default (5 credits per page instead of 1).
 - **`bump-version.sh`**: writes one version into every file that states it (`plugin.json`, `marketplace.json`, the Cursor manifest, `package.json`, the root entries of `package-lock.json`, README badge, `CLAUDE.md`) and cuts `[Unreleased]`. `audit-doc-claims.sh` remains the drift check; this is the matching writer.
 - **Six skills:** `web-research` (DeepAPI-style source router on context7/gh/firecrawl/WebSearch), `youtube-transcript` + `yt-transcript.sh`, `tool-scout` + `knowledge-catalog.sh` (ai-knowledge as a 412-row TSV catalog read from disk, refreshed at SessionStart only when an entry changed), `before-building`, `decisions`, `adr-verbatim` (last three adapted from davidondrej/skills, MIT).
 
