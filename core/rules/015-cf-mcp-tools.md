@@ -6,6 +6,7 @@ NEVER call an MCP browser/scrape tool when a Tier 0/1 alternative (`rg`, `WebFet
 NEVER take a full-resolution screenshot (`chrome-devtools` or `playwright`) when a DOM/accessibility snapshot answers the question — screenshots are the single biggest token cost in this group.
 NEVER run a Firecrawl crawl/batch job without an explicit `limit`/`maxDepth` — uncapped crawls are BANNED (unbounded token cost).
 ALWAYS prefer `firecrawl_scrape` with `onlyMainContent: true` and `formats: ["markdown"]` (or `["json"]` + `schema` for structured extraction) over raw HTML.
+ALWAYS confirm browser or dev-server state has settled (navigation finished, write visible on reload, server answering) before reading or acting on it — elapsed time is not evidence; re-snapshot after a navigation that changes the state you act on.
 ALWAYS prefer `chrome-devtools`'s `take_snapshot` (accessibility tree, text) over `take_screenshot` (image) unless visual verification is the actual goal.
 NEVER pass `--slim` to `chrome-devtools` — it does NOT trim the tool list, it REPLACES it with 3 tools (`navigate`, `evaluate`, `screenshot`), dropping `take_snapshot`, console, network and performance: every reason to route here instead of `playwright`. Trim with `--no-category-emulation` / `--no-category-network` / `--no-category-performance` instead.
 ALWAYS cap screenshot cost in the `chrome-devtools` server args (`--screenshotFormat webp --screenshotQuality 60 --screenshotMaxWidth 1280`), NEVER by remembering per-call format params — a server default is deterministic, agent discipline is not.

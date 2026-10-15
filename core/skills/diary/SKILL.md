@@ -29,7 +29,9 @@ Do NOT use for trivial actions (reads, searches) — that is run-log noise.
    - path = `~/worklogs/diaries/<YYYY>/<MM>/<YYYY-MM-DD>-<hash>.yaml`.
 2. If the file does not exist, create it with `decisions:` as an empty block; the SessionEnd hook will append baseline keys later.
 3. Append one list item under the correct key:
-   - `decisions:` for a choice (`what`, `why`, `outcome: worked|failed|unknown`).
+   - `decisions:` for a choice (`what`, `why`, `outcome: worked|failed|unknown`). `unknown` REQUIRES a
+     `recheck:` field naming the observable that settles it; once it does, append a new `decisions:` item with the settled
+     `outcome` and `ref: <original what>`.
    - add the short pattern string to `worked:` or `failed:` when an outcome is known.
 4. Keep each field to one sentence. NEVER paragraphs.
 5. Emit `[DIARY] appended <key> to <path>`.

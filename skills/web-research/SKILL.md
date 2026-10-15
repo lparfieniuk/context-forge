@@ -41,6 +41,9 @@ compare coverage: 3 web + 3 GitHub + 1 developer-search) · **deep** (user says 
 
 - Answer first (≤5 bullets), every factual bullet carries its source URL.
 - Mark each claim `verified` (primary source read) or `lead` (secondary only).
+- A status claim (live, open, submitted, fixed) carries its evidence tier, strongest first — `observed` (seen live
+  this session) > `listed` (an index or listing says so) > `cached` (saved copy) > `assumed`. A `verified`
+  claim needs `observed`. NEVER report a status above the tier actually observed.
 - "Not found" is a valid result — say what was searched.
 - Non-trivial research (varied/deep, or >3 sources): save to
   `~/worklogs/research/YYYY/MM/YYYY-MM-DD-<slug>.md` and print the path. NEVER inside a repo.

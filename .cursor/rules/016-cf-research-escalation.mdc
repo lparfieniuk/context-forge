@@ -50,6 +50,7 @@ Authority order: **official docs / source > GitHub issue > forum / Reddit**. Red
 | Fetch a known docs/issue URL | `WebFetch` (Tier 0) |
 | Open-web / Reddit / forum search | `firecrawl_search` (`onlyMainContent: true`) or `WebSearch` |
 
+ALWAYS label evidence obtained through a fallback path (saved copy, cache, browser after a 403, alternate tool) as `source: <path> captured <ISO time>` — NEVER stamp it with the time of the failed live fetch.
 Prefer `gh` / `WebFetch` (Tier 0) over the firecrawl MCP when the repo or URL is already known. Cap firecrawl with `limit`; route any result >3KB through rule 014 clearing.
 A user-requested research question (not a failure escalation) ALWAYS goes through the `web-research` skill, and a "which tool/library/MCP" question through `tool-scout` first — raw WebSearch for those is BANNED. Measured 2026-10-15: 17 WebSearch + 10 WebFetch calls in 45 days, zero through a skill.
 

@@ -1,143 +1,144 @@
-# Pisanie sprawdzalnych standardów — ContextForge
+# Writing checkable standards — ContextForge
 
-Właściciel dokumentu: Łukasz Parfieniuk. Przegląd źródeł: 2026-10-08.
+Document owner: Łukasz Parfieniuk. Source review: 2026-10-08.
 
-Ten dokument służy zapisywaniu powodów, dla których stosuję zasady, oraz ćwiczeniu
-przekładania ich na jednoznaczne wymagania. Karty poniżej formalizują istniejące
-praktyki; nie zastępują `core/rules/`, indeksu ani instrukcji projektu. Nowe pomysły
-mają status `draft` do czasu decyzji właściciela i wdrożenia w odpowiednim źródle.
+This document records why I apply rules and practices turning them into
+unambiguous requirements. The cards below formalize existing practice; they do not
+replace `core/rules/`, the index, or project instructions. New ideas stay `draft`
+until the owner decides and they land in the right source.
 
-## Jak zapisać następną zasadę
+## How to write the next standard
 
-1. Opisz konkretny problem i koszt zaniechania. Zapisz również koszt samej zasady.
-2. Ustal zakres: obiekt, moment sprawdzenia i osobę odpowiedzialną.
-3. Zapisz jedno wymaganie. Rozdziel zdanie zawierające kilka niezależnych warunków.
-4. Dopisz wynik kontroli, przykład poprawny, błędny i przypadek brzegowy.
-5. Wskaż źródło, kontrolę i dowód wykonania. Brak któregoś z nich oznacz wprost.
-6. Po zmianie źródła przejrzyj kartę. Historia zmian wyjaśnia decyzję i jej powód.
+1. Describe the concrete problem and the cost of not acting. Also record the cost of the rule itself.
+2. Set the scope: the object, when it is checked, and who is responsible.
+3. Write one requirement. Split a sentence that carries several independent conditions.
+4. Add the check outcome, a compliant example, a non-compliant example, and an edge case.
+5. Name the source, the check, and the evidence it ran. Mark any missing one explicitly.
+6. Review the card when its source changes. The history explains the decision and its reason.
 
-W tym dokumencie `MUST` oznacza obowiązek, `SHOULD` zalecenie dopuszczające
-uzasadnione odstępstwo, a `MAY` opcję. Znaczenia pochodzą z
-[RFC 2119](https://www.rfc-editor.org/info/rfc2119/) i
+In this document `MUST` means an obligation, `SHOULD` a recommendation that allows a
+justified deviation, and `MAY` an option. The meanings come from
+[RFC 2119](https://www.rfc-editor.org/info/rfc2119/) and
 [RFC 8174](https://www.rfc-editor.org/rfc/rfc8174.html).
-To słownik zapisu, nie mechanizm wymuszania zachowania.
+This is a writing vocabulary, not an enforcement mechanism.
 
-## Szablon karty
+## Card template
 
 ```markdown
-### <ID> — <krótka nazwa>
+### <ID> — <short name>
 
-- Wersja / status: 1 / draft | formalizacja istniejącej zasady | accepted | retired.
-- Właściciel / data przeglądu: <osoba> / <YYYY-MM-DD>.
-- Problem i uzasadnienie: <konkretny tryb awarii, któremu zapobiegam>.
-- Zakres: <jakie obiekty, kiedy, dla którego narzędzia lub procesu>.
-- Wymaganie: <obiekt> MUST/SHOULD/MAY <jeden obserwowalny warunek>.
-- Źródło decyzji: <link do reguły, ADR albo decyzja właściciela>.
-- Kontrola: <automatyczna | ręczna | brak; plik i nazwa testu albo procedura>.
-- Kryterium zaliczenia: <jednoznaczny wynik kontroli>.
-- Dowód: <commit, polecenie, rzeczywisty exit code, raport; albo nie wykonano>.
-- Zgodny przykład: <minimalny przypadek spełniający warunek>.
-- Niezgodny przykład: <minimalny przypadek łamiący warunek>.
-- Edge case: <granica zakresu albo przypadek nieocenialny>.
-- Wyjątek: <kto zatwierdza, powód, zakres, termin wygaśnięcia; albo brak>.
-- Koszt / ograniczenie: <co tracę albo czego kontrola nie dowodzi>.
-- Historia: <data — zmiana, powód; przy odwróceniu decyzji wskaż wcześniejszą>.
+- Version / status: 1 / draft | formalization of an existing rule | accepted | retired.
+- Owner / review date: <person> / <YYYY-MM-DD>.
+- Problem and rationale: <the concrete failure mode this prevents>.
+- Scope: <which objects, when, for which tool or process>.
+- Requirement: <object> MUST/SHOULD/MAY <one observable condition>.
+- Decision source: <link to a rule, an ADR, or the owner's decision>.
+- Check: <automatic | manual | none; file and test name, or procedure>.
+- Pass criterion: <unambiguous check outcome>.
+- Evidence: <commit, command, actual exit code, report; or not run>.
+- Compliant example: <minimal case that meets the condition>.
+- Non-compliant example: <minimal case that breaks the condition>.
+- Edge case: <scope boundary or a case that cannot be assessed>.
+- Exception: <who approves, reason, scope, expiry; or none>.
+- Cost / limitation: <what I lose, or what the check does not prove>.
+- History: <date — change, reason; when reversing a decision, point to the earlier one>.
 ```
 
-Zapis kontroli i dowodu jest rozdzielony: znaleziony test nie oznacza, że został
-uruchomiony. Wynik kontroli to `pass`, `fail` albo `not-assessed`. Zatwierdzony
-wyjątek zapisuję osobno; nie zmieniam przez niego wyniku testu na `pass`.
+Check and evidence are recorded separately: a test that exists has not necessarily
+been run. A check outcome is `pass`, `fail`, or `not-assessed`. An approved exception
+is recorded on its own; it never turns a test outcome into `pass`.
 
-## Karty z istniejących praktyk
+## Cards from existing practice
 
-### CF-STD-001 — Rejestracja źródła reguły
+### CF-STD-001 — Register a rule's source
 
-- Wersja / status: 1 / formalizacja istniejącej zasady.
-- Właściciel / przegląd: Łukasz Parfieniuk / 2026-10-08.
-- Problem: plik poza rejestrem może zostać pominięty przy dystrybucji.
-- Zakres: nowa reguła runtime ContextForge, przed utworzeniem pliku źródłowego.
-- Wymaganie: nowa reguła MUST mieć wpis w `core/_index.yaml` przed utworzeniem
-  jej pliku źródłowego.
-- Źródło: globalna zasada rozwoju ContextForge; [indeks](../core/_index.yaml).
-- Kontrola: ręczna dla kolejności zmian; pomocniczo
-  [validate-index.sh](../core/scripts/tools/validate-index.sh) sprawdza istniejące
-  odwołania do plików. Sam końcowy indeks nie dowodzi kolejności utworzenia.
-- Kryterium: historia zmian pokazuje rejestrację przed utworzeniem źródła.
-- Dowód: przegląd źródła kontrolera; historii konkretnej nowej reguły nie oceniano.
-- Zgodny przykład: najpierw wpis w indeksie, następnie plik we wskazanej ścieżce.
-- Niezgodny przykład: utworzenie reguły, a później dopisanie jej do indeksu.
-- Edge case: dokument w `docs/` nie staje się regułą runtime przez użycie `MUST`.
-- Wyjątek: brak w tej karcie; zmianę procesu podejmuje właściciel.
-- Koszt / ograniczenie: dodatkowy krok; walidator sprawdza stan, nie historię.
-- Historia: 2026-10-08 — zapis istniejącej zasady i granicy automatycznej kontroli.
+- Version / status: 1 / formalization of an existing rule.
+- Owner / review: Łukasz Parfieniuk / 2026-10-08.
+- Problem: a file outside the registry can be skipped during distribution.
+- Scope: a new ContextForge runtime rule, before its source file is created.
+- Requirement: a new rule MUST have an entry in `core/_index.yaml` before its
+  source file is created.
+- Source: global ContextForge development rule; [index](../core/_index.yaml).
+- Check: manual for the order of changes; as a helper,
+  [validate-index.sh](../core/scripts/tools/validate-index.sh) checks existing
+  file references. The final index alone does not prove creation order.
+- Criterion: change history shows registration before the source was created.
+- Evidence: checker source reviewed; history of a specific new rule not assessed.
+- Compliant example: index entry first, then the file at the listed path.
+- Non-compliant example: create the rule, then add it to the index.
+- Edge case: a document in `docs/` does not become a runtime rule by using `MUST`.
+- Exception: none in this card; the owner decides process changes.
+- Cost / limitation: an extra step; the validator checks state, not history.
+- History: 2026-10-08 — recorded the existing rule and the limit of the automatic check.
 
-### CF-STD-002 — Koszt reguł ładowanych zawsze
+### CF-STD-002 — Cost of always-loaded rules
 
-- Wersja / status: 1 / formalizacja istniejącej zasady.
-- Właściciel / przegląd: Łukasz Parfieniuk / 2026-10-08.
-- Problem: reguła potrzebna tylko w wybranych zadaniach obciąża każdą sesję.
-- Zakres: indeksowane reguły dla emitera Claude Code, przy walidacji dystrybucji.
-- Wymaganie: reguła z niepustym `installed_claude` MUST mieć `activation: always`.
-- Źródło: kontrakt aktywacji w [CLAUDE.md](../CLAUDE.md).
-- Kontrola: automatyczna w
+- Version / status: 1 / formalization of an existing rule.
+- Owner / review: Łukasz Parfieniuk / 2026-10-08.
+- Problem: a rule needed only in some tasks weighs on every session.
+- Scope: indexed rules for the Claude Code emitter, during distribution validation.
+- Requirement: a rule with a non-empty `installed_claude` MUST have `activation: always`.
+- Source: activation contract in [CLAUDE.md](../CLAUDE.md).
+- Check: automatic in
   [rule-activation.test.ts](../scripts/rule-activation.test.ts), test
-  `only \`always\` rules occupy .claude/rules/ (always-on cost)`.
-- Kryterium: test znajduje zero reguł z instalacją Claude i inną aktywacją.
-- Dowód: kontrola odczytana w źródle; testu nie uruchomiono podczas pisania karty.
-- Zgodny przykład: reguła on-demand ma `installed_claude: null`.
-- Niezgodny przykład: reguła on-demand ma ścieżkę w `.claude/rules/`.
-- Edge case: osierocony plik instalacji wymaga osobnej kontroli katalogu; test
-  indeksu sam go nie wykrywa. Inny harness wymaga kontroli swojego emitera.
-- Wyjątek: brak; rozszerzenie zakresu ładowania wymaga zmiany decyzji źródłowej.
-- Koszt / ograniczenie: reguła on-demand może nie zostać odczytana przez agenta.
-- Historia: 2026-10-08 — oddzielono kontrolę indeksu od kontroli plików i zachowania.
+  ``only `always` rules occupy .claude/rules/ (always-on cost)``.
+- Criterion: the test finds zero rules with a Claude install and another activation.
+- Evidence: check read in source; the test was not run while writing the card.
+- Compliant example: an on-demand rule has `installed_claude: null`.
+- Non-compliant example: an on-demand rule has a path in `.claude/rules/`.
+- Edge case: an orphaned installed file needs a separate directory check; the
+  index test alone does not catch it. Another harness needs a check of its own emitter.
+- Exception: none; widening the load scope requires changing the source decision.
+- Cost / limitation: an on-demand rule may never be read by the agent.
+- History: 2026-10-08 — separated the index check from file and behavior checks.
 
-### CF-STD-003 — Zakres twierdzenia o egzekwowaniu reguły
+### CF-STD-003 — Scope of a claim that a rule is enforced
 
-- Wersja / status: 1 / draft; propozycja doprecyzowania sposobu raportowania.
-- Właściciel / przegląd: Łukasz Parfieniuk / 2026-10-08.
-- Problem: poprawna instalacja instrukcji może zostać pomylona z jej przestrzeganiem.
-- Zakres: raport twierdzący, że agent przestrzega konkretnej reguły.
-- Wymaganie: raport MUST wskazywać dowód obserwowanego zachowania agenta
-  dotyczący tej reguły, aby uzasadniać twierdzenie o jej przestrzeganiu.
-- Źródło decyzji: propozycja tej karty; punktem odniesienia jest
-  [check-parity.sh](../core/scripts/tools/check-parity.sh), który bada instalację
-  i zawsze zwraca 0 jako wynik informacyjny.
-- Kontrola: ręczny przegląd twierdzenia, obserwacji i jej zakresu; brak gate'u.
-- Kryterium: dowód obejmuje oceniane zachowanie, warunki oraz granicę wniosku.
-- Dowód: brak eksperymentu zachowania dla tej karty; `not-assessed`.
-- Zgodny przykład: „W scenariuszu X hook zablokował operację Y; zapis zdarzenia Z”.
-- Niezgodny przykład: „parity zakończyło się kodem 0, więc agent przestrzega reguł”.
-- Edge case: pomiar bez potrzebnej obserwacji pozostaje nieoceniony, nie zaliczony.
-- Wyjątek: brak; wniosek można zawęzić do poprawności instalacji.
-- Koszt / ograniczenie: zebranie obserwacji kosztuje; pojedynczy scenariusz nie
-  dowodzi skuteczności we wszystkich zadaniach.
-- Historia: 2026-10-08 — propozycja, bez zmiany aktywnych reguł i hooków.
+- Version / status: 1 / draft; proposal to sharpen how this is reported.
+- Owner / review: Łukasz Parfieniuk / 2026-10-08.
+- Problem: a correct instruction install can be mistaken for compliance with it.
+- Scope: a report claiming the agent follows a specific rule.
+- Requirement: the report MUST cite evidence of observed agent behavior
+  concerning that rule to support the claim that it is followed.
+- Decision source: this card's proposal; the reference point is
+  [check-parity.sh](../core/scripts/tools/check-parity.sh), which inspects the install
+  and always returns 0 as an informational result.
+- Check: manual review of the claim, the observation, and its scope; no gate.
+- Criterion: the evidence covers the assessed behavior, its conditions, and the limit of the conclusion.
+- Evidence: no behavior experiment for this card; `not-assessed`.
+- Compliant example: "In scenario X the hook blocked operation Y; event record Z".
+- Non-compliant example: "parity exited 0, so the agent follows the rules".
+- Edge case: a measurement without the needed observation stays not-assessed, not passed.
+- Exception: none; the conclusion can be narrowed to install correctness.
+- Cost / limitation: collecting observations costs; a single scenario does not
+  prove effectiveness across all tasks.
+- History: 2026-10-08 — proposal, no change to active rules or hooks.
 
-## Ćwiczenie: od hasła do wymagania
+## Exercise: from slogan to requirement
 
-Weź jedną zasadę, np. „używaj najtańszego poprawnego wykonawcy”. Napisz kartę
-`CF-STD-004` ze statusem `draft`. Najpierw określ, co oznacza „poprawny”, jak
-porównujesz koszt i co robisz, gdy jednej wielkości nie znasz. Przygotuj przypadek,
-w którym tańszy wykonawca kosztuje ostatecznie więcej przez ponawianie pracy.
+Take one rule, e.g. "use the cheapest correct executor". Write card
+`CF-STD-004` with status `draft`. First define what "correct" means, how you
+compare cost, and what you do when one quantity is unknown. Prepare a case
+where the cheaper executor ends up costing more through repeated work.
 
-Poproś czytelnika o ocenę trzech przypadków wyłącznie na podstawie karty. Jeżeli
-musicie dopowiadać definicję, popraw wymaganie. Wywiad z ekspertem ćwiczy ustalenie
-tej definicji, a test sprawdza dopiero uzgodnioną treść.
+Ask a reader to judge three cases from the card alone. If you have to fill in a
+definition for them, fix the requirement. An expert interview practices settling
+that definition; a test only checks the agreed text.
 
-Na potrzeby nauki można użyć lokalnych poziomów:
-- **baseline:** jedno wymaganie, zakres, źródło oraz kryterium zaliczenia;
-- **enhanced:** dodatkowo przykłady, edge case i określona obsługa wyjątku;
-- **evidenced:** dodatkowo rzeczywisty dowód wykonania kontroli dla danej wersji.
+For learning purposes, local levels can be used:
+- **baseline:** one requirement, scope, source, and pass criterion;
+- **enhanced:** plus examples, an edge case, and defined exception handling;
+- **evidenced:** plus real evidence that the check ran for this version.
 
-To propozycja oceny kompletności kart, nie certyfikat zgodności projektu. Kartę
-`draft` oceniam jako ćwiczenie; samo wypełnienie pól nie zatwierdza jej do runtime.
+This is a proposal for rating card completeness, not a project compliance
+certificate. A `draft` card is rated as an exercise; filling in the fields does not approve it for runtime.
 
-Przykłady pomiarowe: [rejestr cf-bench](../../ai-tools/cf-bench/docs/standards-authoring.md).
-Link między lokalnymi repozytoriami zakłada układ katalogów `Projects`; po
-publikacji osobnych repozytoriów ich README pozostają punktami wejścia.
+Measurement examples: [cf-bench register](../../ai-tools/cf-bench/docs/standards-authoring.md).
+The link between local repositories assumes the `Projects` directory layout; once
+the repositories are published separately, their READMEs remain the entry points.
 
-## Historia dokumentu
+## Document history
 
-- 2026-10-08 — pierwszy zapis: wspólny szablon, dwa przykłady istniejących zasad,
-  jedna propozycja i ćwiczenie. Bez zmian w źródłach runtime.
+- 2026-10-08 — first version: shared template, two examples of existing rules,
+  one proposal, and an exercise. No changes to runtime sources.
+- 2026-10-15 — translated to English (project content is English-only).
