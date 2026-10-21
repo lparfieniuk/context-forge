@@ -226,7 +226,7 @@ Hooks are what make the rules more than advice — the blocking ones fail the to
 | PreToolUse · Bash | `enforce-rg.sh` | **yes** | Reject `grep`; print the `rg` equivalent |
 | PreToolUse · Bash | `pre-commit-review.sh` | **yes** | Reject `git commit` unless the review marker matches the current working-tree fingerprint |
 | PreToolUse · Agent | `enforce-tier-routing.sh` | **yes** | Reject a sub-agent spawn when a Tier 0/1 alternative exists |
-| PreToolUse · Firecrawl MCP | `firecrawl-budget.sh` | asks | Force a permission prompt before credit-scaling calls (crawl, agent, large search, paid formats) |
+| PreToolUse · Firecrawl MCP | `firecrawl-budget.sh` | allows / denies | Estimate each call's credits, track remaining via the credit-usage API, log to `~/worklogs/logs/firecrawl-usage.tsv`; deny an uncapped or malformed call or one below the floor, ask when credits are unknown (`CF_FIRECRAWL_FLOOR`, default 200) |
 | PostToolUse · Skill | `skill-usage-log.sh` | no | Append every skill invocation to `~/worklogs/logs/skill-usage.tsv` — history past the 30-day transcript window |
 | PostToolUse · Bash | `run-log-writer.sh` | no | Log significant calls to `~/worklogs/runs/` as self-evolve signal |
 | PostToolUse · MCP | `mcp-context-guard.sh` | no | Flag oversized MCP payloads for clearing (rule 014) |
