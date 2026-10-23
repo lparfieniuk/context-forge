@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **`firecrawl-budget.sh` tracks credits instead of prompting.** The `ask` decision forced a manual prompt on every credit-scaling call. Paid calls now get `allow` plus one `additionalContext` line (estimate, remaining, paid calls today); remaining credits come from `GET /v2/team/credit-usage` (re-read 5 min after the last fetch, decremented locally in between) and every paid call is logged to `~/worklogs/logs/firecrawl-usage.tsv`. It denies an uncapped crawl, a malformed `limit`/`formats`, or a call that would leave fewer than `CF_FIRECRAWL_FLOOR` credits (default 200), and asks when remaining credits are unknown. Unpriced tools (`agent`, `interact`, `research_*`) are booked at 10 credits, so the floor is soft for them.
+
 ## [1.4.1] - 2026-10-15
 
 ### Fixed
